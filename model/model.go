@@ -3,7 +3,7 @@ package model
 import "time"
 
 type (
-	AttributeType int8
+	AttributeType string
 	Attribute     struct {
 		Name string        `bson:"name"`
 		Type AttributeType `bson:"type"`
@@ -33,10 +33,10 @@ type (
 )
 
 const (
-	AttributeTypeString AttributeType = iota
-	AttributeTypeInteger
-	AttributeTypeDecimal
-	AttributeTypeDate
+	AttributeTypeString  AttributeType = "String"
+	AttributeTypeInteger AttributeType = "Integer"
+	AttributeTypeDecimal AttributeType = "Decimal"
+	AttributeTypeDate    AttributeType = "Date"
 
 	ObjectTypeAccount ObjectType = "Account"
 	ObjectTypePerson  ObjectType = "Person"
