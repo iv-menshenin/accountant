@@ -2,7 +2,7 @@ package business
 
 import "github.com/iv-menshenin/accountant/model"
 
-func (a *App) AccountGet() (*model.Account, error) {
+func (a *App) AccountGet(q model.GetAccountQuery) (*model.Account, error) {
 	return nil, nil
 }
 

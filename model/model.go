@@ -3,8 +3,11 @@ package model
 import "time"
 
 type (
+	UserIDType    string
+	IDType        int64
 	AttributeType string
-	Attribute     struct {
+
+	Attribute struct {
 		Name string        `bson:"name"`
 		Type AttributeType `bson:"type"`
 	}
@@ -15,20 +18,22 @@ type (
 	}
 
 	Account struct {
-		AccountID  int64                  `bson:"account_id"`
-		Attributes map[string]interface{} `bson:"attributes"`
-		Person     []Person               `bson:"persons"`
-		Object     []Object               `bson:"objects"`
+		AccountID  IDType                 `bson:"account_id" json:"account_id"`
+		Attributes map[string]interface{} `bson:"attributes" json:"attributes"`
+		Person     []Person               `bson:"persons" json:"persons"`
+		Object     []Object               `bson:"objects" json:"objects"`
 	}
 	Person struct {
-		Name       string                 `bson:"name"`
-		Surname    string                 `bson:"surname"`
-		PatName    string                 `bson:"pat_name"`
-		DOB        time.Time              `bson:"dob,omitempty"`
-		Attributes map[string]interface{} `bson:"attributes"`
+		PersonID   IDType                 `bson:"person_id" json:"person_id"`
+		Name       string                 `bson:"name" json:"name"`
+		Surname    string                 `bson:"surname" json:"surname"`
+		PatName    string                 `bson:"pat_name" json:"pat_name"`
+		DOB        time.Time              `bson:"dob,omitempty" json:"dob,omitempty"`
+		Attributes map[string]interface{} `bson:"attributes" json:"attributes"`
 	}
 	Object struct {
-		Attributes map[string]interface{} `bson:"attributes"`
+		ObjectID   IDType                 `bson:"object_id" json:"object_id"`
+		Attributes map[string]interface{} `bson:"attributes" json:"attributes"`
 	}
 )
 

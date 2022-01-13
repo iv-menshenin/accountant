@@ -9,8 +9,6 @@ import (
 	"net/http"
 	"sync"
 	"time"
-
-	"github.com/gorilla/mux"
 )
 
 type (
@@ -58,12 +56,6 @@ func makeServer(handler http.Handler, logger *log.Logger) http.Server {
 	}
 }
 
-func makeRouter() http.Handler {
-	router := mux.NewRouter()
-	router.Path("/account").Methods(http.MethodGet).Handler(nil)
-	return router
-}
-
 func (t *Server) ConnState(_ net.Conn, state http.ConnState) {
 	switch state {
 	case http.StateNew:
@@ -73,9 +65,9 @@ func (t *Server) ConnState(_ net.Conn, state http.ConnState) {
 	}
 }
 
-func New(logger *log.Logger) *Server {
+func New(logger *log.Logger, rp RequestProcessor) *Server {
 	flag.Parse()
-	var httpServer = makeServer(makeRouter(), logger)
+	var httpServer = makeServer(makeRouter(rp), logger)
 	var server = Server{
 		server: &httpServer,
 	}
