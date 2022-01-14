@@ -1,8 +1,7 @@
-package http
+package ep
 
 import (
 	"encoding/json"
-	"errors"
 	"github.com/iv-menshenin/accountant/model"
 	"log"
 	"net/http"
@@ -131,16 +130,4 @@ func (r DataResponse) data() []byte {
 		log.Println(err)
 	}
 	return b
-}
-
-const (
-	accountID = "account_id"
-)
-
-func getAccountMapper(r *http.Request) (q model.GetAccountQuery, err error) {
-	if q.ID = r.URL.Query().Get(accountID); q.ID != "" {
-		// TODO: verify
-		return
-	}
-	return q, errors.New(accountID + " must not be empty")
 }

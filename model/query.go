@@ -12,7 +12,10 @@ type (
 	NotFound     struct{}
 
 	GetAccountQuery struct {
-		ID string
+		ID IDType
+	}
+	SaveAccountQuery struct {
+		AccountData `json:",inline"`
 	}
 )
 

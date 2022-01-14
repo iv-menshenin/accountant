@@ -2,39 +2,25 @@ package http
 
 import (
 	"github.com/gorilla/mux"
-	"github.com/iv-menshenin/accountant/model"
+	"github.com/iv-menshenin/accountant/transport/internal/http/ep"
 	"net/http"
 )
 
 type (
-	AccountGetter interface {
-		AccountGet(q model.GetAccountQuery) (*model.Account, error)
-	}
 	RequestProcessor interface {
-		AccountGetter
+		ep.AccountGetter
+		ep.AccountSaver
 	}
 )
 
 func makeRouter(rp RequestProcessor) http.Handler {
 	router := mux.NewRouter()
 
-	router.Path("/account").Methods(http.MethodGet).Handler(makeGetAccountHandler(rp))
+	accounts := ep.NewAccountsEP(rp)
+
+	router.Path(accounts.LookupPathPattern()).
+		Methods(http.MethodGet).
+		Handler(accounts.LookupHandler())
 
 	return router
-}
-
-func makeGetAccountHandler(rp RequestProcessor) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		q, err := getAccountMapper(r)
-		if err != nil {
-			writeQueryError(w, err)
-			return
-		}
-		account, err := rp.AccountGet(q)
-		if err != nil {
-			writeError(w, err)
-			return
-		}
-		writeData(w, account)
-	}
 }
