@@ -19,6 +19,10 @@ type (
 	PostAccountQuery struct {
 		AccountData `json:",inline"`
 	}
+	PutAccountQuery struct {
+		ID      uuid.UUID
+		Account AccountData
+	}
 )
 
 func (u Unauthorized) Error() string {
