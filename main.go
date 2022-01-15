@@ -4,6 +4,7 @@ import (
 	"context"
 	"flag"
 	"github.com/iv-menshenin/accountant/business"
+	"github.com/iv-menshenin/accountant/store"
 	"log"
 	"os"
 	"time"
@@ -28,10 +29,12 @@ func main() {
 
 func mainFunc(ctx context.Context, halt <-chan struct{}) (err error) {
 	var (
-		logger         = log.Default()
-		appHnd         = business.New()
+		listeningError    = make(chan error)
+		logger            = log.Default()
+		accountCollection = store.NewAccountMemoryCollection()
+
+		appHnd         = business.New(accountCollection)
 		queryTransport = transport.New(logger, appHnd)
-		listeningError = make(chan error)
 	)
 	queryTransport.ListenAndServe(listeningError)
 	select {

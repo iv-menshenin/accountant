@@ -1,10 +1,17 @@
 package business
 
+import "github.com/iv-menshenin/accountant/store"
+
 type (
 	App struct {
+		accounts *store.AccountCollection
 	}
 )
 
-func New() *App {
-	return &App{}
+func New(
+	accounts *store.AccountCollection,
+) *App {
+	return &App{
+		accounts: accounts,
+	}
 }

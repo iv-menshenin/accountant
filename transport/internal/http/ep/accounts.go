@@ -1,6 +1,8 @@
 package ep
 
 import (
+	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/gorilla/mux"
@@ -10,12 +12,16 @@ import (
 
 type (
 	AccountGetter interface {
-		AccountGet(q model.GetAccountQuery) (*model.Account, error)
+		AccountGet(context.Context, model.GetAccountQuery) (*model.Account, error)
 	}
 	AccountSaver interface {
-		AccountSave(acc model.SaveAccountQuery) (*model.Account, error)
+		AccountSave(context.Context, model.PostAccountQuery) (*model.Account, error)
+	}
+	AccountCreator interface {
+		AccountCreate(context.Context, model.PostAccountQuery) (*model.Account, error)
 	}
 	AccountProcessor interface {
+		AccountCreator
 		AccountGetter
 		AccountSaver
 	}
@@ -39,7 +45,7 @@ func (a *Accounts) LookupHandler() http.HandlerFunc {
 			writeQueryError(w, err)
 			return
 		}
-		account, err := a.processor.AccountGet(q)
+		account, err := a.processor.AccountGet(r.Context(), q)
 		if err != nil {
 			writeError(w, err)
 			return
@@ -49,11 +55,13 @@ func (a *Accounts) LookupHandler() http.HandlerFunc {
 }
 
 func getAccountMapper(r *http.Request) (q model.GetAccountQuery, err error) {
-	if id := mux.Vars(r)[accountID]; id != "" {
-
+	id := mux.Vars(r)[accountID]
+	if id == "" {
+		err = errors.New(accountID + " must not be empty")
 		return
 	}
-	return q, errors.New(accountID + " must not be empty")
+	err = q.ID.FromString(id)
+	return
 }
 
 func (a *Accounts) PostHandler() http.HandlerFunc {
@@ -63,7 +71,7 @@ func (a *Accounts) PostHandler() http.HandlerFunc {
 			writeQueryError(w, err)
 			return
 		}
-		account, err := a.processor.AccountSave(q)
+		account, err := a.processor.AccountCreate(r.Context(), q)
 		if err != nil {
 			writeError(w, err)
 			return
@@ -72,8 +80,11 @@ func (a *Accounts) PostHandler() http.HandlerFunc {
 	}
 }
 
-func postAccountMapper(r *http.Request) (q model.SaveAccountQuery, err error) {
-	return q, errors.New("not implemented")
+func postAccountMapper(r *http.Request) (q model.PostAccountQuery, err error) {
+	decoder := json.NewDecoder(r.Body)
+	decoder.DisallowUnknownFields()
+	err = decoder.Decode(&q)
+	return
 }
 
 func NewAccountsEP(ap AccountProcessor) *Accounts {

@@ -1,23 +1,40 @@
 package business
 
-import "github.com/iv-menshenin/accountant/model"
+import (
+	"context"
+	"github.com/iv-menshenin/accountant/model"
+	"github.com/iv-menshenin/accountant/model/uuid"
+	"github.com/iv-menshenin/accountant/store"
+)
 
-func (a *App) AccountGet(q model.GetAccountQuery) (*model.Account, error) {
+func (a *App) AccountCreate(ctx context.Context, acc model.PostAccountQuery) (*model.Account, error) {
+	var account = model.Account{
+		AccountID:   uuid.NewUUID(),
+		AccountData: acc.AccountData,
+	}
+	err := a.accounts.Create(ctx, account)
+	if err != nil {
+		return nil, err
+	}
+	return a.accounts.Lookup(ctx, account.AccountID)
+}
+
+func (a *App) AccountGet(ctx context.Context, q model.GetAccountQuery) (*model.Account, error) {
+	account, err := a.accounts.Lookup(ctx, q.ID)
+	if err == store.ErrNotFound {
+		return nil, model.NotFound{}
+	}
+	return account, nil
+}
+
+func (a *App) AccountsFind(ctx context.Context) ([]model.Account, error) {
 	return nil, nil
 }
 
-func (a *App) AccountsFind() ([]model.Account, error) {
-	return nil, nil
-}
-
-func (a *App) AccountDelete() error {
+func (a *App) AccountDelete(ctx context.Context) error {
 	return nil
 }
 
-func (a *App) AccountSave(acc model.SaveAccountQuery) (*model.Account, error) {
+func (a *App) AccountSave(ctx context.Context, acc model.PostAccountQuery) (*model.Account, error) {
 	return nil, nil
-}
-
-func (a *App) AccountCreate(acc model.Account) error {
-	return nil
 }

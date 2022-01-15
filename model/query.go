@@ -1,9 +1,11 @@
 package model
 
+import "github.com/iv-menshenin/accountant/model/uuid"
+
 type (
 	AuthData struct {
 		JWT    string
-		UserID UserIDType
+		UserID uuid.UUID
 		Roles  []string
 	}
 
@@ -12,9 +14,9 @@ type (
 	NotFound     struct{}
 
 	GetAccountQuery struct {
-		ID IDType
+		ID uuid.UUID
 	}
-	SaveAccountQuery struct {
+	PostAccountQuery struct {
 		AccountData `json:",inline"`
 	}
 )

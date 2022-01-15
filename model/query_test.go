@@ -2,22 +2,25 @@ package model
 
 import (
 	"encoding/json"
+	"github.com/iv-menshenin/accountant/model/uuid"
 	"reflect"
 	"testing"
+	"time"
 )
 
 func Test_SaveAccountQuery(t *testing.T) {
 	var acc = Account{
-		AccountID: IDType{},
+		AccountID: uuid.NewUUID(),
 		AccountData: AccountData{
-			Attributes: map[string]interface{}{
-				"foo": "bar",
-			},
-			Person: []Person{},
-			Object: []Object{},
+			Comment:      "foo, bar",
+			AgreementNum: "#foo-001-002-00bar",
+			AgreementDate: func() *time.Time {
+				var tm = time.Now().Round(time.Hour)
+				return &tm
+			}(),
 		},
 	}
-	var aq = SaveAccountQuery{
+	var aq = PostAccountQuery{
 		AccountData: acc.AccountData,
 	}
 	data, err := json.Marshal(aq)

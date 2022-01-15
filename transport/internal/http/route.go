@@ -8,6 +8,7 @@ import (
 
 type (
 	RequestProcessor interface {
+		ep.AccountCreator
 		ep.AccountGetter
 		ep.AccountSaver
 	}
