@@ -30,12 +30,27 @@ type (
 	}
 )
 
+func NewAccountsEP(ap AccountProcessor) *Accounts {
+	return &Accounts{
+		processor: ap,
+	}
+}
+
 const (
 	accountID = "account_id"
 )
 
-func (a *Accounts) LookupPathPattern() string {
-	return fmt.Sprintf("/account/{%s:[0-9a-f]+}", accountID)
+func (a *Accounts) RegisterRoute(router *mux.Router) {
+	const accountsPath = "/accounts"
+	router.
+		Path(fmt.Sprintf("%s/{%s:[0-9a-f\\-]+}", accountsPath, accountID)).
+		Methods(http.MethodGet).
+		Handler(a.LookupHandler())
+
+	router.
+		Path(accountsPath).
+		Methods(http.MethodPost).
+		Handler(a.PostHandler())
 }
 
 func (a *Accounts) LookupHandler() http.HandlerFunc {
@@ -85,10 +100,4 @@ func postAccountMapper(r *http.Request) (q model.PostAccountQuery, err error) {
 	decoder.DisallowUnknownFields()
 	err = decoder.Decode(&q)
 	return
-}
-
-func NewAccountsEP(ap AccountProcessor) *Accounts {
-	return &Accounts{
-		processor: ap,
-	}
 }

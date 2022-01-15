@@ -18,10 +18,7 @@ func makeRouter(rp RequestProcessor) http.Handler {
 	router := mux.NewRouter()
 
 	accounts := ep.NewAccountsEP(rp)
-
-	router.Path(accounts.LookupPathPattern()).
-		Methods(http.MethodGet).
-		Handler(accounts.LookupHandler())
+	accounts.RegisterRoute(router)
 
 	return router
 }
