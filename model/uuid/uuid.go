@@ -1,9 +1,11 @@
 package uuid
 
 import (
+	"bytes"
 	"crypto/rand"
 	"encoding/hex"
 	"errors"
+	"io"
 )
 
 type (
@@ -48,10 +50,51 @@ func (u *UUID) String() string {
 	return string(buf[0:8]) + "-" + string(buf[8:12]) + "-" + string(buf[12:16]) + "-" + string(buf[16:20]) + "-" + string(buf[20:])
 }
 
+func (u *UUID) Write(w io.Writer) error {
+	var buf [32]byte
+	hex.Encode(buf[:], u[:])
+	if _, err := w.Write(buf[0:8]); err != nil {
+		return err
+	}
+	if _, err := w.Write([]byte("-")); err != nil {
+		return err
+	}
+	if _, err := w.Write(buf[8:12]); err != nil {
+		return err
+	}
+	if _, err := w.Write([]byte("-")); err != nil {
+		return err
+	}
+	if _, err := w.Write(buf[12:16]); err != nil {
+		return err
+	}
+	if _, err := w.Write([]byte("-")); err != nil {
+		return err
+	}
+	if _, err := w.Write(buf[16:20]); err != nil {
+		return err
+	}
+	if _, err := w.Write([]byte("-")); err != nil {
+		return err
+	}
+	if _, err := w.Write(buf[20:]); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (u *UUID) UnmarshalJSON(data []byte) error {
 	return u.FromString(string(data))
 }
 
 func (u *UUID) MarshalJSON() ([]byte, error) {
-	return []byte(u.String()), nil
+	var buf = bytes.NewBuffer(make([]byte, 0, 38))
+	if _, err := buf.WriteRune('"'); err != nil {
+		return nil, err
+	}
+	if err := u.Write(buf); err != nil {
+		return nil, err
+	}
+	_, err := buf.WriteRune('"')
+	return buf.Bytes(), err
 }
