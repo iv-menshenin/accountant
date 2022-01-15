@@ -15,7 +15,7 @@ type (
 		AccountGet(context.Context, model.GetAccountQuery) (*model.Account, error)
 	}
 	AccountSaver interface {
-		AccountSave(context.Context, model.PostAccountQuery) (*model.Account, error)
+		AccountSave(context.Context, model.PutAccountQuery) (*model.Account, error)
 	}
 	AccountCreator interface {
 		AccountCreate(context.Context, model.PostAccountQuery) (*model.Account, error)
@@ -40,17 +40,13 @@ const (
 	accountID = "account_id"
 )
 
-func (a *Accounts) RegisterRoute(router *mux.Router) {
+func (a *Accounts) SetupRouting(router *mux.Router) {
 	const accountsPath = "/accounts"
-	router.
-		Path(fmt.Sprintf("%s/{%s:[0-9a-f\\-]+}", accountsPath, accountID)).
-		Methods(http.MethodGet).
-		Handler(a.LookupHandler())
+	accountsWithIDPath := fmt.Sprintf("%s/{%s:[0-9a-f\\-]+}", accountsPath, accountID)
 
-	router.
-		Path(accountsPath).
-		Methods(http.MethodPost).
-		Handler(a.PostHandler())
+	router.Path(accountsWithIDPath).Methods(http.MethodGet).Handler(a.LookupHandler())
+	router.Path(accountsPath).Methods(http.MethodPost).Handler(a.PostHandler())
+	router.Path(accountsWithIDPath).Methods(http.MethodPut).Handler(a.PutHandler())
 }
 
 func (a *Accounts) LookupHandler() http.HandlerFunc {
@@ -99,5 +95,36 @@ func postAccountMapper(r *http.Request) (q model.PostAccountQuery, err error) {
 	decoder := json.NewDecoder(r.Body)
 	decoder.DisallowUnknownFields()
 	err = decoder.Decode(&q)
+	return
+}
+
+func (a *Accounts) PutHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		q, err := putAccountMapper(r)
+		if err != nil {
+			writeQueryError(w, err)
+			return
+		}
+		account, err := a.processor.AccountSave(r.Context(), q)
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+		writeData(w, account)
+	}
+}
+
+func putAccountMapper(r *http.Request) (q model.PutAccountQuery, err error) {
+	id := mux.Vars(r)[accountID]
+	if id == "" {
+		err = errors.New(accountID + " must not be empty")
+		return
+	}
+	if err = q.ID.FromString(id); err != nil {
+		return q, err
+	}
+	decoder := json.NewDecoder(r.Body)
+	decoder.DisallowUnknownFields()
+	err = decoder.Decode(&q.Account)
 	return
 }
