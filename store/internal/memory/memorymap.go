@@ -1,9 +1,13 @@
 package memory
 
-import "github.com/iv-menshenin/accountant/model/uuid"
+import (
+	"github.com/iv-menshenin/accountant/model/uuid"
+	"sync"
+)
 
 type (
 	Memory struct {
+		mux  sync.RWMutex
 		data map[uuid.UUID]interface{}
 	}
 )
@@ -15,6 +19,8 @@ func New() *Memory {
 }
 
 func (m *Memory) Create(id uuid.UUID, data interface{}) error {
+	m.mux.Lock()
+	defer m.mux.Unlock()
 	if _, ok := m.data[id]; ok {
 		return ErrDuplicate
 	}
@@ -23,6 +29,8 @@ func (m *Memory) Create(id uuid.UUID, data interface{}) error {
 }
 
 func (m *Memory) Replace(id uuid.UUID, data interface{}) error {
+	m.mux.Lock()
+	defer m.mux.Unlock()
 	if _, ok := m.data[id]; !ok {
 		return ErrNotFound
 	}
@@ -31,6 +39,8 @@ func (m *Memory) Replace(id uuid.UUID, data interface{}) error {
 }
 
 func (m *Memory) Delete(id uuid.UUID) error {
+	m.mux.Lock()
+	defer m.mux.Unlock()
 	if _, ok := m.data[id]; !ok {
 		return ErrNotFound
 	}
@@ -39,6 +49,8 @@ func (m *Memory) Delete(id uuid.UUID) error {
 }
 
 func (m *Memory) Lookup(id uuid.UUID) (interface{}, error) {
+	m.mux.RLock()
+	defer m.mux.RUnlock()
 	if data, ok := m.data[id]; ok {
 		return data, nil
 	}
@@ -46,6 +58,8 @@ func (m *Memory) Lookup(id uuid.UUID) (interface{}, error) {
 }
 
 func (m *Memory) Find(filter func(interface{}) bool) []interface{} {
+	m.mux.RLock()
+	defer m.mux.RUnlock()
 	var result = make([]interface{}, 0)
 	for _, v := range m.data {
 		if filter(v) {
