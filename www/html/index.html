@@ -1,0 +1,43 @@
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <title></title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" />
+    <link rel="stylesheet" href="/www/css/theme-main.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script src="../js/navigation.js"></script>
+</head>
+<body>
+    <nav style="overflow: hidden">
+        <div class="nav-wrapper theme-nav">
+            <a href="#" data-target="nav-slide-out" class="sidenav-trigger"><i class="material-icons">menu</i></a>
+            &nbsp;&nbsp;<a href="#" class="brand-logo"><i class="material-icons">cloud</i>Лицевой счет</a>
+            <ul id="navigation-full" class="right">
+                <!-- navigation links -->
+            </ul>
+        </div>
+    </nav>
+    <ul id="nav-slide-out" class="sidenav">
+        <li><div class="user-view">
+            <!--            <div class="background"><img src="images/office.jpg"></div>-->
+            <!--            <a href="#user"><img class="circle" src="images/yuna.jpg"></a>-->
+            <!--            <a href="#name"><span class="white-text name">John Doe</span></a>-->
+            <!--            <a href="#email"><span class="white-text email">jdandturk@gmail.com</span></a>-->
+        </div></li>
+        <!-- navigation links -->
+    </ul>
+    <script src="/www/js/jquery.js"></script>
+    <script src="/www/js/api.js"></script>
+    <script src="/www/js/helpers.js"></script>
+    <script src="/www/js/navigation.js"></script>
+    <script>
+        initNavigationBar();
+        document.addEventListener('DOMContentLoaded', function() {
+            let elmsSideNav = document.querySelectorAll('.sidenav');
+            let instancesSideNav = M.Sidenav.init(elmsSideNav, {});
+            sideNav = instancesSideNav[0];
+        });
+    </script>
+</body>
+</html>
