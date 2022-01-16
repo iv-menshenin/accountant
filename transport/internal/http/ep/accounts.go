@@ -8,6 +8,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/iv-menshenin/accountant/model"
 	"net/http"
+	"strconv"
 )
 
 type (
@@ -24,13 +25,14 @@ type (
 		AccountDelete(context.Context, model.DeleteAccountQuery) error
 	}
 	AccountFinder interface {
-		AccountsFind(context.Context, model.FindAccountsQuery) error
+		AccountsFind(context.Context, model.FindAccountsQuery) ([]model.Account, error)
 	}
 	AccountProcessor interface {
 		AccountCreator
 		AccountGetter
 		AccountSaver
 		AccountDeleter
+		AccountFinder
 	}
 	Accounts struct {
 		processor AccountProcessor
@@ -55,6 +57,7 @@ func (a *Accounts) SetupRouting(router *mux.Router) {
 	router.Path(accountsPath).Methods(http.MethodPost).Handler(a.PostHandler())
 	router.Path(accountsWithIDPath).Methods(http.MethodPut).Handler(a.PutHandler())
 	router.Path(accountsWithIDPath).Methods(http.MethodDelete).Handler(a.DeleteHandler())
+	router.Path(accountsPath).Methods(http.MethodGet).Handler(a.FindHandler())
 
 }
 
@@ -161,5 +164,57 @@ func deleteAccountMapper(r *http.Request) (q model.DeleteAccountQuery, err error
 		return
 	}
 	err = q.ID.FromString(id)
+	return
+}
+
+func (a *Accounts) FindHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		q, err := findAccountMapper(r)
+		if err != nil {
+			writeQueryError(w, err)
+			return
+		}
+		accounts, err := a.processor.AccountsFind(r.Context(), q)
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+		writeData(w, accounts)
+	}
+}
+
+const (
+	accountField    = "account"
+	streetField     = "street"
+	buildingField   = "building"
+	personNameField = "person"
+	sumAreaField    = "area"
+)
+
+func findAccountMapper(r *http.Request) (q model.FindAccountsQuery, err error) {
+	vars := mux.Vars(r)
+	if account, ok := vars[accountField]; ok {
+		q.Account = &account
+	}
+	if street, ok := vars[streetField]; ok {
+		q.Street = &street
+	}
+	if building, ok := vars[buildingField]; ok {
+		num, err := strconv.Atoi(building)
+		if err != nil {
+			return q, err
+		}
+		q.Building = &num
+	}
+	if person, ok := vars[personNameField]; ok {
+		q.PersonFullName = &person
+	}
+	if area, ok := vars[sumAreaField]; ok {
+		f, err := strconv.ParseFloat(area, 64)
+		if err != nil {
+			return q, err
+		}
+		q.SumArea = &f
+	}
 	return
 }

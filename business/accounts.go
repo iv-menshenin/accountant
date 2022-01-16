@@ -43,6 +43,15 @@ func (a *App) AccountDelete(ctx context.Context, q model.DeleteAccountQuery) err
 	return a.accounts.Delete(ctx, q.ID)
 }
 
-func (a *App) AccountsFind(ctx context.Context) ([]model.Account, error) {
-	return nil, nil
+func (a *App) AccountsFind(ctx context.Context, q model.FindAccountsQuery) ([]model.Account, error) {
+	var findOption store.FindAccountOption
+	findOption.FillFromQuery(q)
+	accounts, err := a.accounts.Find(ctx, findOption)
+	if err != nil {
+		return nil, err
+	}
+	if len(accounts) == 0 {
+		return nil, model.NotFound{}
+	}
+	return accounts, nil
 }

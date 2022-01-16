@@ -27,6 +27,11 @@ type (
 		ID uuid.UUID
 	}
 	FindAccountsQuery struct {
+		Account        *string
+		Street         *string
+		Building       *int
+		PersonFullName *string
+		SumArea        *float64
 	}
 )
 
