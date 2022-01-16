@@ -1,12 +1,13 @@
 
 // конфигурация меню навигации
+navPagesList = [
+    {title: "Лицевые счета", anchor: "accounts", onClick: ()=>{AccountsList();}},
+    {title: "Цели", anchor: "targets", onClick: ()=>{alert("2");}},
+    {title: "Бухгалтерия", anchor: "money", onClick: ()=>{alert("3");}},
+];
+
 function initNavigationBar() {
-    let navPages = [
-        {title: "Лицевые счета", anchor: "accounts", onClick: ()=>{alert("1");}},
-        {title: "Цели", anchor: "targets", onClick: ()=>{alert("2");}},
-        {title: "Бухгалтерия", anchor: "money", onClick: ()=>{alert("3");}},
-    ];
-    for (const navPage of navPages) {
+    for (const navPage of navPagesList) {
 
         // заполнение горизонтального меню навигации
         let idFull = "full-nav-link-" + navPage.anchor;
