@@ -22,6 +22,7 @@ type (
 )
 
 func writeQueryError(w http.ResponseWriter, e error) {
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusBadRequest)
 	_, err := w.Write(ErrorResponse{
 		Meta: ResponseMeta{
@@ -48,6 +49,7 @@ func writeError(w http.ResponseWriter, e error) {
 }
 
 func writeInternalError(w http.ResponseWriter, e error) {
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusInternalServerError)
 	_, err := w.Write(ErrorResponse{
 		Meta: ResponseMeta{
@@ -61,6 +63,7 @@ func writeInternalError(w http.ResponseWriter, e error) {
 }
 
 func writeDataAccessError(w http.ResponseWriter, e error) {
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusForbidden)
 	_, err := w.Write(ErrorResponse{
 		Meta: ResponseMeta{
@@ -74,6 +77,7 @@ func writeDataAccessError(w http.ResponseWriter, e error) {
 }
 
 func writeUnauthorizedError(w http.ResponseWriter, e error) {
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusUnauthorized)
 	_, err := w.Write(ErrorResponse{
 		Meta: ResponseMeta{
@@ -87,6 +91,7 @@ func writeUnauthorizedError(w http.ResponseWriter, e error) {
 }
 
 func writeNotFoundError(w http.ResponseWriter, e error) {
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusNotFound)
 	_, err := w.Write(ErrorResponse{
 		Meta: ResponseMeta{
@@ -100,6 +105,7 @@ func writeNotFoundError(w http.ResponseWriter, e error) {
 }
 
 func writeData(w http.ResponseWriter, data interface{}) {
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	_, err := w.Write(DataResponse{
 		Meta: ResponseMeta{

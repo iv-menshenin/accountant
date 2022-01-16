@@ -12,7 +12,7 @@
     <nav style="overflow: hidden">
         <div class="nav-wrapper theme-nav">
             <a href="#" data-target="nav-slide-out" class="sidenav-trigger"><i class="material-icons">menu</i></a>
-            &nbsp;&nbsp;<a href="#" class="brand-logo"><i class="material-icons">cloud</i>Лицевой счет</a>
+            &nbsp;&nbsp;<a href="#" class="brand-logo"><i class="material-icons">cloud</i><span id="page-title">Main</span></a>
             <ul id="navigation-full" class="right">
                 <!-- navigation links -->
             </ul>
@@ -27,10 +27,13 @@
         </div></li>
         <!-- navigation links -->
     </ul>
+    <div id="main-page-container"></div>
     <script src="/www/js/jquery.js"></script>
     <script src="/www/js/api.js"></script>
     <script src="/www/js/helpers.js"></script>
     <script src="/www/js/navigation.js"></script>
+    <script src="/www/js/models.js"></script>
+    <script src="/www/js/accounts.js"></script>
     <script>
         initNavigationBar();
         document.addEventListener('DOMContentLoaded', function() {

@@ -1,4 +1,9 @@
 
+function preparePage(title, constructor) {
+    $("#page-title").html(title);
+    $("#main-page-container").html(buildHTML(constructor));
+}
+
 function buildHTML(constructor){
     function buildTag(tagOptions){
         if (tagOptions && tagOptions.tag) {
