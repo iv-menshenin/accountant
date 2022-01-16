@@ -20,10 +20,17 @@ type (
 	AccountCreator interface {
 		AccountCreate(context.Context, model.PostAccountQuery) (*model.Account, error)
 	}
+	AccountDeleter interface {
+		AccountDelete(context.Context, model.DeleteAccountQuery) error
+	}
+	AccountFinder interface {
+		AccountsFind(context.Context, model.FindAccountsQuery) error
+	}
 	AccountProcessor interface {
 		AccountCreator
 		AccountGetter
 		AccountSaver
+		AccountDeleter
 	}
 	Accounts struct {
 		processor AccountProcessor
@@ -47,6 +54,8 @@ func (a *Accounts) SetupRouting(router *mux.Router) {
 	router.Path(accountsWithIDPath).Methods(http.MethodGet).Handler(a.LookupHandler())
 	router.Path(accountsPath).Methods(http.MethodPost).Handler(a.PostHandler())
 	router.Path(accountsWithIDPath).Methods(http.MethodPut).Handler(a.PutHandler())
+	router.Path(accountsWithIDPath).Methods(http.MethodDelete).Handler(a.DeleteHandler())
+
 }
 
 func (a *Accounts) LookupHandler() http.HandlerFunc {
@@ -126,5 +135,31 @@ func putAccountMapper(r *http.Request) (q model.PutAccountQuery, err error) {
 	decoder := json.NewDecoder(r.Body)
 	decoder.DisallowUnknownFields()
 	err = decoder.Decode(&q.Account)
+	return
+}
+
+func (a *Accounts) DeleteHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		q, err := deleteAccountMapper(r)
+		if err != nil {
+			writeQueryError(w, err)
+			return
+		}
+		err = a.processor.AccountDelete(r.Context(), q)
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+		writeNoContent(w)
+	}
+}
+
+func deleteAccountMapper(r *http.Request) (q model.DeleteAccountQuery, err error) {
+	id := mux.Vars(r)[accountID]
+	if id == "" {
+		err = errors.New(accountID + " must not be empty")
+		return
+	}
+	err = q.ID.FromString(id)
 	return
 }

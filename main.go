@@ -34,7 +34,7 @@ func mainFunc(ctx context.Context, halt <-chan struct{}) (err error) {
 		accountCollection = store.NewAccountMemoryCollection()
 
 		appHnd         = business.New(accountCollection)
-		queryTransport = transport.New(logger, appHnd)
+		queryTransport = transport.NewHTTPServer(logger, appHnd)
 	)
 	queryTransport.ListenAndServe(listeningError)
 	select {

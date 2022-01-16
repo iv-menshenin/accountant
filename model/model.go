@@ -7,26 +7,43 @@ import (
 )
 
 type (
-	AccountData struct {
-		Comment       string     `bson:"comment" json:"comment"`
-		AgreementNum  string     `bson:"agreement" json:"agreement"`
-		AgreementDate *time.Time `bson:"agreement_date,omitempty" json:"agreement_date,omitempty"`
-	}
+	// Account представляет собой верхний уровень иерархии - лицевой счет
 	Account struct {
 		AccountID   uuid.UUID `bson:"account_id" json:"account_id"`
 		Person      []Person  `bson:"persons" json:"persons"`
 		Object      []Object  `bson:"objects" json:"objects"`
 		AccountData `bson:",inline" json:",inline"`
 	}
-	PersonData struct {
-		Name    string    `bson:"name" json:"name"`
-		Surname string    `bson:"surname" json:"surname"`
-		PatName string    `bson:"pat_name" json:"pat_name"`
-		DOB     time.Time `bson:"dob,omitempty" json:"dob,omitempty"`
+	AccountData struct {
+		// Account это номер лицевого счета. Т.к. не является первичным ключем, то может изменяться без проблем с консистентностью
+		Account string `bson:"account" json:"account"`
+		// CadNumber это кадастровый номер
+		CadNumber string `bson:"cad_number" json:"cad_number"`
+		// AgreementNum это номер договора (купли/продажи или аренды)
+		AgreementNum string `bson:"agreement" json:"agreement"`
+		// AgreementDate это дата договора, если есть
+		AgreementDate *time.Time `bson:"agreement_date,omitempty" json:"agreement_date,omitempty"`
+		// Comment просто текстовый комментарий для заметок
+		Comment string `bson:"comment,omitempty" json:"comment,omitempty"`
 	}
+	// Person представляет собой физическое лицо, закрепленное за лицевым счетом
 	Person struct {
 		PersonID   uuid.UUID `bson:"person_id" json:"person_id"`
 		PersonData `bson:",inline" json:",inline"`
+	}
+	PersonData struct {
+		Name    string `bson:"name" json:"name"`
+		Surname string `bson:"surname" json:"surname"`
+		PatName string `bson:"pat_name" json:"pat_name"`
+		// DOB дата рождения
+		DOB *time.Time `bson:"dob,omitempty" json:"dob,omitempty"`
+		// IsMember это признак, является ли членом общества
+		IsMember bool `bson:"is_member" json:"is_member"`
+	}
+	// Object представляет собой территорию, которая закреплена за лицевым счетом (дачный участок)
+	Object struct {
+		ObjectID   uuid.UUID `bson:"object_id" json:"object_id"`
+		ObjectData `bson:",inline" json:",inline"`
 	}
 	ObjectData struct {
 		PostalCode string `bson:"postal_code" json:"postal_code"`
@@ -34,9 +51,7 @@ type (
 		Village    string `bson:"village" json:"village"`
 		Street     string `bson:"street" json:"street"`
 		Number     int    `bson:"number" json:"number"`
-	}
-	Object struct {
-		ObjectID   uuid.UUID `bson:"object_id" json:"object_id"`
-		ObjectData `bson:",inline" json:",inline"`
+		// Area это площадь территории
+		Area float64 `bson:"area,omitempty" json:"area,omitempty"`
 	}
 )

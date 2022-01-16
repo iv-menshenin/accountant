@@ -34,9 +34,9 @@ func New() *Resources {
 }
 
 func (r *Resources) SetupRouting(router *mux.Router) {
-	router.Path("/js/{filename:[a-z0-1\\-]+}.js").Methods(http.MethodGet).Handler(http.HandlerFunc(r.Script))
-	router.Path("/html/{filename:[a-z0-1\\-]+}.html").Methods(http.MethodGet).Handler(http.HandlerFunc(r.Html))
-	router.Path("/css/{filename:[a-z0-1\\-]+}.css").Methods(http.MethodGet).Handler(http.HandlerFunc(r.Html))
+	router.Path("/js/{filename:[a-z0-9\\-]+}.js").Methods(http.MethodGet).Handler(http.HandlerFunc(r.Script))
+	router.Path("/html/{filename:[a-z0-9\\-]+}.html").Methods(http.MethodGet).Handler(http.HandlerFunc(r.Html))
+	router.Path("/css/{filename:[a-z0-9\\-]+}.css").Methods(http.MethodGet).Handler(http.HandlerFunc(r.Css))
 }
 
 func (r *Resources) Script(w http.ResponseWriter, q *http.Request) {

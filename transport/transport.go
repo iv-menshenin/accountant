@@ -14,6 +14,6 @@ type (
 	}
 )
 
-func New(logger *log.Logger, rp http.RequestProcessor) Transport {
+func NewHTTPServer(logger *log.Logger, rp http.RequestProcessor) Transport {
 	return http.New(logger, rp)
 }

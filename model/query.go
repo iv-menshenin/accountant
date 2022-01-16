@@ -23,6 +23,11 @@ type (
 		ID      uuid.UUID
 		Account AccountData
 	}
+	DeleteAccountQuery struct {
+		ID uuid.UUID
+	}
+	FindAccountsQuery struct {
+	}
 )
 
 func (u Unauthorized) Error() string {
