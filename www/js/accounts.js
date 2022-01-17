@@ -33,7 +33,7 @@ class accountsManager {
 
 let accounts = new(accountsManager);
 
-function AccountsList() {
+function AccountsListPage() {
     let showFn = preparePage("Лицевые счета", [
         {
             tag: "div", class: "", content: [
@@ -74,20 +74,32 @@ function AccountsList() {
     )
 }
 
-function showAccountDetails(anchor) {
-    let account_id = undefined;
-    let url = new URL(anchor.href);
-    let uuid_match = /#account:([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/
-    let hash_blocks = uuid_match.exec(url.hash);
-    if (hash_blocks.length > 1) {
-        account_id = hash_blocks[1]
+function AccountPage(props, retry=true) {
+    if (!props.uuid) {
+        return false
     }
-    if (account_id) {
-        let account = accounts.getAccount(account_id);
-        if (account) {
-
-            return true
+    let account = accounts.getAccount(props.uuid);
+    if (!account) {
+        if (retry) {
+            accounts.loadAccounts(()=> {AccountPage(props, false)}, (err) => {});
+            return false
         }
+        return false
     }
-    // todo toss error
+    let showFn = preparePage(getFirstPersonName(account), [
+        accountEditPageRender(account),
+        {
+            tag: "div", class: "row", content: [
+                {tag: "button", "data-target": "modal-action-1", class: ["btn", "waves-effect", "waves-light", "modal-trigger", "action-button", "s4", "col"], content: "Собственники"},
+                {tag: "div", class: ["col", "s4"]},
+                {tag: "button", "data-target": "modal-action-2", class: ["btn", "waves-effect", "waves-light", "modal-trigger", "action-button", "s4", "col"], content: "Участки"}
+            ]
+        }
+    ], ()=>{
+
+    });
+    if (account) {
+        showFn();
+        return true
+    }
 }
