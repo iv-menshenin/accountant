@@ -2,3 +2,11 @@
 .theme-nav {
     background-color: #303030 !important;
 }
+
+.action-button {
+    background-color: #f6655b !important;
+}
+
+.action-button:hover {
+    background-color: #F44336 !important;
+}

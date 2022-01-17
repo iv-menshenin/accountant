@@ -5,6 +5,7 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" />
     <link rel="stylesheet" href="/www/css/theme-main.css" />
+    <link rel="stylesheet" href="/www/css/structs.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
     <script src="../js/navigation.js"></script>
 </head>
@@ -27,8 +28,12 @@
         </div></li>
         <!-- navigation links -->
     </ul>
-    <div id="main-page-container"></div>
-    <div id="modal-frame-container"></div>
+    <div class="section">
+        <div id="main-page-container" class="container"></div>
+    </div>
+    <div id="modal-action" class="container modal">
+        <div id="modal-frame-container" class="modal-content"></div>
+    </div>
     <script src="/www/js/jquery.js"></script>
     <script src="/www/js/api.js"></script>
     <script src="/www/js/helpers.js"></script>
@@ -36,12 +41,21 @@
     <script src="/www/js/models.js"></script>
     <script src="/www/js/accounts.js"></script>
     <script>
+        let modalWindow = undefined;
+        let sideNav = undefined;
         initNavigationBar();
         document.addEventListener('DOMContentLoaded', function() {
             let elmsSideNav = document.querySelectorAll('.sidenav');
             let instancesSideNav = M.Sidenav.init(elmsSideNav, {});
             sideNav = instancesSideNav[0];
+
+            let elmsModal = document.querySelectorAll('.modal');
+            let modalWindows = M.Modal.init(elmsModal, {})
+            modalWindow = modalWindows[0];
+
+            urlHashChange();
         });
+        window.addEventListener('hashchange', urlHashChange);
     </script>
 </body>
 </html>

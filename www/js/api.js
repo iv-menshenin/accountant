@@ -64,11 +64,11 @@ class apiManager {
                 onSuccess(responseData)
             },
             error: function (request, _, cl) {
-                onError(request)
-                console.log(cl);
                 if (request.status === 401) {
                     // todo login page redirect
                 }
+                onError(request)
+                console.log(cl);
             }
         });
     }

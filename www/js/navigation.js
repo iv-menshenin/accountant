@@ -31,3 +31,8 @@ function initNavigationBar() {
         $("#"+idSlide).bind("click", navPage.onClick);
     }
 }
+
+function urlHashChange(){
+    let hash = location.hash;
+    // alert(hash);
+}

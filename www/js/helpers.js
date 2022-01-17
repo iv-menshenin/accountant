@@ -22,6 +22,10 @@ function preparePage(title, constructor, onComplete) {
     }
 }
 
+function prepareModalForm(constructor) {
+    $("#modal-frame-container").hide().html(buildHTML(constructor)).show();
+}
+
 function buildHTML(constructor){
     function buildTag(tagOptions){
         if (tagOptions && tagOptions.tag) {

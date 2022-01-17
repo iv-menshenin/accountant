@@ -9,7 +9,11 @@ class accountsManager {
                 onDone(accounts);
             },
             (err) => {
-                onError(err.meta.message);
+                if (err.status === 404) {
+                    onDone([]);
+                    return
+                }
+                onError(err.responseJSON.meta.message);
             },
         )
     }
@@ -32,14 +36,34 @@ let accounts = new(accountsManager);
 function AccountsList() {
     let showFn = preparePage("Лицевые счета", [
         {
-            tag: "div", class: "container", content: [
-                {id: "accounts-container", tag: "ul", class: "collection", content: null},
+            tag: "div", class: "", content: [
+                {id: "accounts-container", tag: "ul", class: ["collection", "with-header"], content: {tag: "li", class: "collection-header", content: {tag: "h4", content: "Зарегистрированные ЛС"}}},
             ]
         },
+        {
+            tag: "button", "data-target": "modal-action", class: ["btn", "waves-effect", "waves-light", "modal-trigger", "action-button"], content: "Добавить новый"
+        }
     ], ()=>{
         let accountsCollection = accounts.getAccounts();
         $("#accounts-container").append(accountsCollection.map(renderAccountListElement));
     });
+    prepareModalForm([
+        {
+            id: "account-add-form", tag: "div", class: ["container"], content: [
+                {tag: "h5", content: "Новый лицевой счет"},
+                {
+                    tag: "div", class: "row", content: [
+                        {
+                            tag: "div", class: ["col", "s10"], content: [
+                                {tag: "label", for: "account-number", content: "Лицевой счет"},
+                                {id: "account-number", tag: "input", type: "text"},
+                            ]
+                        }
+                    ]
+                },
+            ]
+        }
+    ]);
     accounts.loadAccounts(
         (accounts) => {
             showFn();
