@@ -23,6 +23,10 @@ type (
 		AgreementNum string `bson:"agreement" json:"agreement"`
 		// AgreementDate это дата договора, если есть
 		AgreementDate *time.Time `bson:"agreement_date,omitempty" json:"agreement_date,omitempty"`
+		// PurchaseKind вид приобретения
+		PurchaseKind string `bson:"purchase_kind" json:"purchase_kind"`
+		// PurchaseDate дата приобретения
+		PurchaseDate time.Time `bson:"purchase_date" json:"purchase_date"`
 		// Comment просто текстовый комментарий для заметок
 		Comment string `bson:"comment,omitempty" json:"comment,omitempty"`
 	}
@@ -39,6 +43,10 @@ type (
 		DOB *time.Time `bson:"dob,omitempty" json:"dob,omitempty"`
 		// IsMember это признак, является ли членом общества
 		IsMember bool `bson:"is_member" json:"is_member"`
+		// Phone это номер телефона
+		Phone string `bson:"phone,omitempty" json:"phone,omitempty"`
+		// EMail это адрес электронной почты
+		EMail string `bson:"email,omitempty" json:"email,omitempty"`
 	}
 	// Object представляет собой территорию, которая закреплена за лицевым счетом (дачный участок)
 	Object struct {
