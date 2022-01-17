@@ -21,21 +21,28 @@ class accountsManager {
         }
         return undefined
     }
+
+    getAccounts() {
+        return this.collection;
+    }
 }
 
 let accounts = new(accountsManager);
 
 function AccountsList() {
-    preparePage("Лицевые счета", [
+    let showFn = preparePage("Лицевые счета", [
         {
             tag: "div", class: "container", content: [
                 {id: "accounts-container", tag: "ul", class: "collection", content: null},
             ]
         },
-    ]);
+    ], ()=>{
+        let accountsCollection = accounts.getAccounts();
+        $("#accounts-container").append(accountsCollection.map(renderAccountListElement));
+    });
     accounts.loadAccounts(
         (accounts) => {
-            $("#accounts-container").append(accounts.map(renderAccountListElement));
+            showFn();
         },
         (error) => {
             // todo toss error

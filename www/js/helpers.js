@@ -1,7 +1,25 @@
+const animDurationDefault = 200;
 
-function preparePage(title, constructor) {
-    $("#page-title").html(title);
-    $("#main-page-container").html(buildHTML(constructor));
+function preparePage(title, constructor, onComplete) {
+    let trigger = ()=>{};
+    let hidden = false;
+    $("#main-page-container").hide({
+        duration: animDurationDefault,
+        complete: ()=>{
+            hidden = true;
+            $("#page-title").html(title);
+            $("#main-page-container").html(buildHTML(constructor));
+            trigger();
+        },
+    });
+    return ()=>{
+        trigger = ()=>{
+            $("#main-page-container").show(animDurationDefault, onComplete);
+        }
+        if (hidden) {
+            trigger();
+        }
+    }
 }
 
 function buildHTML(constructor){
