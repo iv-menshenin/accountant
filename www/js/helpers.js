@@ -100,3 +100,17 @@ function tagA(content, options) {
     options.content = content;
     return options;
 }
+
+function makeSwitcher() {
+    let consumers = [];
+    return {
+        consume: (consumer)=>{
+            consumers.push(consumer);
+        },
+        switch: (value)=>{
+            consumers.forEach((fn) => {
+                fn(value);
+            })
+        },
+    }
+}

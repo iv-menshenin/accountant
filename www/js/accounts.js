@@ -34,33 +34,22 @@ class accountsManager {
 let accounts = new(accountsManager);
 
 function AccountsListPage() {
+    let switcher = makeSwitcher();
+    let collection = makeCollectionContainer("Зарегистрированные ЛС", {});
     let showFn = preparePage("Лицевые счета", [
-        {
-            tag: "div", class: "", content: [
-                {id: "accounts-container", tag: "ul", class: ["collection", "with-header"], content: {tag: "li", class: "collection-header", content: {tag: "h4", content: "Зарегистрированные ЛС"}}},
-            ]
-        },
-        {
-            tag: "button", "data-target": "modal-action", class: ["btn", "waves-effect", "waves-light", "modal-trigger", "action-button"], content: "Добавить новый"
-        }
+        collection.content,
+        makeButton("Добавить новый", {target: "modal-action", class: "action-button"}),
     ], ()=>{
         let accountsCollection = accounts.getAccounts();
-        $("#accounts-container").append(accountsCollection.map(renderAccountListElement));
+        collection.append(accountsCollection.map(renderAccountListElement));
+        switcher.switch(true);
     });
+    let newModalForm = accountEditPageRender({}, {switch: switcher.consume});
     prepareModalForm([
         {
             id: "account-add-form", tag: "div", class: ["container"], content: [
                 {tag: "h5", content: "Новый лицевой счет"},
-                {
-                    tag: "div", class: "row", content: [
-                        {
-                            tag: "div", class: ["col", "s10"], content: [
-                                {tag: "label", for: "account-number", content: "Лицевой счет"},
-                                {id: "account-number", tag: "input", type: "text"},
-                            ]
-                        }
-                    ]
-                },
+                {tag: "div", class: "row", content: newModalForm.content},
             ]
         }
     ]);
