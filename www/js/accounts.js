@@ -41,7 +41,7 @@ function AccountsListPage() {
         makeButton("Добавить новый", {target: "modal-action", class: "action-button"}),
     ], ()=>{
         let accountsCollection = accounts.getAccounts();
-        collection.append(accountsCollection.map(renderAccountListElement));
+        collection.append(accountsCollection.map(mapAccountToListElement));
         switcher.switch(true);
     });
     let newModalForm = accountEditPageRender({}, {switch: switcher.consume});

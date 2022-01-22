@@ -18,7 +18,7 @@ function getFirstPersonName(account) {
 
 function getAllPersonNames(account) {
     if (account.persons && account.persons.length > 0) {
-        account.persons.map((person) => {
+        return account.persons.map((person) => {
             let result = [];
             if (person.surname) {
                 result.push(person.surname);

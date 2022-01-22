@@ -1,7 +1,8 @@
 
 
-function renderAccountListElement(account) {
+function mapAccountToListElement(account) {
     let obj = [
+        {tag: "img", class: "circle", src: "/www/png/badge_account.png"},
         {tag: "span", class: ["title", "black-text"], content: getAllPersonNames(account)}, // ФИО
         {tag: "p", class: ["grey-text"], content: getShortAddress(account)},     // информация об участках
         {tag: "p", class: ["secondary-content"], content: account.account},      // лицевой счет
@@ -27,7 +28,7 @@ function accountEditPageRender(account, options) {
     let COMM = makeTextArea("Комментарий", account.comment, {switch: options.switch})
     return {
         tag: "div", class: "row", content: [
-            {tag: "h4", content: account.account},
+            {tag: "h4", content: getShortAddress(account)},
             {tag: "div", class: "row", content: [LS.content, CAD.content]},
             {tag: "div", class: "row", content: [NAGR.content, DAGR.content]},
             {tag: "div", class: "row", content: [KPUR.content, DPUR.content]},
