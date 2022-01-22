@@ -1,23 +1,65 @@
 package business
 
-import "github.com/iv-menshenin/accountant/model"
+import (
+	"context"
 
-func (a *App) PersonGet() (*model.Person, error) {
-	return nil, nil
+	"github.com/iv-menshenin/accountant/model"
+	"github.com/iv-menshenin/accountant/model/uuid"
+	"github.com/iv-menshenin/accountant/store"
+)
+
+func (a *App) PersonCreate(ctx context.Context, q model.PostPersonQuery) (*model.Person, error) {
+	var person = model.Person{
+		PersonID:   uuid.NewUUID(),
+		PersonData: q.PersonData,
+	}
+	err := a.persons.Create(ctx, q.AccountID, person)
+	if err != nil {
+		return nil, err
+	}
+	return a.persons.Lookup(ctx, q.AccountID, person.PersonID)
 }
 
-func (a *App) PersonsFind() ([]model.Person, error) {
-	return nil, nil
+func (a *App) PersonGet(ctx context.Context, q model.GetPersonQuery) (*model.Person, error) {
+	person, err := a.persons.Lookup(ctx, q.AccountID, q.PersonID)
+	if err == store.ErrNotFound {
+		return nil, model.NotFound{}
+	}
+	return person, nil
 }
 
-func (a *App) PersonDelete() error {
-	return nil
+func (a *App) PersonSave(ctx context.Context, q model.PutPersonQuery) (*model.Person, error) {
+	person, err := a.persons.Lookup(ctx, q.AccountID, q.PersonID)
+	if err == store.ErrNotFound {
+		return nil, model.NotFound{}
+	}
+	person.PersonData = q.PersonData
+	if err = a.persons.Replace(ctx, q.AccountID, q.PersonID, *person); err != nil {
+		return nil, err
+	}
+	return person, nil
 }
 
-func (a *App) PersonSave(acc model.Person) error {
-	return nil
+func (a *App) PersonDelete(ctx context.Context, q model.DeletePersonQuery) error {
+	err := a.persons.Delete(ctx, q.AccountID, q.PersonID)
+	if err == store.ErrNotFound {
+		return model.NotFound{}
+	}
+	return err
 }
 
-func (a *App) PersonCreate(acc model.Person) error {
-	return nil
+func (a *App) PersonsFind(ctx context.Context, q model.FindPersonsQuery) ([]model.Person, error) {
+	var findOption store.FindPersonOption
+	findOption.FillFromQuery(q)
+	persons, err := a.persons.Find(ctx, findOption)
+	if err != nil {
+		if err == store.ErrNotFound {
+			return nil, model.NotFound{}
+		}
+		return nil, err
+	}
+	if len(persons) == 0 {
+		return nil, model.NotFound{}
+	}
+	return persons, nil
 }

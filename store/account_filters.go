@@ -1,8 +1,9 @@
 package store
 
 import (
-	"github.com/iv-menshenin/accountant/model"
 	"strings"
+
+	"github.com/iv-menshenin/accountant/model"
 )
 
 type (
@@ -67,17 +68,12 @@ func checkAccount(account model.Account, pattern string) bool {
 }
 
 func checkAccountFullName(account model.Account, pattern string) bool {
-	var correct bool
 	for _, person := range account.Person {
-		correct = correct ||
-			strings.Contains(person.Name, pattern) ||
-			strings.Contains(person.Surname, pattern) ||
-			strings.Contains(person.PatName, pattern)
-		if correct {
-			break
+		if checkPersonFullName(person, pattern) {
+			return true
 		}
 	}
-	return correct
+	return false
 }
 
 func checkAccountStreet(account model.Account, pattern string) bool {

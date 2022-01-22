@@ -2,6 +2,7 @@ package store
 
 import (
 	"errors"
+
 	"github.com/iv-menshenin/accountant/store/internal/memory"
 )
 

@@ -10,17 +10,23 @@ import (
 type (
 	RequestProcessor interface {
 		ep.AccountProcessor
+		ep.PersonProcessor
 	}
 )
 
 func makeRouter(rp RequestProcessor) http.Handler {
 	router := mux.NewRouter()
+	wwwSubRouter := router.PathPrefix("/www").Subrouter()
+	apiSubRouter := router.PathPrefix("/api").Subrouter()
 
 	stat := static.New()
-	stat.SetupRouting(router.PathPrefix("/www").Subrouter())
+	stat.SetupRouting(wwwSubRouter)
 
 	accounts := ep.NewAccountsEP(rp)
-	accounts.SetupRouting(router.PathPrefix("/api").Subrouter())
+	accounts.SetupRouting(apiSubRouter)
+
+	persons := ep.NewPersonsEP(rp)
+	persons.SetupRouting(apiSubRouter)
 
 	return router
 }

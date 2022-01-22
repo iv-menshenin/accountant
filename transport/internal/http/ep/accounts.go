@@ -106,7 +106,7 @@ func (a *Accounts) PostHandler() http.HandlerFunc {
 func postAccountMapper(r *http.Request) (q model.PostAccountQuery, err error) {
 	decoder := json.NewDecoder(r.Body)
 	decoder.DisallowUnknownFields()
-	err = decoder.Decode(&q)
+	err = decoder.Decode(&q.AccountData)
 	return
 }
 

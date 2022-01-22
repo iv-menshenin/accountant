@@ -17,7 +17,7 @@ type (
 		ID uuid.UUID
 	}
 	PostAccountQuery struct {
-		AccountData `json:",inline"`
+		AccountData AccountData
 	}
 	PutAccountQuery struct {
 		ID      uuid.UUID
@@ -32,6 +32,28 @@ type (
 		Building       *int
 		PersonFullName *string
 		SumArea        *float64
+	}
+
+	PostPersonQuery struct {
+		AccountID  uuid.UUID
+		PersonData PersonData
+	}
+	GetPersonQuery struct {
+		AccountID uuid.UUID
+		PersonID  uuid.UUID
+	}
+	PutPersonQuery struct {
+		AccountID  uuid.UUID
+		PersonID   uuid.UUID
+		PersonData PersonData
+	}
+	DeletePersonQuery struct {
+		AccountID uuid.UUID
+		PersonID  uuid.UUID
+	}
+	FindPersonsQuery struct {
+		AccountID      *uuid.UUID
+		PersonFullName *string
 	}
 )
 

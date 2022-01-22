@@ -2,6 +2,7 @@ package business
 
 import (
 	"context"
+
 	"github.com/iv-menshenin/accountant/model"
 	"github.com/iv-menshenin/accountant/model/uuid"
 	"github.com/iv-menshenin/accountant/store"
@@ -40,7 +41,11 @@ func (a *App) AccountSave(ctx context.Context, q model.PutAccountQuery) (*model.
 }
 
 func (a *App) AccountDelete(ctx context.Context, q model.DeleteAccountQuery) error {
-	return a.accounts.Delete(ctx, q.ID)
+	err := a.accounts.Delete(ctx, q.ID)
+	if err == store.ErrNotFound {
+		return model.NotFound{}
+	}
+	return err
 }
 
 func (a *App) AccountsFind(ctx context.Context, q model.FindAccountsQuery) ([]model.Account, error) {

@@ -32,8 +32,9 @@ func mainFunc(ctx context.Context, halt <-chan struct{}) (err error) {
 		listeningError    = make(chan error)
 		logger            = log.Default()
 		accountCollection = store.NewAccountMemoryCollection()
+		personsCollection = store.NewPersonMemoryCollection(accountCollection)
 
-		appHnd         = business.New(accountCollection)
+		appHnd         = business.New(accountCollection, personsCollection)
 		queryTransport = transport.NewHTTPServer(logger, appHnd)
 	)
 	queryTransport.ListenAndServe(listeningError)

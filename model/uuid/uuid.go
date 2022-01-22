@@ -8,8 +8,10 @@ import (
 	"io"
 )
 
+const uuidLen = 16
+
 type (
-	UUID [16]byte
+	UUID [uuidLen]byte
 )
 
 func NilUUID() UUID {
@@ -19,7 +21,7 @@ func NilUUID() UUID {
 func NewUUID() UUID {
 	var uuid UUID
 	n, err := rand.Read(uuid[:])
-	if err == nil && n != 16 {
+	if err == nil && n != uuidLen {
 		err = errors.New("unexpected crypto/rand read error")
 	}
 	if err != nil {
