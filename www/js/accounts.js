@@ -1,8 +1,10 @@
 
 class accountsManager {
+    onDone = () => {};
     collection = [];
 
     loadAccounts(onDone, onError) {
+        this.onDone = onDone;
         manager.GetAccounts(
             (accounts) => {
                 this.collection = accounts;
@@ -29,6 +31,21 @@ class accountsManager {
     getAccounts() {
         return this.collection;
     }
+
+    addOrReplaceAccount(newAccount) {
+        let self = this;
+        let replaced = this.collection.reduce((replaced, account, i)=>{
+            if (account.account_id === newAccount.account_id) {
+                self.collection[i] = newAccount;
+                return true;
+            }
+            return replaced;
+        }, false)
+        if (!replaced) {
+            this.collection.push(newAccount);
+        }
+        this.onDone(this.collection);
+    }
 }
 
 let accounts = new(accountsManager);
@@ -39,12 +56,12 @@ function AccountsListPage() {
     let showFn = preparePage("Лицевые счета", [
         collection.content,
         makeButton("Добавить новый", {target: "modal-action", class: "action-button"}),
-    ], ()=>{
-        let accountsCollection = accounts.getAccounts();
-        collection.append(accountsCollection.map(mapAccountToListElement));
+    ], (accounts)=>{
+        collection.clear();
+        collection.append(accounts.map(mapAccountToListElement));
         switcher.switch(true);
     });
-    let newAccountModal = accountEditor.pageRender({}, {switch: switcher.consume});
+    let newAccountModal = accountEditor.pageRender({}, {switch: switcher.consume, onDone: ()=>{modalWindow.close();}});
     prepareModalForm([
         {
             id: "account-add-form", tag: "div", class: ["container"], content: [
@@ -55,7 +72,7 @@ function AccountsListPage() {
     ], newAccountModal.footer);
     accounts.loadAccounts(
         (accounts) => {
-            showFn();
+            showFn(accounts);
         },
         (error) => {
             // todo toss error
@@ -76,17 +93,32 @@ function AccountPage(props, retry=true) {
         return false
     }
     let accountEditModal = accountEditor.pageRender(account);
+    let personsContainer = makeCollectionContainer("Собственники", {});
+    let objectsContainer = makeCollectionContainer("Объекты", {});
     let showFn = preparePage(getFirstPersonName(account), [
         accountEditModal.content,
+        {tag: "div", class: "row", content: [{tag: "hr", class: ["s12", "col"]}]},
+        personsContainer.content,
         {
             tag: "div", class: "row", content: [
-                {tag: "button", "data-target": "modal-action-1", class: ["btn", "waves-effect", "waves-light", "modal-trigger", "action-button", "s4", "col"], content: "Собственники"},
-                {tag: "div", class: ["col", "s4"]},
-                {tag: "button", "data-target": "modal-action-2", class: ["btn", "waves-effect", "waves-light", "modal-trigger", "action-button", "s4", "col"], content: "Участки"}
+                {tag: "button", "data-target": "modal-action-1", class: ["btn", "waves-effect", "waves-light", "modal-trigger", "action-button", "s4", "col", "right"], content: "+собственник"}
+            ]
+        },
+        objectsContainer.content,
+        {
+            tag: "div", class: "row", content: [
+                {tag: "button", "data-target": "modal-action-2", class: ["btn", "waves-effect", "waves-light", "modal-trigger", "action-button", "s4", "col", "right"], content: "+участок"}
             ]
         }
     ], ()=>{
-
+        if (account.persons) {
+            personsContainer.clear();
+            personsContainer.append(account.persons.map(mapPersonToListElement));
+        }
+        if (account.objects) {
+            objectsContainer.clear();
+            objectsContainer.append(account.objects.map(mapObjectToListElement));
+        }
     });
     if (account) {
         showFn();

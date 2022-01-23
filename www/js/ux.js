@@ -15,6 +15,36 @@ function mapAccountToListElement(account) {
     };
 }
 
+function mapPersonToListElement(person) {
+    let obj = [
+        {tag: "img", class: "circle", src: "/www/png/butterfly.png"},
+        {tag: "span", class: ["title", "black-text"], content: getPersonFullName(person)}, // ФИО
+        {tag: "p", class: ["grey-text"], content: (person.phone ? person.phone : "")},     // телефон
+        {tag: "p", class: ["secondary-content"], content: (person.is_member ? "член" : "не член")},
+    ];
+    return {
+        tag: "a",
+        class: ["collection-item", "avatar"],
+        href: "#person:uuid=" + person.account_id,
+        content: obj,
+    };
+}
+
+function mapObjectToListElement(object) {
+    let obj = [
+        {tag: "img", class: "circle", src: "/www/png/badge_object.png"},
+        {tag: "span", class: ["title", "black-text"], content: getObjectShortAddress(object)},
+        {tag: "p", class: ["grey-text"], content: (object.city ? object.city : "")},
+        {tag: "p", class: ["secondary-content"], content: (object.area ? object.area : "?")},
+    ];
+    return {
+        tag: "a",
+        class: ["collection-item", "avatar"],
+        href: "#object:uuid=" + object.account_id,
+        content: obj,
+    };
+}
+
 function makeButton(content, options) {
     if (!options) {
         options = {};
@@ -45,21 +75,21 @@ function makeButton(content, options) {
 function makeCollectionContainer(header, options) {
     let containerID = rndDivID();
     let classes = ["collection"];
-    let content = "";
+    let defaultContent = "";
     if (header !== "") {
         classes.push("with-header");
-        content = {tag: "li", class: "collection-header", content: {tag: "h4", content: header}}
+        defaultContent = {tag: "li", class: "collection-header", content: {tag: "h4", content: header}}
     }
     if (options && options.class) {
         classes.push(options.class);
     }
     return {
-        content: {tag: "div", class: "", content: {id: containerID, tag: "ul", class: classes, content: content}},
+        content: {tag: "div", class: "", content: {id: containerID, tag: "ul", class: classes, content: defaultContent}},
         append: (content)=>{
             $("#"+containerID).append(buildHTML(content));
         },
         clear: ()=>{
-            $("#"+containerID).html("");
+            $("#"+containerID).html(buildHTML(defaultContent));
         },
     }
 }

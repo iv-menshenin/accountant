@@ -61,7 +61,7 @@ class apiManager {
             headers: headers,
             data: (method !== "GET" ? JSON.stringify(data) : undefined),
             success: function (responseData) {
-                onSuccess(responseData)
+                onSuccess(responseData.data)
             },
             error: function (request, _, cl) {
                 if (request.status === 401) {
@@ -79,9 +79,7 @@ class apiManager {
 
     // GetAccounts получает список зарегистрированых ЛС
     GetAccounts(onSuccess, onError) {
-        this.apiExecute(this.accountsPath, "GET", undefined, undefined, (data) => {
-            onSuccess(data.data)
-        }, onError);
+        this.apiExecute(this.accountsPath, "GET", undefined, undefined, onSuccess, onError);
     }
 
     // CreateAccount создает новый лицевой счет в ответе на запрос присылает полную структуру данных созданного ЛС

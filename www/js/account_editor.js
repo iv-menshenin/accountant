@@ -8,11 +8,16 @@ class accountEditorForm {
     KPUR = undefined;
     DPUR = undefined;
     COMM = undefined;
+    onDone = () => {};
 
     pageRender(account, options) {
         this.account = account;
         if (!options) {
             options = {};
+        }
+        this.onDone = () => {};
+        if (options.onDone) {
+            this.onDone = options.onDone;
         }
         this.LS = makeInput("Номер лицового счета", account.account, {middle: true, switch: options.switch})
         this.CAD = makeInput("Кадастровый номер", account.cad_number, {middle: true, switch: options.switch})
@@ -71,12 +76,13 @@ class accountEditorForm {
                 manager.CreateAccount(
                     accountEditor.account,
                     (account) => {
-                        // todo update accounts in container
+                        accounts.addOrReplaceAccount(account)
+                        accountEditor.onDone()
                     },
                     (error) => {
                         // todo toss error
                         console.log(error);
-                        alert(error)
+                        alert(error.toString())
                     }
                 )
             }

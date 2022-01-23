@@ -12,9 +12,9 @@ function preparePage(title, constructor, onComplete) {
             trigger();
         },
     });
-    return ()=>{
+    return (args)=>{
         trigger = ()=>{
-            $("#main-page-container").show(animDurationDefault, onComplete);
+            $("#main-page-container").show(animDurationDefault, onComplete(args));
         }
         if (hidden) {
             trigger();
@@ -23,6 +23,7 @@ function preparePage(title, constructor, onComplete) {
 }
 
 function prepareModalForm(constructor, footer) {
+    modalWindow.close();
     $("#modal-frame-container").hide().html(buildHTML(constructor)).show();
     $("#modal-frame-footer").hide().html(buildHTML(footer)).show();
 }

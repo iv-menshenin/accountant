@@ -18,38 +18,42 @@ function getFirstPersonName(account) {
 
 function getAllPersonNames(account) {
     if (account.persons && account.persons.length > 0) {
-        return account.persons.map((person) => {
-            let result = [];
-            if (person.surname) {
-                result.push(person.surname);
-            }
-            if (person.name) {
-                result.push(person.name);
-            }
-            if (person.pat_name) {
-                result.push(person.pat_name);
-            }
-            return result.join(" ");
-        }).join("; ");
+        return account.persons.map(getPersonFullName).join("; ");
     }
     return "Не зарегистрировано";
 }
 
+function getPersonFullName(person) {
+    let result = [];
+    if (person.surname) {
+        result.push(person.surname);
+    }
+    if (person.name) {
+        result.push(person.name);
+    }
+    if (person.pat_name) {
+        result.push(person.pat_name);
+    }
+    return result.join(" ");
+}
+
 function getShortAddress(account) {
     if (account.objects && account.objects.length > 0) {
-        account.objects.map((object) => {
-            let result = [];
-            if (object.village) {
-                result.push(object.village);
-            }
-            if (object.street) {
-                result.push(object.street);
-            }
-            if (object.number) {
-                result.push(object.number);
-            }
-            return result.join(", ");
-        }).join("; ");
+        account.objects.map(getObjectShortAddress).join("; ");
     }
     return "Без участка";
+}
+
+function getObjectShortAddress(object) {
+    let result = [];
+    if (object.village) {
+        result.push(object.village);
+    }
+    if (object.street) {
+        result.push(object.street);
+    }
+    if (object.number) {
+        result.push(object.number);
+    }
+    return result.join(", ");
 }
