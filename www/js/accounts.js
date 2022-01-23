@@ -44,15 +44,15 @@ function AccountsListPage() {
         collection.append(accountsCollection.map(mapAccountToListElement));
         switcher.switch(true);
     });
-    let newModalForm = accountEditPageRender({}, {switch: switcher.consume});
+    let newAccountModal = accountEditor.pageRender({}, {switch: switcher.consume});
     prepareModalForm([
         {
             id: "account-add-form", tag: "div", class: ["container"], content: [
-                {tag: "h5", content: "Новый лицевой счет"},
-                {tag: "div", class: "row", content: newModalForm.content},
+                windowHeader("Новый лицевой счет"),
+                {tag: "div", class: "row", content: newAccountModal.content},
             ]
         }
-    ]);
+    ], newAccountModal.footer);
     accounts.loadAccounts(
         (accounts) => {
             showFn();
@@ -75,8 +75,9 @@ function AccountPage(props, retry=true) {
         }
         return false
     }
+    let accountEditModal = accountEditor.pageRender(account);
     let showFn = preparePage(getFirstPersonName(account), [
-        accountEditPageRender(account),
+        accountEditModal.content,
         {
             tag: "div", class: "row", content: [
                 {tag: "button", "data-target": "modal-action-1", class: ["btn", "waves-effect", "waves-light", "modal-trigger", "action-button", "s4", "col"], content: "Собственники"},

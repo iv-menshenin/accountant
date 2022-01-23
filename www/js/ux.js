@@ -15,43 +15,31 @@ function mapAccountToListElement(account) {
     };
 }
 
-function accountEditPageRender(account, options) {
+function makeButton(content, options) {
     if (!options) {
         options = {};
     }
-    let LS = makeInput("Номер лицового счета", account.account, {middle: true, switch: options.switch})
-    let CAD = makeInput("Кадастровый номер", account.cad_number, {middle: true, switch: options.switch})
-    let NAGR = makeInput("Номер договора", account.agreement, {middle: true, switch: options.switch})
-    let DAGR = makeInput("Дата договора", account.agreement_date, {middle: true, switch: options.switch})
-    let KPUR = makeInput("Вид приобретения", account.purchase_kind, {middle: true, switch: options.switch})
-    let DPUR = makeInput("Дата приобретения", account.purchase_date, {middle: true, switch: options.switch}) // zeroDate = "0001-01-01T00:00:00Z"
-    let COMM = makeTextArea("Комментарий", account.comment, {switch: options.switch})
-    return {
-        tag: "div", class: "row", content: [
-            {tag: "h4", content: getShortAddress(account)},
-            {tag: "div", class: "row", content: [LS.content, CAD.content]},
-            {tag: "div", class: "row", content: [NAGR.content, DAGR.content]},
-            {tag: "div", class: "row", content: [KPUR.content, DPUR.content]},
-            {tag: "div", class: "row", content: COMM.content},
-        ]
-    };
-}
-
-function makeButton(content, options) {
-    let modal_action = "modal-action";
-    let classes = ["btn", "waves-effect", "waves-light", "modal-trigger"];
-    if (options && options.class) {
+    let modal_action = undefined;
+    let classes = ["btn", "waves-effect", "waves-light"];
+    if (options.class) {
         classes.push(options.class);
     }
-    if (options && options.target) {
+    if (options.target) {
         modal_action = options.target;
+        classes.push("modal-trigger");
     }
-    return {
+    let buttonTag = {
         tag: "button",
-        "data-target": modal_action,
         class: classes,
         content: content
+    };
+    if (options.onclick) {
+        buttonTag["onclick"] = options.onclick;
     }
+    if (modal_action) {
+        buttonTag["data-target"] = modal_action;
+    }
+    return buttonTag
 }
 
 function makeCollectionContainer(header, options) {
@@ -102,7 +90,7 @@ function makeInput(label, value, options) {
             ]
         },
         getValue: () => {
-            return $("#"+inputID).value;
+            return $("#"+inputID)[0].value;
         },
     }
 }
@@ -133,7 +121,7 @@ function makeTextArea(label, value, options) {
             ]
         },
         getValue: () => {
-            return $("#"+textAreaID).value;
+            return $("#"+textAreaID)[0].value;
         },
     }
 }

@@ -39,13 +39,13 @@ class apiManager {
     getApiAddr(path, query) {
         let encodedQuery = "";
         if (query) {
-            encodedQuery = this.getEncodedUriParameterString(query);
+            encodedQuery = "?" + this.getEncodedUriParameterString(query);
         }
         let server = this.server;
         if (this.port) {
             server = server + ":" + this.port;
         }
-        return this.proto + "://" + server + this.rooPath + path + "?" + encodedQuery
+        return this.proto + "://" + server + this.rooPath + path + encodedQuery
     }
 
     apiExecute(path, method, query, data, onSuccess, onError) {
@@ -79,8 +79,7 @@ class apiManager {
 
     // GetAccounts получает список зарегистрированых ЛС
     GetAccounts(onSuccess, onError) {
-        let query = {}
-        this.apiExecute(this.accountsPath, "GET", query, undefined, (data) => {
+        this.apiExecute(this.accountsPath, "GET", undefined, undefined, (data) => {
             onSuccess(data.data)
         }, onError);
     }

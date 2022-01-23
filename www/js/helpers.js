@@ -22,12 +22,13 @@ function preparePage(title, constructor, onComplete) {
     }
 }
 
-function prepareModalForm(constructor) {
+function prepareModalForm(constructor, footer) {
     $("#modal-frame-container").hide().html(buildHTML(constructor)).show();
+    $("#modal-frame-footer").hide().html(buildHTML(footer)).show();
 }
 
-function buildHTML(constructor){
-    function buildTag(tagOptions){
+function buildHTML(constructor) {
+    function buildTabFromTagOption(tagOptions) {
         if (tagOptions && tagOptions.tag) {
             let content = "";
             let tag = "";
@@ -74,13 +75,23 @@ function buildHTML(constructor){
             }
         }
     }
+    function buildTags(tagOptions) {
+        if (Array.isArray(tagOptions)) {
+            let results = [];
+            for (let nn = 0;nn < tagOptions.length;nn++) {
+                results.push(buildTags(tagOptions[nn]))
+            }
+            return results.join("\n");
+        }
+        return buildTabFromTagOption(tagOptions)
+    }
     if (typeof(constructor) === "object") {
         let results = [];
         if (!Array.isArray(constructor)) {
             constructor = [constructor];
         }
         for (let nn = 0;nn < constructor.length;nn++) {
-            results.push(buildTag(constructor[nn]))
+            results.push(buildTags(constructor[nn]))
         }
         return results.join("\n");
     } else {
@@ -99,6 +110,14 @@ function tagA(content, options) {
     options.tag = "a";
     options.content = content;
     return options;
+}
+
+function windowHeader(title) {
+    return {tag: "h4", content: title};
+}
+
+function formHeader(title) {
+    return {tag: "h5", content: title};
 }
 
 function makeSwitcher() {
