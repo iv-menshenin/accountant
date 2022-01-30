@@ -11,11 +11,11 @@ class apiManager {
         if (document.domain === "localhost") {
             this.server = "localhost";
             this.port = "8080";
-            this.proto = "http";
+            this.proto = "http:";
         } else {
-            this.server = document.domain;
-            this.port = "";
-            this.proto = "https";
+            this.server = document.location.hostname;
+            this.port = document.location.port;
+            this.proto = document.location.protocol;
         }
         this.session = localStorage.getItem("session")
         if (!this.session) {
@@ -45,7 +45,7 @@ class apiManager {
         if (this.port) {
             server = server + ":" + this.port;
         }
-        return this.proto + "://" + server + this.rooPath + path + encodedQuery
+        return this.proto + "//" + server + this.rooPath + path + encodedQuery
     }
 
     apiExecute(path, method, query, data, onSuccess, onError) {
@@ -63,11 +63,21 @@ class apiManager {
             success: function (responseData) {
                 onSuccess(responseData.data)
             },
-            error: function (request, _, cl) {
-                if (request.status === 401) {
+            error: function (req, _, cl) {
+                if (req.status === 401) {
                     // todo login page redirect
                 }
-                onError(request)
+                if (req.responseJSON) {
+                    console.log(req.responseJSON.meta);
+                    onError(req.responseJSON.meta.message, req.status)
+                    return
+                }
+                if (req.responseText) {
+                    console.log(req.responseText);
+                    onError(req.responseText, req.status)
+                    return
+                }
+                onError(req, req.status)
                 console.log(cl);
             }
         });
@@ -112,6 +122,28 @@ class apiManager {
         let path = this.accountsPath + "/" + account_id;
         this.apiExecute(path, "DELETE", undefined, undefined, onSuccess, onError);
     }
+
+    personsPath = "/persons";
+
+    // CreatePerson создает новый лицевой счет в ответе на запрос присылает полную структуру данных созданного ЛС
+    CreatePerson(accountID, person, onSuccess, onError) {
+        let body = {
+            name: person.name,
+            surname: person.surname,
+            pat_name: person.pat_name,
+            dob: person.dob,
+            is_member: person.is_member,
+            phone: person.phone,
+            email: person.email,
+        };
+        this.apiExecute(this.accountsPath + "/" + accountID + this.personsPath, "POST", undefined, body, onSuccess, onError);
+    }
+
+    // GetAccounts получает список зарегистрированых ЛС
+    GetAccountPersons(accountID, onSuccess, onError) {
+        this.apiExecute(this.accountsPath + "/" + accountID + this.personsPath, "GET", undefined, undefined, onSuccess, onError);
+    }
+
 }
 
 let manager = new(apiManager);

@@ -1,13 +1,14 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8" />
-    <title></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accounts Keeper</title>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" />
     <link rel="stylesheet" href="/www/css/theme-main.css" />
     <link rel="stylesheet" href="/www/css/structs.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
-    <script src="../js/navigation.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
     <nav style="overflow: hidden">
@@ -31,36 +32,52 @@
     <div class="section">
         <div id="main-page-container" class="container"></div>
     </div>
-    <div id="modal-action" class="container modal">
+    <div id="modal-action" class="container modal modal-fixed-footer">
         <div id="modal-frame-container" class="modal-content"></div>
         <div id="modal-frame-footer" class="modal-footer"></div>
     </div>
-    <script src="/www/js/jquery.js"></script>
 
     <script src="/www/js/api.js"></script>
     <script src="/www/js/helpers.js"></script>
-    <script src="/www/js/navigation.js"></script>
     <script src="/www/js/models.js"></script>
     <script src="/www/js/ux.js"></script>
+    <script src="/www/js/render.js"></script>
+    <script src="/www/js/navigation.js"></script>
 
-    <script src="/www/js/account_editor.js"></script>
+    <script src="/www/js/editor.js"></script>
     <script src="/www/js/accounts.js"></script>
     <script>
         let modalWindow = undefined;
-        let sideNav = undefined;
-        initNavigationBar();
         document.addEventListener('DOMContentLoaded', function() {
+
             let elmsSideNav = document.querySelectorAll('.sidenav');
             let instancesSideNav = M.Sidenav.init(elmsSideNav, {});
-            sideNav = instancesSideNav[0];
+            let sideNav = instancesSideNav[0];
 
             let elmsModal = document.querySelectorAll('.modal');
             let modalWindows = M.Modal.init(elmsModal, {})
             modalWindow = modalWindows[0];
 
-            urlHashChange();
+            let elems = document.querySelectorAll('.fixed-action-btn');
+            let instances = M.FloatingActionButton.init(elems, {});
+
+            let navigation = new navigationManager(sideNav);
+            window.addEventListener('hashchange', ()=>navigation.urlHashChange());
+            navigation.urlHashChange();
         });
-        window.addEventListener('hashchange', urlHashChange);
     </script>
+
+    <div id="fixed-action-btn" class="fixed-action-btn" style="display: none">
+        <a class="btn-floating btn-large red">
+            <i class="large material-icons">mode_edit</i>
+        </a>
+        <ul>
+            <li><a class="btn-floating red"><i class="material-icons">add</i></a></li>
+            <li><a class="btn-floating red"><i class="material-icons">edit</i></a></li>
+            <li><a class="btn-floating yellow darken-1"><i class="material-icons">format_quote</i></a></li>
+            <li><a class="btn-floating green"><i class="material-icons">publish</i></a></li>
+            <li><a class="btn-floating blue"><i class="material-icons">attach_file</i></a></li>
+        </ul>
+    </div>
 </body>
 </html>

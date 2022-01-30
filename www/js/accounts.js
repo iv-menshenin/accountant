@@ -2,20 +2,26 @@
 class accountsManager {
     onDone = () => {};
     collection = [];
+    consumers = [];
 
     loadAccounts(onDone, onError) {
         this.onDone = onDone;
         manager.GetAccounts(
             (accounts) => {
+                let self = this;
                 this.collection = accounts;
+                this.collection.forEach((account)=>{
+                    self.messageAll("add", account)
+                });
                 onDone(accounts);
             },
-            (err) => {
-                if (err.status === 404) {
+            (message, status) => {
+                if (status === 404) {
                     onDone([]);
                     return
                 }
-                onError(err.responseJSON.meta.message);
+                toast(message);
+                onError(message);
             },
         )
     }
@@ -26,10 +32,6 @@ class accountsManager {
             return filtered[0]
         }
         return undefined
-    }
-
-    getAccounts() {
-        return this.collection;
     }
 
     addOrReplaceAccount(newAccount) {
@@ -44,40 +46,87 @@ class accountsManager {
         if (!replaced) {
             this.collection.push(newAccount);
         }
+        this.messageAll("replace", newAccount)
         this.onDone(this.collection);
+    }
+
+    addOrReplacePerson(accountID, newPerson) {
+        for (let i = 0; i < this.collection.length; i++) {
+            if (this.collection[i].account_id === accountID) {
+                let persons = [];
+                if (this.collection[i].persons) {
+                    persons = this.collection[i].persons;
+                }
+                let personPos = persons.find((person) => person.person_id === newPerson.person_id);
+                if (personPos < 0) {
+                    this.collection[i].persons.push(newPerson);
+                } else {
+                    this.collection[i].persons[personPos] = newPerson;
+                }
+                this.messageAll("replace", this.collection[i]);
+                return
+            }
+        }
+    }
+
+    consume(consumer) {
+        let consumer_id = randID();
+        this.consumers.push({id: consumer_id, handler: consumer});
+        this.collection.forEach((account)=>{
+            this.message("add", account, consumer);
+        });
+        return consumer_id;
+    }
+
+    unconsume(consumer_id) {
+        this.consumers = this.consumers.filter((consumer)=>{return consumer.id !== consumer_id});
+    }
+
+    messageAll(action, account) {
+        this.consumers.forEach((consumer) => {
+            this.message(action, account, consumer.handler);
+        });
+    }
+
+    message(action, account, consumer) {
+        consumer(action, buildAccountElement(account), account.account_id, "#account:uuid="+account.account_id);
     }
 }
 
 let accounts = new(accountsManager);
 
 function AccountsListPage() {
-    let switcher = makeSwitcher();
-    let collection = makeCollectionContainer("Зарегистрированные ЛС", {});
-    let showFn = preparePage("Лицевые счета", [
-        collection.content,
-        makeButton("Добавить новый", {target: "modal-action", class: "action-button"}),
-    ], (accounts)=>{
-        collection.clear();
-        collection.append(accounts.map(mapAccountToListElement));
-        switcher.switch(true);
-    });
-    let newAccountModal = accountEditor.pageRender({}, {switch: switcher.consume, onDone: ()=>{modalWindow.close();}});
-    prepareModalForm([
-        {
-            id: "account-add-form", tag: "div", class: ["container"], content: [
-                windowHeader("Новый лицевой счет"),
-                {tag: "div", class: "row", content: newAccountModal.content},
-            ]
-        }
-    ], newAccountModal.footer);
-    accounts.loadAccounts(
-        (accounts) => {
-            showFn(accounts);
-        },
-        (error) => {
-            // todo toss error
-        },
-    )
+    if (accounts.collection.length === 0) {
+        accounts.loadAccounts(()=>{}, ()=>{});
+    }
+    let destroy = MakeCollectionPage("Лицевые счета", accounts);
+    let mainPage = new Render("#main-page-container");
+    mainPage.registerFloatingButtons({href: "#account:new", icon: "add", color: "brown", onClick: () => {
+        let account = {};
+        RenderModalWindow(
+            new EditorForm("Новый ЛС", {
+                account: {label: "Номер счета", type: "text", value: account.account, short: true},
+                cad_number: {label: "Кадастровый номер", type: "text", value: account.cad_number, short: true},
+                agreement: {label: "Номер договора", type: "text", value: account.agreement, short: true},
+                agreement_date: {label: "Дата договора", type: "date", value: account.agreement_date, short: true},
+                purchase_kind: {label: "Вид собственности", type: "text", value: account.purchase_kind, short: true},
+                purchase_date: {label: "Дата приобретения", type: "date", value: account.purchase_date, short: true},
+                comment: {label: "Комментарий", type: "multiline", value: account.comment, short: false},
+            }, (updated)=>{
+                updated.account_id = account.account_id;
+                manager.UpdateAccount(updated, (updatedAccount)=>{
+                    accounts.addOrReplaceAccount(updatedAccount)
+                }, (message)=>{
+                    console.log(message);
+                    toast("Что-то пошло не так");
+                })
+            })
+        );
+        return false;
+    }})
+    return ()=>{
+        destroy();
+    }
 }
 
 function AccountPage(props, retry=true) {
@@ -85,43 +134,31 @@ function AccountPage(props, retry=true) {
         return false
     }
     let account = accounts.getAccount(props.uuid);
+
     if (!account) {
         if (retry) {
-            accounts.loadAccounts(()=> {AccountPage(props, false)}, (err) => {});
+            accounts.loadAccounts(()=> {AccountPage(props, false)}, (err) => {toast(err)});
             return false
         }
         return false
     }
-    let accountEditModal = accountEditor.pageRender(account);
-    let personsContainer = makeCollectionContainer("Собственники", {});
-    let objectsContainer = makeCollectionContainer("Объекты", {});
-    let showFn = preparePage(getFirstPersonName(account), [
-        accountEditModal.content,
-        {tag: "div", class: "row", content: [{tag: "hr", class: ["s12", "col"]}]},
-        personsContainer.content,
-        {
-            tag: "div", class: "row", content: [
-                {tag: "button", "data-target": "modal-action-1", class: ["btn", "waves-effect", "waves-light", "modal-trigger", "action-button", "s4", "col", "right"], content: "+собственник"}
-            ]
-        },
-        objectsContainer.content,
-        {
-            tag: "div", class: "row", content: [
-                {tag: "button", "data-target": "modal-action-2", class: ["btn", "waves-effect", "waves-light", "modal-trigger", "action-button", "s4", "col", "right"], content: "+участок"}
-            ]
-        }
-    ], ()=>{
-        if (account.persons) {
-            personsContainer.clear();
-            personsContainer.append(account.persons.map(mapPersonToListElement));
-        }
-        if (account.objects) {
-            objectsContainer.clear();
-            objectsContainer.append(account.objects.map(mapObjectToListElement));
-        }
+    let editor = new EditorForm(getFirstPersonName(account), {
+        account: {label: "Номер счета", type: "text", value: account.account, short: true},
+        cad_number: {label: "Кадастровый номер", type: "text", value: account.cad_number, short: true},
+        agreement: {label: "Номер договора", type: "text", value: account.agreement, short: true},
+        agreement_date: {label: "Дата договора", type: "date", value: account.agreement_date, short: true},
+        purchase_kind: {label: "Вид собственности", type: "text", value: account.purchase_kind, short: true},
+        purchase_date: {label: "Дата приобретения", type: "date", value: account.purchase_date, short: true},
+        comment: {label: "Комментарий", type: "multiline", value: account.comment, short: false},
+    }, (updated)=>{
+        updated.account_id = account.account_id;
+        manager.UpdateAccount(updated, (updatedAccount)=>{
+            accounts.addOrReplaceAccount(updatedAccount)
+        }, (message)=>{
+            console.log(message);
+            toast("Что-то пошло не так");
+        })
     });
-    if (account) {
-        showFn();
-        return true
-    }
+    editor.renderTo("#main-page-container");
+    return ()=>{editor.destroy()};
 }

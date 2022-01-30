@@ -1,4 +1,15 @@
 
+function buildAccountElement(account) {
+    return {
+        primary: [
+            {tag: "img", class: "circle", src: "/www/png/badge_account.png"},
+            {tag: "span", class: ["title", "black-text"], content: getAllPersonNames(account)}, // ФИО
+            {tag: "p", class: ["grey-text"], content: getShortAddress(account)},     // информация об участках
+        ],
+        secondary: account.account
+    };
+}
+
 function getFirstPersonName(account) {
     if (account.persons && account.persons.length > 0) {
         let result = [];

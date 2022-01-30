@@ -21,6 +21,10 @@ class EditorForm {
         })
     }
 
+    destroy() {
+
+    }
+
     renderTo(divIDForm, divIDControl) {
         let forms = [];
         for (let i = 0; i < this.attributes.length; i++) {
@@ -35,7 +39,7 @@ class EditorForm {
                 {tag: "div", class: "row", content: forms},
             ],
             footer: [
-                {tag: "div", id: btnContainerID, class: "s6", content: makeButton("Сохранить", {class: "action-button save-button"})}
+                {tag: "div", id: btnContainerID, disabled: "disabled", class: "s6", content: makeButton("Сохранить", {class: "action-button save-button"})}
             ]
         };
         let renderStruct = [formConstructor.content];
