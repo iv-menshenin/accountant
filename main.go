@@ -3,12 +3,12 @@ package main
 import (
 	"context"
 	"flag"
-	"github.com/iv-menshenin/accountant/business"
-	"github.com/iv-menshenin/accountant/store"
 	"log"
 	"os"
 	"time"
 
+	"github.com/iv-menshenin/accountant/business"
+	"github.com/iv-menshenin/accountant/store"
 	"github.com/iv-menshenin/accountant/transport"
 	"github.com/iv-menshenin/appctl"
 )
@@ -33,8 +33,9 @@ func mainFunc(ctx context.Context, halt <-chan struct{}) (err error) {
 		logger            = log.Default()
 		accountCollection = store.NewAccountMemoryCollection()
 		personsCollection = store.NewPersonMemoryCollection(accountCollection)
+		objectsCollection = store.NewObjectMemoryCollection(accountCollection)
 
-		appHnd         = business.New(accountCollection, personsCollection)
+		appHnd         = business.New(accountCollection, personsCollection, objectsCollection)
 		queryTransport = transport.NewHTTPServer(logger, appHnd)
 	)
 	queryTransport.ListenAndServe(listeningError)
