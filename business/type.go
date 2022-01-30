@@ -11,6 +11,7 @@ type (
 	App struct {
 		accounts AccountCollection
 		persons  PersonCollection
+		objects  ObjectsCollection
 	}
 
 	PersonCollection interface {
@@ -19,6 +20,14 @@ type (
 		Replace(context.Context, uuid.UUID, uuid.UUID, model.Person) error
 		Delete(context.Context, uuid.UUID, uuid.UUID) error
 		Find(context.Context, store.FindPersonOption) ([]model.Person, error)
+	}
+
+	ObjectsCollection interface {
+		Create(context.Context, uuid.UUID, model.Object) error
+		Lookup(context.Context, uuid.UUID, uuid.UUID) (*model.Object, error)
+		Replace(context.Context, uuid.UUID, uuid.UUID, model.Object) error
+		Delete(context.Context, uuid.UUID, uuid.UUID) error
+		Find(context.Context, store.FindObjectOption) ([]model.Object, error)
 	}
 
 	AccountCollection interface {
@@ -33,9 +42,11 @@ type (
 func New(
 	accounts AccountCollection,
 	persons PersonCollection,
+	objects ObjectsCollection,
 ) *App {
 	return &App{
 		accounts: accounts,
 		persons:  persons,
+		objects:  objects,
 	}
 }

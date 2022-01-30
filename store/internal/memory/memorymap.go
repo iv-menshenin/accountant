@@ -1,8 +1,9 @@
 package memory
 
 import (
-	"github.com/iv-menshenin/accountant/model/uuid"
 	"sync"
+
+	"github.com/iv-menshenin/accountant/model/uuid"
 )
 
 type (
