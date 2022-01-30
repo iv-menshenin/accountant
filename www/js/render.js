@@ -137,7 +137,7 @@ function buildHTML(constructor) {
                     postPend += " " + key + "=\"" + optionStr + "\"";
                 }
             }
-            if (content === "") {
+            if (content === "" && tagOptions.tag !== "textarea") {
                 return "<" + tagOptions.tag + postPend + " />";
             }
             return "<" + tagOptions.tag + postPend + ">" + content + "</" + tagOptions.tag + ">";
