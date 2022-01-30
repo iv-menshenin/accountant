@@ -189,6 +189,8 @@ const (
 	buildingField   = "building"
 	personNameField = "person"
 	sumAreaField    = "area"
+	addressField    = "address"
+	objectNumField  = "number"
 )
 
 func findAccountMapper(r *http.Request) (q model.FindAccountsQuery, err error) {

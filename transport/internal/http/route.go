@@ -11,6 +11,7 @@ type (
 	RequestProcessor interface {
 		ep.AccountProcessor
 		ep.PersonProcessor
+		ep.ObjectProcessor
 	}
 )
 
@@ -27,6 +28,9 @@ func makeRouter(rp RequestProcessor) http.Handler {
 
 	persons := ep.NewPersonsEP(rp)
 	persons.SetupRouting(apiSubRouter)
+
+	objects := ep.NewObjectsEP(rp)
+	objects.SetupRouting(apiSubRouter)
 
 	return router
 }

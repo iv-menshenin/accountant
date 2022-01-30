@@ -48,28 +48,28 @@ const (
 	personID = "person_id"
 )
 
-func (a *Persons) SetupRouting(router *mux.Router) {
+func (p *Persons) SetupRouting(router *mux.Router) {
 	const accountsPath = "/accounts"
 	const personsPath = "/persons"
 	personsWithoutIDPath := fmt.Sprintf("%s/{%s:[0-9a-f\\-]+}%s", accountsPath, accountID, personsPath)
 	personsWithIDPath := fmt.Sprintf("%s/{%s:[0-9a-f\\-]+}%s/{%s:[0-9a-f\\-]+}", accountsPath, accountID, personsPath, personID)
 
-	router.Path(personsWithIDPath).Methods(http.MethodGet).Handler(a.LookupHandler())
-	router.Path(personsWithoutIDPath).Methods(http.MethodPost).Handler(a.PostHandler())
-	router.Path(personsWithIDPath).Methods(http.MethodPut).Handler(a.PutHandler())
-	router.Path(personsWithIDPath).Methods(http.MethodDelete).Handler(a.DeleteHandler())
-	router.Path(personsPath).Methods(http.MethodGet).Handler(a.FindHandler())
+	router.Path(personsWithIDPath).Methods(http.MethodGet).Handler(p.LookupHandler())
+	router.Path(personsWithoutIDPath).Methods(http.MethodPost).Handler(p.PostHandler())
+	router.Path(personsWithIDPath).Methods(http.MethodPut).Handler(p.PutHandler())
+	router.Path(personsWithIDPath).Methods(http.MethodDelete).Handler(p.DeleteHandler())
+	router.Path(personsPath).Methods(http.MethodGet).Handler(p.FindHandler())
 
 }
 
-func (a *Persons) LookupHandler() http.HandlerFunc {
+func (p *Persons) LookupHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		q, err := getPersonMapper(r)
 		if err != nil {
 			writeQueryError(w, err)
 			return
 		}
-		account, err := a.processor.PersonGet(r.Context(), q)
+		account, err := p.processor.PersonGet(r.Context(), q)
 		if err != nil {
 			writeError(w, err)
 			return
@@ -96,14 +96,14 @@ func getPersonMapper(r *http.Request) (q model.GetPersonQuery, err error) {
 	return
 }
 
-func (a *Persons) PostHandler() http.HandlerFunc {
+func (p *Persons) PostHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		q, err := postPersonMapper(r)
 		if err != nil {
 			writeQueryError(w, err)
 			return
 		}
-		account, err := a.processor.PersonCreate(r.Context(), q)
+		account, err := p.processor.PersonCreate(r.Context(), q)
 		if err != nil {
 			writeError(w, err)
 			return
@@ -128,14 +128,14 @@ func postPersonMapper(r *http.Request) (q model.PostPersonQuery, err error) {
 	return
 }
 
-func (a *Persons) PutHandler() http.HandlerFunc {
+func (p *Persons) PutHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		q, err := putPersonMapper(r)
 		if err != nil {
 			writeQueryError(w, err)
 			return
 		}
-		account, err := a.processor.PersonSave(r.Context(), q)
+		account, err := p.processor.PersonSave(r.Context(), q)
 		if err != nil {
 			writeError(w, err)
 			return
@@ -166,14 +166,14 @@ func putPersonMapper(r *http.Request) (q model.PutPersonQuery, err error) {
 	return
 }
 
-func (a *Persons) DeleteHandler() http.HandlerFunc {
+func (p *Persons) DeleteHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		q, err := deletePersonMapper(r)
 		if err != nil {
 			writeQueryError(w, err)
 			return
 		}
-		err = a.processor.PersonDelete(r.Context(), q)
+		err = p.processor.PersonDelete(r.Context(), q)
 		if err != nil {
 			writeError(w, err)
 			return
@@ -200,14 +200,14 @@ func deletePersonMapper(r *http.Request) (q model.DeletePersonQuery, err error) 
 	return
 }
 
-func (a *Persons) FindHandler() http.HandlerFunc {
+func (p *Persons) FindHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		q, err := findPersonMapper(r)
 		if err != nil {
 			writeQueryError(w, err)
 			return
 		}
-		accounts, err := a.processor.PersonsFind(r.Context(), q)
+		accounts, err := p.processor.PersonsFind(r.Context(), q)
 		if err != nil {
 			writeError(w, err)
 			return
