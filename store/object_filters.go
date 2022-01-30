@@ -16,6 +16,18 @@ type (
 	}
 )
 
+func (q FindObjectOption) FillFromQuery(query model.FindObjectsQuery) {
+	if query.Address != nil {
+		q.Address = query.Address
+	}
+	if query.Number != nil {
+		q.Number = query.Number
+	}
+	if query.AccountID != nil {
+		q.AccountID = query.AccountID
+	}
+}
+
 func checkObjectFilter(object model.Object, filter FindObjectOption) bool {
 	if filter.Address != nil {
 		if !checkObjectAddress(object, *filter.Address) {

@@ -55,6 +55,29 @@ type (
 		AccountID      *uuid.UUID
 		PersonFullName *string
 	}
+
+	PostObjectQuery struct {
+		AccountID  uuid.UUID
+		ObjectData ObjectData
+	}
+	GetObjectQuery struct {
+		AccountID uuid.UUID
+		ObjectID  uuid.UUID
+	}
+	PutObjectQuery struct {
+		AccountID  uuid.UUID
+		ObjectID   uuid.UUID
+		ObjectData ObjectData
+	}
+	DeleteObjectQuery struct {
+		AccountID uuid.UUID
+		ObjectID  uuid.UUID
+	}
+	FindObjectsQuery struct {
+		AccountID *uuid.UUID
+		Address   *string
+		Number    *int
+	}
 )
 
 func (u Unauthorized) Error() string {
