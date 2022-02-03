@@ -15,13 +15,17 @@ type (
 	}
 )
 
-func makeRouter(rp RequestProcessor) http.Handler {
+func makeRouter(rp RequestProcessor, auth AuthCore) http.Handler {
 	router := mux.NewRouter()
 	wwwSubRouter := router.PathPrefix("/www").Subrouter()
-	apiSubRouter := router.PathPrefix("/api").Subrouter()
 
 	stat := static.New()
 	stat.SetupRouting(wwwSubRouter)
+
+	apiSubRouter := router.PathPrefix("/api").Subrouter()
+	if auth != nil {
+		apiSubRouter.Use(auth.Middleware())
+	}
 
 	accounts := ep.NewAccountsEP(rp)
 	accounts.SetupRouting(apiSubRouter)
@@ -31,6 +35,11 @@ func makeRouter(rp RequestProcessor) http.Handler {
 
 	objects := ep.NewObjectsEP(rp)
 	objects.SetupRouting(apiSubRouter)
+
+	authSubRouter := router.PathPrefix("/auth").Subrouter()
+
+	authP := ep.NewAuthEP(auth)
+	authP.SetupRouting(authSubRouter)
 
 	return router
 }

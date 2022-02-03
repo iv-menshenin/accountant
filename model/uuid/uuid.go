@@ -46,7 +46,7 @@ func (u *UUID) FromString(s string) error {
 	return err
 }
 
-func (u *UUID) String() string {
+func (u UUID) String() string {
 	var buf [32]byte
 	hex.Encode(buf[:], u[:])
 	return string(buf[0:8]) + "-" + string(buf[8:12]) + "-" + string(buf[12:16]) + "-" + string(buf[16:20]) + "-" + string(buf[20:])
@@ -86,10 +86,18 @@ func (u *UUID) Write(w io.Writer) error {
 }
 
 func (u *UUID) UnmarshalJSON(data []byte) error {
+	if len(data) > 2 {
+		quoted := data[0] == '"' && data[len(data)-1] == '"'
+		quoted = quoted || data[0] == '\'' && data[len(data)-1] == '\''
+		quoted = quoted || data[0] == '{' && data[len(data)-1] == '}'
+		if quoted {
+			data = data[1 : len(data)-1]
+		}
+	}
 	return u.FromString(string(data))
 }
 
-func (u *UUID) MarshalJSON() ([]byte, error) {
+func (u UUID) MarshalJSON() ([]byte, error) {
 	var buf = bytes.NewBuffer(make([]byte, 0, 38))
 	if _, err := buf.WriteRune('"'); err != nil {
 		return nil, err

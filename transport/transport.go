@@ -4,7 +4,7 @@ import (
 	"context"
 	"log"
 
-	"github.com/iv-menshenin/accountant/transport/internal/http"
+	ht "github.com/iv-menshenin/accountant/transport/internal/http"
 )
 
 type (
@@ -14,6 +14,6 @@ type (
 	}
 )
 
-func NewHTTPServer(logger *log.Logger, rp http.RequestProcessor) Transport {
-	return http.New(logger, rp)
+func NewHTTPServer(logger *log.Logger, rp ht.RequestProcessor, auth ht.AuthCore) Transport {
+	return ht.New(logger, rp, auth)
 }

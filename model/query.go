@@ -4,9 +4,16 @@ import "github.com/iv-menshenin/accountant/model/uuid"
 
 type (
 	AuthData struct {
-		JWT    string
-		UserID uuid.UUID
-		Roles  []string
+		JWT     string    `json:"jwt"`
+		UserID  uuid.UUID `json:"user_id"`
+		Context []string  `json:"context"`
+	}
+	AuthQuery struct {
+		Login    string `json:"login,omitempty"`
+		Password string `json:"password,omitempty"`
+	}
+	RefreshTokenQuery struct {
+		Token string `json:"token,omitempty"`
 	}
 
 	Unauthorized struct{}

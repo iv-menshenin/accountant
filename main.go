@@ -7,6 +7,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/iv-menshenin/accountant/auth"
 	"github.com/iv-menshenin/accountant/business"
 	"github.com/iv-menshenin/accountant/store"
 	"github.com/iv-menshenin/accountant/transport"
@@ -28,6 +29,10 @@ func main() {
 }
 
 func mainFunc(ctx context.Context, halt <-chan struct{}) (err error) {
+	authCore, err := auth.New("")
+	if err != nil {
+		return err
+	}
 	var (
 		listeningError    = make(chan error)
 		logger            = log.Default()
@@ -36,7 +41,7 @@ func mainFunc(ctx context.Context, halt <-chan struct{}) (err error) {
 		objectsCollection = store.NewObjectMemoryCollection(accountCollection)
 
 		appHnd         = business.New(accountCollection, personsCollection, objectsCollection)
-		queryTransport = transport.NewHTTPServer(logger, appHnd)
+		queryTransport = transport.NewHTTPServer(logger, appHnd, authCore)
 	)
 	queryTransport.ListenAndServe(listeningError)
 	select {

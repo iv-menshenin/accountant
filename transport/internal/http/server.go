@@ -4,12 +4,14 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"github.com/iv-menshenin/accountant/configstorage"
 	"log"
 	"net"
 	"net/http"
 	"sync"
 	"time"
+
+	"github.com/iv-menshenin/accountant/configstorage"
+	"github.com/iv-menshenin/accountant/transport/internal/http/ep"
 )
 
 type (
@@ -18,6 +20,10 @@ type (
 		connCounter sync.WaitGroup
 		server      *http.Server
 		stopOnce    sync.Once
+	}
+	AuthCore interface {
+		ep.AuthProcessor
+		Middleware() func(h http.Handler) http.Handler
 	}
 )
 
@@ -66,9 +72,9 @@ func (t *Server) ConnState(_ net.Conn, state http.ConnState) {
 	}
 }
 
-func New(logger *log.Logger, rp RequestProcessor) *Server {
+func New(logger *log.Logger, rp RequestProcessor, auth AuthCore) *Server {
 	flag.Parse()
-	var httpServer = makeServer(makeRouter(rp), logger)
+	var httpServer = makeServer(makeRouter(rp, auth), logger)
 	var server = Server{
 		server: &httpServer,
 	}
