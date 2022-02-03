@@ -60,6 +60,16 @@ func (c *JWTCore) SignJWT(user model.User) (string, error) {
 	return token.SignedString(c.private)
 }
 
+func (c *JWTCore) RefreshToken(user model.User) (string, error) {
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"user_id":    user.UUID.String(),
+		"context":    user.Context,
+		"created":    time.Now().UTC().Unix(),
+		"expiration": time.Now().Add(time.Hour * 720).UTC().Unix(),
+	})
+	return token.SignedString(privateForRefresh(c.private))
+}
+
 func (c *JWTCore) ParseJWT(tokenString string) (*Info, error) {
 	var claims Claims
 	token, err := jwt.ParseWithClaims(tokenString, &claims, func(_ *jwt.Token) (interface{}, error) {
@@ -69,4 +79,23 @@ func (c *JWTCore) ParseJWT(tokenString string) (*Info, error) {
 		return nil, err
 	}
 	return &Info{Token: token, Claims: claims}, nil
+}
+
+func (c *JWTCore) ParseRefreshToken(tokenString string) (*Info, error) {
+	var claims Claims
+	token, err := jwt.ParseWithClaims(tokenString, &claims, func(_ *jwt.Token) (interface{}, error) {
+		return privateForRefresh(c.private), nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &Info{Token: token, Claims: claims}, nil
+}
+
+func privateForRefresh(private []byte) []byte {
+	var inverted = make([]byte, len(private))
+	for i, b := range private {
+		inverted[len(inverted)-i-1] = b
+	}
+	return inverted
 }

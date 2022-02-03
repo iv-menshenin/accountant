@@ -50,14 +50,19 @@ func (c *JWTCore) Auth(context.Context, model.AuthQuery) (model.AuthData, error)
 	if err != nil {
 		return model.AuthData{}, err
 	}
+	refresh, err := c.RefreshToken(user)
+	if err != nil {
+		return model.AuthData{}, err
+	}
 	return model.AuthData{
 		JWT:     token,
 		UserID:  user.UUID,
 		Context: user.Context,
+		Refresh: refresh,
 	}, nil
 }
 
-func (c *JWTCore) Refresh(context.Context, model.RefreshTokenQuery) (model.AuthData, error) {
+func (c *JWTCore) Refresh(ctx context.Context, r model.RefreshTokenQuery) (model.AuthData, error) {
 	var user = model.User{
 		UUID:     uuid.NilUUID(),
 		UserName: "test",
@@ -66,7 +71,15 @@ func (c *JWTCore) Refresh(context.Context, model.RefreshTokenQuery) (model.AuthD
 
 	// dummy
 
+	_, err := c.ParseRefreshToken(r.Token)
+	if err != nil {
+		return model.AuthData{}, err
+	}
 	token, err := c.SignJWT(user)
+	if err != nil {
+		return model.AuthData{}, err
+	}
+	refresh, err := c.RefreshToken(user)
 	if err != nil {
 		return model.AuthData{}, err
 	}
@@ -74,5 +87,6 @@ func (c *JWTCore) Refresh(context.Context, model.RefreshTokenQuery) (model.AuthD
 		JWT:     token,
 		UserID:  user.UUID,
 		Context: user.Context,
+		Refresh: refresh,
 	}, nil
 }
