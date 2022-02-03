@@ -11,7 +11,7 @@ function buildAccountElement(account) {
 }
 
 function getFirstPersonName(account) {
-    if (account.persons && account.persons.length > 0) {
+    if (account && account.persons && account.persons.length > 0) {
         let result = [];
         if (account.persons[0].surname) {
             result.push(account.persons[0].surname);

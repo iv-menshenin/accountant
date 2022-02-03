@@ -1,11 +1,15 @@
 
 class apiManager {
-    session = "";
     server = "";
     port = "";
     proto = "https";
     rooPath = "/api";
     requestedWith = "X-SessionManager";
+
+    authHeader = "X-Auth-Token";
+    authToken  = "";
+    refreshToken  = "";
+    context = [];
 
     constructor() {
         if (document.domain === "localhost") {
@@ -17,10 +21,7 @@ class apiManager {
             this.port = document.location.port;
             this.proto = document.location.protocol;
         }
-        this.session = localStorage.getItem("session")
-        if (!this.session) {
-            // todo login
-        }
+        this.refreshToken = localStorage.getItem('rt');
     }
 
     getEncodedUriParameterString(paramsMap){
@@ -54,31 +55,120 @@ class apiManager {
             "Accept": "application/json",
             "X-Requested-With": this.requestedWith,
         };
+        headers[this.authHeader] = this.authToken;
+        let exec = ()=>{};
+        let suc = function (responseData) {
+            onSuccess(responseData.data)
+        };
+        let err = function (req, cl, canRepeat) {
+            if (req.status === 401 && canRepeat) {
+                self.AuthInitiate(exec);
+            }
+            if (req.responseJSON) {
+                console.log(req.responseJSON.meta);
+                onError(req.responseJSON.meta.message, req.status)
+                return
+            }
+            if (req.responseText) {
+                console.log(req.responseText);
+                onError(req.responseText, req.status)
+                return
+            }
+            onError(req, req.status)
+            console.log(cl);
+        };
+        exec = (canRepeat)=> {
+            $.ajax({
+                crossDomain: true,
+                type: method,
+                url: self.getApiAddr(path, query),
+                headers: headers,
+                data: (method !== "GET" ? JSON.stringify(data) : undefined),
+                success: suc,
+                error: (req, _, cl) => err(req, cl, canRepeat)
+            });
+        }
+        exec(true);
+    }
+
+    // AUTH ------------------------------------------------------------------------------------------------------------
+
+    AuthInitiate(callback) {
+        localStorage.removeItem('rt');
+        if (this.refreshToken) {
+            this.Refresh(()=>{
+                callback(false);
+            }, ()=>{
+                document.location.replace("#login:back=" + document.location.hash.substr(1));
+            })
+        } else {
+            document.location.replace("#login:back=" + document.location.hash.substr(1));
+        }
+    }
+
+    loginPath = "/auth/login";
+
+    // Login аутентифицирует пользователя по логину и паролю
+    Login(login, password, onSuccess, onError) {
+        let body = {
+            login: login,
+            password: password,
+        };
+        let self = this;
+        let headers = {
+            "Accept": "application/json",
+            "X-Requested-With": this.requestedWith,
+        };
         $.ajax({
             crossDomain: true,
-            type: method,
-            url: self.getApiAddr(path, query),
+            type: "POST",
+            url: this.loginPath,
             headers: headers,
-            data: (method !== "GET" ? JSON.stringify(data) : undefined),
+            data: JSON.stringify(body),
             success: function (responseData) {
-                onSuccess(responseData.data)
+                self.authToken = responseData.data.jwt_token;
+                self.refreshToken = responseData.data.refresh_token;
+                self.context = responseData.data.context;
+                localStorage.setItem('rt', responseData.data.refresh_token);
+                onSuccess(responseData.data.user_id)
             },
             error: function (req, _, cl) {
-                if (req.status === 401) {
-                    // todo login page redirect
-                }
-                if (req.responseJSON) {
-                    console.log(req.responseJSON.meta);
-                    onError(req.responseJSON.meta.message, req.status)
+                if (req.status > 399 && req.status < 500) {
+                    onError("возможно вы ввели неверный логин или пароль")
                     return
                 }
-                if (req.responseText) {
-                    console.log(req.responseText);
-                    onError(req.responseText, req.status)
-                    return
-                }
-                onError(req, req.status)
-                console.log(cl);
+                onError("неожиданная ошибка")
+            }
+        });
+    }
+
+    refreshPath = "/auth/refresh";
+
+    // Login аутентифицирует пользователя по логину и паролю
+    Refresh(onSuccess, onError) {
+        let body = {
+            token: this.refreshToken,
+        };
+        let self = this;
+        let headers = {
+            "Accept": "application/json",
+            "X-Requested-With": this.requestedWith,
+        };
+        $.ajax({
+            crossDomain: true,
+            type: "POST",
+            url: this.refreshPath,
+            headers: headers,
+            data: JSON.stringify(body),
+            success: function (responseData) {
+                self.authToken = responseData.data.jwt_token;
+                self.refreshToken = responseData.data.refresh_token;
+                self.context = responseData.data.context;
+                localStorage.setItem('rt', responseData.data.refresh_token);
+                onSuccess(responseData.data.user_id)
+            },
+            error: function (req, _, cl) {
+                self.AuthInitiate();
             }
         });
     }
@@ -99,6 +189,8 @@ class apiManager {
             cad_number: account.cad_number,
             agreement: account.agreement,
             agreement_date: account.agreement_date,
+            purchase_kind: account.purchase_kind,
+            purchase_date: account.purchase_date,
             comment: account.comment,
         };
         this.apiExecute(this.accountsPath, "POST", undefined, body, onSuccess, onError);
@@ -112,6 +204,8 @@ class apiManager {
             cad_number: account.cad_number,
             agreement: account.agreement,
             agreement_date: account.agreement_date,
+            purchase_kind: account.purchase_kind,
+            purchase_date: account.purchase_date,
             comment: account.comment,
         };
         this.apiExecute(path, "PUT", undefined, body, onSuccess, onError);
@@ -143,7 +237,6 @@ class apiManager {
     GetAccountPersons(accountID, onSuccess, onError) {
         this.apiExecute(this.accountsPath + "/" + accountID + this.personsPath, "GET", undefined, undefined, onSuccess, onError);
     }
-
 }
 
 let manager = new(apiManager);

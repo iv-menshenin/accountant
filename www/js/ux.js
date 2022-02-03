@@ -72,6 +72,10 @@ function makeInput(label, value, options) {
     if (!options) {
         options = {}
     }
+    let inputType = "text";
+    if (options.password) {
+        inputType = "password"
+    }
     let inputID = rndDivID();
     let classes = buildClassesForInput(options);
     if (options.switch) {
@@ -86,7 +90,7 @@ function makeInput(label, value, options) {
     return {
         content: {
             tag: "div", class: classes, content: [
-                {id: inputID, tag: "input", type: "text", class: "validate", value: (value ? value : "")},
+                {id: inputID, tag: "input", type: inputType, class: "validate", value: (value ? value : "")},
                 {tag: "label", for: inputID, class: (value ? "active" : ""), content: label}
             ]
         },
@@ -171,16 +175,20 @@ function makeDatePicker(label, value, options) {
     return {
         content: {
             tag: "div", class: classes, content: [
-                {id: datePickerID, tag: "input", type: "text", class: "datepicker", content: value},
+                {id: datePickerID, tag: "input", type: "text", class: "datepicker", content: ""},
                 {tag: "label", for: datePickerID, class: (value ? "active" : ""), content: label}
             ],
             afterRender: ()=>{
                 let elems = $("#"+datePickerID);
-                instance = M.Datepicker.init(elems, {});
+                instance = M.Datepicker.init(elems, {
+                    defaultDate: new Date(value),
+                    setDefaultDate: true,
+                })[0];
             }
         },
         getValue: () => {
-            return instance.toString();
+            // format: "yyyy-mm-ddT00:00:00Z"
+            return instance.date.toISOString();
         },
     }
 }

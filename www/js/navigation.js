@@ -6,9 +6,10 @@ class navigationManager {
     hashPattern = /(#[a-z]+):?(([a-z0-9_=-]+\/?)*)?/;
     destructorFn = ()=>{};
     navPagesList = [
+        {title: "Вход", anchor: "#login", handler: (prop)=>{return AuthPage(prop)}},
         {title: "Главная", anchor: "#main", handler: ()=>{return ()=>{};}},
-        {title: "Лицевые счета", nav: true, anchor: "#accounts", handler: (prop)=>{AccountsListPage(prop)}},
-        {title: "Лицевой счет", anchor: "#account", handler: (prop)=>{AccountPage(prop)}},
+        {title: "Лицевые счета", nav: true, anchor: "#accounts", handler: (prop)=>{return AccountsListPage(prop)}},
+        {title: "Лицевой счет", anchor: "#account", handler: (prop)=>{return AccountPage(prop)}},
         {title: "Цели", nav: true, anchor: "#targets"},
         {title: "Бухгалтерия", nav: true, anchor: "#money"},
     ];
@@ -54,7 +55,7 @@ class navigationManager {
             this.destructorFn();
         }
         let selectedPage = this.navPagesList.filter((x) => {return x.anchor === pageCode})
-        if (selectedPage) {
+        if (selectedPage.length > 0) {
             if (this.sideNav.isOpen) {
                 this.sideNav.close()
             }

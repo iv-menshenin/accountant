@@ -60,6 +60,7 @@ class EditorForm {
     makeForm(attr) {
         switch (attr.type) {
             case "text": return makeInput(attr.label, attr.value, {short: attr.short});
+            case "password": return makeInput(attr.label, attr.value, {short: attr.short, password: true});
             case "date": return makeDatePicker(attr.label, attr.value, {short: attr.short});
             case "multiline": return makeTextArea(attr.label, attr.value, {short: attr.short});
         }

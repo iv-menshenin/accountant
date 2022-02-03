@@ -96,12 +96,21 @@ class accountsManager {
 let accounts = new(accountsManager);
 
 function AccountsListPage() {
+    let destroy = MakeCollectionPage("Лицевые счета", accounts);
+    let mainPage = new Render("#main-page-container");
+    mainPage.registerFloatingButtons({href: "#account:new", icon: "add", color: "brown"})
+    // lazy load
     if (accounts.collection.length === 0) {
         accounts.loadAccounts(()=>{}, ()=>{});
     }
-    let destroy = MakeCollectionPage("Лицевые счета", accounts);
-    let mainPage = new Render("#main-page-container");
-    mainPage.registerFloatingButtons({href: "#account:new", icon: "add", color: "brown", onClick: () => {
+    return ()=>{
+        destroy();
+    }
+}
+
+/*
+*
+* onClick: () => {
         let account = {};
         RenderModalWindow(
             new EditorForm("Новый ЛС", {
@@ -123,17 +132,18 @@ function AccountsListPage() {
             })
         );
         return false;
-    }})
-    return ()=>{
-        destroy();
     }
-}
+* */
 
 function AccountPage(props, retry=true) {
-    if (!props.uuid) {
-        return false
+    let account = {};
+    let header = "";
+    if (props.uuid) {
+        account = accounts.getAccount(props.uuid);
+        header = getFirstPersonName(account);
+    } else {
+        header = "Новый";
     }
-    let account = accounts.getAccount(props.uuid);
 
     if (!account) {
         if (retry) {
@@ -142,7 +152,7 @@ function AccountPage(props, retry=true) {
         }
         return false
     }
-    let editor = new EditorForm(getFirstPersonName(account), {
+    let editor = new EditorForm(header, {
         account: {label: "Номер счета", type: "text", value: account.account, short: true},
         cad_number: {label: "Кадастровый номер", type: "text", value: account.cad_number, short: true},
         agreement: {label: "Номер договора", type: "text", value: account.agreement, short: true},
@@ -151,13 +161,23 @@ function AccountPage(props, retry=true) {
         purchase_date: {label: "Дата приобретения", type: "date", value: account.purchase_date, short: true},
         comment: {label: "Комментарий", type: "multiline", value: account.comment, short: false},
     }, (updated)=>{
-        updated.account_id = account.account_id;
-        manager.UpdateAccount(updated, (updatedAccount)=>{
-            accounts.addOrReplaceAccount(updatedAccount)
-        }, (message)=>{
-            console.log(message);
-            toast("Что-то пошло не так");
-        })
+        if (account.account_id) {
+            updated.account_id = account.account_id;
+            manager.UpdateAccount(updated, (updatedAccount)=>{
+                accounts.addOrReplaceAccount(updatedAccount)
+            }, (message)=>{
+                console.log(message);
+                toast("Что-то пошло не так");
+            })
+        } else {
+            manager.CreateAccount(updated, (updatedAccount)=>{
+                accounts.addOrReplaceAccount(updatedAccount);
+                document.location.replace("#account:uuid="+updatedAccount.account_id);
+            }, (message)=>{
+                console.log(message);
+                toast("Что-то пошло не так");
+            })
+        }
     });
     editor.renderTo("#main-page-container");
     return ()=>{editor.destroy()};
