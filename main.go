@@ -43,7 +43,7 @@ func mainFunc(ctx context.Context, halt <-chan struct{}) (err error) {
 		appHnd         = business.New(accountCollection, personsCollection, objectsCollection)
 		queryTransport = transport.NewHTTPServer(logger, appHnd, authCore)
 	)
-	queryTransport.ListenAndServe(listeningError)
+	go queryTransport.ListenAndServe(listeningError)
 	select {
 	case err = <-listeningError:
 		return err
