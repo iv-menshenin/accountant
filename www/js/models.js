@@ -60,7 +60,7 @@ function getFirstPersonName(account) {
 }
 
 function getAllPersonNames(account) {
-    if (account.persons && account.persons.length > 0) {
+    if (account && account.persons && account.persons.length > 0) {
         return account.persons.map(getPersonFullName).join("; ");
     }
     return "Не зарегистрировано";
@@ -81,7 +81,7 @@ function getPersonFullName(person) {
 }
 
 function getShortAddress(account) {
-    if (account.objects && account.objects.length > 0) {
+    if (account && account.objects && account.objects.length > 0) {
         account.objects.map(getObjectShortAddress).join("; ");
     }
     return "Без участка";

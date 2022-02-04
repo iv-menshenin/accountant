@@ -138,9 +138,11 @@ function AccountsListPage() {
 function AccountPage(props, retry=true) {
     let account = {};
     let header = "";
+    let accHeader = "";
     if (props.uuid) {
         account = accounts.getAccount(props.uuid);
         header = getFirstPersonName(account);
+        accHeader = (account ? account.account + "&nbsp;&nbsp;:&nbsp;:&nbsp;&nbsp;" : "") + header + "&nbsp;&nbsp;:&nbsp;:&nbsp;&nbsp;" + getShortAddress(account);
     } else {
         header = "Новый";
     }
@@ -179,7 +181,46 @@ function AccountPage(props, retry=true) {
             })
         }
     });
-    editor.renderTo("#main-page-container");
-    editor.disable();
+    let accountInfoBlock = [
+        {tag: "div", id: "account-attrs"},
+        {tag: "div", id: "account-ctrls"},
+    ];
+    let collapsibleID = rndDivID();
+    let accountPage = new Render("#main-page-container");
+    // assignment
+    // account_circle
+    // home
+
+    if (props.uuid) {
+        let collapsibleAccount = [
+            {tag: "div", class: "collapsible-header", content: [{tag: "i", class: ["material-icons", "small"], content: "assignment"}, accHeader]},
+            {tag: "div", class: "collapsible-body", content: accountInfoBlock},
+        ];
+        let collapsiblePersons = [
+            {tag: "div", class: "collapsible-header", content: [{tag: "i", class: ["material-icons", "small"], content: "account_circle"}, getAllPersonNames(account)]},
+            {tag: "div", class: "collapsible-body", content: accountInfoBlock},
+        ];
+        let collapsibleObjects = [
+            {tag: "div", class: "collapsible-header", content: [{tag: "i", class: ["material-icons", "small"], content: "home"}, getShortAddress(account)]},
+            {tag: "div", class: "collapsible-body", content: accountInfoBlock},
+        ];
+        accountPage.content({
+            tag: "ul", id: collapsibleID, class: "collapsible", content: [
+                {tag: "li", content: collapsibleAccount, class: "active"},
+                {tag: "li", content: collapsiblePersons},
+                {tag: "li", content: collapsibleObjects},
+            ],
+            afterRender: ()=>{
+                let elems = $("#" + collapsibleID);
+                let instances = M.Collapsible.init(elems, {});
+            }
+        });
+    } else {
+        accountPage.content(accountInfoBlock);
+    }
+    editor.renderTo("#account-attrs", "#account-ctrls");
+    if (props.uuid) {
+        editor.disable();
+    }
     return ()=>{editor.destroy()};
 }

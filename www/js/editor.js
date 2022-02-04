@@ -36,9 +36,17 @@ class EditorForm {
         }
         let btnContainerID = randID();
         this.saveButton = makeButton("Сохранить", {class: "action-button save-button"}, ()=>self.saveAction());
+        this.checkbox = makeFlatCheckBox(true, (e) => self.setEnabled(e));
+        let b = {tag: "i", class: ["tiny", "material-icons", "red-text"], content: "block"};
+        let r = {tag: "i", class: ["tiny", "material-icons", "green-text"], content: "create"};
+        let switcher = {tag: "div", class: "switch", content: {tag: "label", content: [b, this.checkbox.content, {tag: "span", class: "lever"}, r]}};
+        let headers = [
+            {tag: "div", class: ["col", "s6"], content: formHeader(this.label)},
+            {tag: "div", class: ["col", "s6", "right-align"], content: switcher},
+        ];
         return {
             content: [
-                formHeader(this.label),
+                {tag: "div", class: "row", content: headers},
                 {tag: "div", class: "row", content: forms},
             ],
             footer: [
@@ -75,6 +83,7 @@ class EditorForm {
     }
 
     setEnabled(enabled) {
+        this.checkbox.setValue(enabled);
         this.attributes.forEach((v) => {
             if (v.form.setEnabled) {
                 v.form.setEnabled(enabled);
