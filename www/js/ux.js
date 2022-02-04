@@ -1,21 +1,11 @@
 
-function buildClassesForInput(options) {
-    let classes = ["input-field", "col", "s12"];
-    if (options.short) {
-        classes.push("l6");
-    }
-    if (options.class) {
-        classes.push(options.class);
-    }
-    return classes;
-}
-
 class inputForm {
     el = undefined;
     id = undefined;
     label = "";
     options = {};
     classes = [];
+    tag = "input";
     type = "text";
 
     constructor(label, options) {
@@ -38,33 +28,47 @@ class inputForm {
         }
     }
 
-    content(inputType, value) {
-        if (inputType === "select") {
-            // todo ugly case
-            return this.contentSelect(value)
+    formTag(value) {
+        let cl = (this.tag === "textarea" ? "materialize-textarea" : "validate");
+        let construct = {id: this.id, tag: this.tag, type: this.type, class: cl};
+        switch (this.type) {
+            case "select":
+                construct.content = this.options.options.map((v)=>({tag: "option", content: v, selected: (v === value ? "selected" : undefined)}));
+                break;
+            case "textarea":
+                construct.content = (value ? value : "");
+                break;
+            default:
+                construct.value = (value ? value : "");
         }
+        return construct;
+    }
+
+    content(inputType, value) {
+        let area = (inputType === "textarea");
+        let select = (inputType === "select");
+        this.tag = (area ? "textarea" : (select ? "select" : "input"));
         this.type = inputType;
         let self = this;
         return {
             tag: "div", class: self.classes, content: [
-                {tag: "label", for: self.id, class: (value ? "active" : ""), content: this.label},
-                {id: self.id, tag: "input", type: inputType, class: "validate", value: (value ? value : "")},
+                {tag: "label", for: self.id, class: (value || this.type === "select" ? "active" : ""), content: this.label},
+                this.formTag(value),
             ],
             afterRender: ()=>self.init()
         }
     }
+}
 
-    contentSelect(value) {
-        this.type = "select";
-        let self = this;
-        return {
-            tag: "div", class: this.classes, content: [
-                {tag: "label", for: this.id, class: "active", content: this.label},
-                {id: this.id, tag: "select", content: this.options.options.map((v)=>({tag: "option", content: v, selected: (v === value ? "selected" : undefined)}))},
-            ],
-            afterRender: ()=>self.init()
-        }
+function buildClassesForInput(options) {
+    let classes = ["input-field", "col", "s12"];
+    if (options.short) {
+        classes.push("l6");
     }
+    if (options.class) {
+        classes.push(options.class);
+    }
+    return classes;
 }
 
 function makeInput(label, value, options) {
@@ -102,6 +106,23 @@ function makeSelect(label, value, options) {
             // we need to reinitialize form
             form.el.destroy();
             form.init();
+        }
+    }
+}
+
+function makeTextArea(label, value, options) {
+    let form = new inputForm(label, options);
+    let content = form.content("textarea", value);
+    return {
+        content: content,
+        getValue: () => {
+            return form.el.value;
+        },
+        setEnabled: (enabled) => {
+            form.el.removeAttribute("disabled");
+            if (!enabled) {
+                form.el.setAttribute("disabled", "true");
+            }
         }
     }
 }
@@ -181,45 +202,6 @@ function makeCheckBox(label, value, options) {
         },
         getValue: () => {
             return instance.checked;
-        },
-        setEnabled: (enabled) => {
-            instance.removeAttribute("disabled");
-            if (!enabled) {
-                instance.setAttribute("disabled", "true");
-            }
-        }
-    }
-}
-
-function makeTextArea(label, value, options) {
-    if (!options) {
-        options = {}
-    }
-    let textAreaID = rndDivID();
-    let classes = buildClassesForInput(options);
-    if (options && options.switch) {
-        options.switch((enabled)=>{
-            let div = $("#"+textAreaID);
-            div.removeAttr("disabled");
-            if (!enabled) {
-                div.attr("disabled", "true");
-            }
-        })
-    }
-    let instance = undefined;
-    return {
-        content: {
-            tag: "div", class: classes, content: [
-                {id: textAreaID, tag: "textarea", class: "materialize-textarea", content: value},
-                {tag: "label", for: textAreaID, class: (value ? "active" : ""), content: label}
-            ],
-            afterRender: ()=> {
-                let elems = $("#"+textAreaID);
-                instance = elems[0];
-            }
-        },
-        getValue: () => {
-            return instance.value;
         },
         setEnabled: (enabled) => {
             instance.removeAttribute("disabled");
