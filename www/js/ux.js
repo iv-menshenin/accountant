@@ -1,62 +1,4 @@
 
-
-function mapPersonToListElement(person) {
-    let obj = [
-        {tag: "img", class: "circle", src: "/www/png/butterfly.png"},
-        {tag: "span", class: ["title", "black-text"], content: getPersonFullName(person)}, // ФИО
-        {tag: "p", class: ["grey-text"], content: (person.phone ? person.phone : "")},     // телефон
-        {tag: "p", class: ["secondary-content"], content: (person.is_member ? "член" : "не член")},
-    ];
-    return {
-        tag: "a",
-        class: ["collection-item", "avatar"],
-        href: "#person:uuid=" + person.account_id,
-        content: obj,
-    };
-}
-
-function mapObjectToListElement(object) {
-    let obj = [
-        {tag: "img", class: "circle", src: "/www/png/badge_object.png"},
-        {tag: "span", class: ["title", "black-text"], content: getObjectShortAddress(object)},
-        {tag: "p", class: ["grey-text"], content: (object.city ? object.city : "")},
-        {tag: "p", class: ["secondary-content"], content: (object.area ? object.area : "?")},
-    ];
-    return {
-        tag: "a",
-        class: ["collection-item", "avatar"],
-        href: "#object:uuid=" + object.account_id,
-        content: obj,
-    };
-}
-
-function makeButton(content, options) {
-    if (!options) {
-        options = {};
-    }
-    let modal_action = undefined;
-    let classes = ["btn", "waves-effect", "waves-light"];
-    if (options.class) {
-        classes.push(options.class);
-    }
-    if (options.target) {
-        modal_action = options.target;
-        classes.push("modal-trigger");
-    }
-    let buttonTag = {
-        tag: "button",
-        class: classes,
-        content: content
-    };
-    if (options.onclick) {
-        buttonTag["onclick"] = options.onclick;
-    }
-    if (modal_action) {
-        buttonTag["data-target"] = modal_action;
-    }
-    return buttonTag
-}
-
 function buildClassesForInput(options) {
     let classes = ["input-field", "col", "s12"];
     if (options.short) {
@@ -66,6 +8,65 @@ function buildClassesForInput(options) {
         classes.push(options.class);
     }
     return classes;
+}
+
+class inputForm {
+    id = undefined;
+    options = {};
+    classes = [];
+
+    constructor(options) {
+        this.id = rndDivID();
+        if (options) {
+            this.options = options;
+        }
+        this.classes = buildClassesForInput(this.options);
+    }
+
+}
+
+
+function makeButton(content, options) {
+    if (!options) {
+        options = {};
+    }
+    let buttonID = rndDivID();
+    let modal_action = undefined;
+    let classes = ["btn", "waves-effect", "waves-light"];
+    if (options.class) {
+        classes.push(options.class);
+    }
+    if (options.target) {
+        modal_action = options.target;
+        classes.push("modal-trigger");
+    }
+    let instance = undefined;
+    let buttonTag = {
+        id: buttonID,
+        tag: "button",
+        class: classes,
+        content: content,
+        afterRender: ()=> {
+            let elems = $("#"+buttonID);
+            instance = elems[0];
+        }
+    };
+    if (options.onclick) {
+        buttonTag["onclick"] = options.onclick;
+    }
+    if (modal_action) {
+        buttonTag["data-target"] = modal_action;
+    }
+    return {
+        content: buttonTag,
+        getValue: () => {},
+        setEnabled: (enabled) => {
+            instance.removeAttribute("disabled");
+            if (!enabled) {
+                instance.setAttribute("disabled", "true");
+            }
+        }
+    }
 }
 
 function makeInput(label, value, options) {
@@ -87,16 +88,74 @@ function makeInput(label, value, options) {
             }
         })
     }
+    let instance = undefined;
     return {
         content: {
             tag: "div", class: classes, content: [
                 {id: inputID, tag: "input", type: inputType, class: "validate", value: (value ? value : "")},
                 {tag: "label", for: inputID, class: (value ? "active" : ""), content: label}
-            ]
+            ],
+            afterRender: ()=> {
+                let elems = $("#"+inputID);
+                instance = elems[0];
+            }
         },
         getValue: () => {
-            return $("#"+inputID)[0].value;
+            return instance.value;
         },
+        setEnabled: (enabled) => {
+            instance.removeAttribute("disabled");
+            if (!enabled) {
+                instance.setAttribute("disabled", "true");
+            }
+        }
+    }
+}
+
+function makeSelect(label, value, options) {
+    if (!options) {
+        options = {}
+    }
+    let inputID = rndDivID();
+    let classes = buildClassesForInput(options);
+    if (!options.options) {
+        options.options = [];
+    }
+    let instance = undefined;
+    return {
+        content: {
+            tag: "div", class: classes, content: [
+                {tag: "label", class: "active", content: label}, // always active if there is no empty option
+                {id: inputID, tag: "select", content: options.options.map(
+                    (v)=>{
+                        let option = {tag: "option", content: v};
+                        if (v === value) {
+                            option.selected = "selected";
+                        }
+                        return option;
+                    }
+                )}
+            ],
+            afterRender: ()=> {
+                let elems = $("#"+inputID);
+                instance = M.FormSelect.init(elems, options)[0];
+            }
+        },
+        getValue: () => {
+            if (instance.input) {
+                return instance.input.value;
+            }
+        },
+        setEnabled: (enabled) => {
+            instance.el.removeAttribute("disabled");
+            if (!enabled) {
+                instance.el.setAttribute("disabled", "true");
+            }
+            // we need to reinitialize form
+            instance.destroy();
+            let elems = $("#"+inputID);
+            instance = M.FormSelect.init(elems, options)[0];
+        }
     }
 }
 
@@ -115,16 +174,27 @@ function makeCheckBox(label, value, options) {
             }
         })
     }
+    let instance = undefined;
     return {
         content: {
             tag: "label", class: classes, content: [
                 {id: textAreaID, tag: "input", type: "checkbox", checked: (value ? "checked" : "false"), content: value},
                 {tag: "span", content: label}
-            ]
+            ],
+            afterRender: ()=> {
+                let elems = $("#"+textAreaID);
+                instance = elems[0];
+            }
         },
         getValue: () => {
-            return $("#"+textAreaID)[0].checked;
+            return instance.checked;
         },
+        setEnabled: (enabled) => {
+            instance.removeAttribute("disabled");
+            if (!enabled) {
+                instance.setAttribute("disabled", "true");
+            }
+        }
     }
 }
 
@@ -143,15 +213,50 @@ function makeTextArea(label, value, options) {
             }
         })
     }
+    let instance = undefined;
     return {
         content: {
             tag: "div", class: classes, content: [
                 {id: textAreaID, tag: "textarea", class: "materialize-textarea", content: value},
                 {tag: "label", for: textAreaID, class: (value ? "active" : ""), content: label}
-            ]
+            ],
+            afterRender: ()=> {
+                let elems = $("#"+textAreaID);
+                instance = elems[0];
+            }
         },
         getValue: () => {
-            return $("#"+textAreaID)[0].value;
+            return instance.value;
+        },
+        setEnabled: (enabled) => {
+            instance.removeAttribute("disabled");
+            if (!enabled) {
+                instance.setAttribute("disabled", "true");
+            }
+        }
+    }
+}
+
+function datePickerLocalizedOptions(value) {
+    return {
+        defaultDate: new Date(value),
+        maxDate: new Date(),
+        minDate: new Date("1900-01-01T00:00:00Z"),
+        setDefaultDate: true,
+        yearRange: [(new Date()).getFullYear() - 100, (new Date()).getFullYear()],
+        format: "dd.mm.yyyy",
+        showClearBtn: true,
+        showDaysInNextAndPreviousMonths: true,
+        firstDay: 1,
+        i18n: {
+            cancel: "Отмена",
+            clear: "Очистить",
+            done: "Выбрать",
+            months: ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"],
+            monthsShort: ["Янв", "Фев", "Мар", "Апр", "Май", "Июн", "Июл", "Авг", "Сен", "Окт", "Ноя", "Дек"],
+            weekdays: ["Воскресение", "Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота"],
+            weekdaysShort: ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"],
+            weekdaysAbbrev: ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"],
         },
     }
 }
@@ -180,16 +285,26 @@ function makeDatePicker(label, value, options) {
             ],
             afterRender: ()=>{
                 let elems = $("#"+datePickerID);
-                instance = M.Datepicker.init(elems, {
-                    defaultDate: new Date(value),
-                    setDefaultDate: true,
-                })[0];
+                instance = M.Datepicker.init(elems, datePickerLocalizedOptions(value))[0];
             }
         },
         getValue: () => {
-            // format: "yyyy-mm-ddT00:00:00Z"
-            return instance.date.toISOString();
+            if (instance.date) {
+                // format: "yyyy-mm-ddT00:00:00Z"
+                return instance.date.toISOString();
+            }
         },
+        setEnabled: (enabled) => {
+            instance.el.removeAttribute("disabled");
+            if (!enabled) {
+                instance.el.setAttribute("disabled", "true");
+                // we need to reinitialize form
+                instance.destroy();
+            }
+            // todo what about re-enable after disabling?
+            // let elems = $("#"+datePickerID);
+            // instance = M.FormSelect.init(elems, options)[0];
+        }
     }
 }
 

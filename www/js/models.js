@@ -10,6 +10,38 @@ function buildAccountElement(account) {
     };
 }
 
+// todo
+function mapPersonToListElement(person) {
+    let obj = [
+        {tag: "img", class: "circle", src: "/www/png/butterfly.png"},
+        {tag: "span", class: ["title", "black-text"], content: getPersonFullName(person)}, // ФИО
+        {tag: "p", class: ["grey-text"], content: (person.phone ? person.phone : "")},     // телефон
+        {tag: "p", class: ["secondary-content"], content: (person.is_member ? "член" : "не член")},
+    ];
+    return {
+        tag: "a",
+        class: ["collection-item", "avatar"],
+        href: "#person:uuid=" + person.account_id,
+        content: obj,
+    };
+}
+
+// todo
+function mapObjectToListElement(object) {
+    let obj = [
+        {tag: "img", class: "circle", src: "/www/png/badge_object.png"},
+        {tag: "span", class: ["title", "black-text"], content: getObjectShortAddress(object)},
+        {tag: "p", class: ["grey-text"], content: (object.city ? object.city : "")},
+        {tag: "p", class: ["secondary-content"], content: (object.area ? object.area : "?")},
+    ];
+    return {
+        tag: "a",
+        class: ["collection-item", "avatar"],
+        href: "#object:uuid=" + object.account_id,
+        content: obj,
+    };
+}
+
 function getFirstPersonName(account) {
     if (account && account.persons && account.persons.length > 0) {
         let result = [];

@@ -4,6 +4,7 @@ class EditorForm {
     attributes = [];
     render = [];
     saveFn = ()=>{};
+    saveButton = undefined;
 
     constructor(label, attributes, onSaveAction) {
         this.label = label;
@@ -14,6 +15,7 @@ class EditorForm {
                 name: key,
                 label: attr.label,
                 type: attr.type,
+                options: attr.options,
                 short: (attr.short),
                 value: (attr.value ? attr.value : ""),
                 form: {},
@@ -32,6 +34,7 @@ class EditorForm {
             this.attributes[i].form = form;
             forms.push(form.content);
         }
+        this.saveButton = makeButton("Сохранить", {class: "action-button save-button"});
         let btnContainerID = randID();
         let formConstructor = {
             content: [
@@ -39,7 +42,7 @@ class EditorForm {
                 {tag: "div", class: "row", content: forms},
             ],
             footer: [
-                {tag: "div", id: btnContainerID, disabled: "disabled", class: "s6", content: makeButton("Сохранить", {class: "action-button save-button"})}
+                {tag: "div", id: btnContainerID, class: "s6", content: this.saveButton.content}
             ]
         };
         let renderStruct = [formConstructor.content];
@@ -57,11 +60,24 @@ class EditorForm {
         $("#"+btnContainerID+" .save-button").on("click", ()=>self.saveAction());
     }
 
+    disable() {
+        this.attributes.forEach((v) => {
+            if (v.form.setEnabled) {
+                v.form.setEnabled(false);
+            }
+        });
+        if (this.saveButton.setEnabled) {
+            this.saveButton.setEnabled(false);
+        }
+    }
+
     makeForm(attr) {
         switch (attr.type) {
             case "text": return makeInput(attr.label, attr.value, {short: attr.short});
             case "password": return makeInput(attr.label, attr.value, {short: attr.short, password: true});
+            case "select": return makeSelect(attr.label, attr.value, {short: attr.short, options: attr.options});
             case "date": return makeDatePicker(attr.label, attr.value, {short: attr.short});
+            case "checkbox": return makeCheckBox(attr.label, attr.value, {short: attr.short});
             case "multiline": return makeTextArea(attr.label, attr.value, {short: attr.short});
         }
     }

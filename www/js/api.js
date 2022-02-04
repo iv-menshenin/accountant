@@ -62,6 +62,7 @@ class apiManager {
         let err = function (req, cl, canRepeat) {
             if (req.status === 401 && canRepeat) {
                 self.AuthInitiate(exec);
+                return
             }
             if (req.responseJSON) {
                 console.log(req.responseJSON.meta);

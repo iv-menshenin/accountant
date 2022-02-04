@@ -157,7 +157,7 @@ function AccountPage(props, retry=true) {
         cad_number: {label: "Кадастровый номер", type: "text", value: account.cad_number, short: true},
         agreement: {label: "Номер договора", type: "text", value: account.agreement, short: true},
         agreement_date: {label: "Дата договора", type: "date", value: account.agreement_date, short: true},
-        purchase_kind: {label: "Вид собственности", type: "text", value: account.purchase_kind, short: true},
+        purchase_kind: {label: "Вид собственности", type: "select", options: ["купля-продажа", "наследство"], value: account.purchase_kind, short: true},
         purchase_date: {label: "Дата приобретения", type: "date", value: account.purchase_date, short: true},
         comment: {label: "Комментарий", type: "multiline", value: account.comment, short: false},
     }, (updated)=>{
@@ -180,5 +180,6 @@ function AccountPage(props, retry=true) {
         }
     });
     editor.renderTo("#main-page-container");
+    editor.disable();
     return ()=>{editor.destroy()};
 }
