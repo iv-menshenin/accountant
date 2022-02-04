@@ -55,7 +55,6 @@ class apiManager {
             "Accept": "application/json",
             "X-Requested-With": this.requestedWith,
         };
-        headers[this.authHeader] = this.authToken;
         let exec = ()=>{};
         let suc = function (responseData) {
             onSuccess(responseData.data)
@@ -78,6 +77,7 @@ class apiManager {
             console.log(cl);
         };
         exec = (canRepeat)=> {
+            headers[this.authHeader] = this.authToken;
             $.ajax({
                 crossDomain: true,
                 type: method,
