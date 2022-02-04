@@ -11,18 +11,52 @@ function buildClassesForInput(options) {
 }
 
 class inputForm {
+    el = undefined;
     id = undefined;
+    label = "";
     options = {};
     classes = [];
 
-    constructor(options) {
+    constructor(options, label) {
         this.id = rndDivID();
+        this.label = label;
         if (options) {
             this.options = options;
         }
         this.classes = buildClassesForInput(this.options);
     }
 
+    content(inputType, value) {
+        let self = this;
+        return {
+            tag: "div", class: self.classes, content: [
+                {id: self.id, tag: "input", type: inputType, class: "validate", value: (value ? value : "")},
+                {tag: "label", for: self.id, class: (value ? "active" : ""), content: this.label}
+            ],
+            afterRender: ()=> {
+                let elems = $("#"+self.id);
+                this.el = elems[0];
+            }
+        }
+    }
+
+}
+
+function makeInput(label, value, options) {
+    let form = new inputForm(options);
+    let content = form.content((options.password ? "password" : "text"), value);
+    return {
+        content: content,
+        getValue: () => {
+            return form.el.value;
+        },
+        setEnabled: (enabled) => {
+            form.el.removeAttribute("disabled");
+            if (!enabled) {
+                form.el.setAttribute("disabled", "true");
+            }
+        }
+    }
 }
 
 
@@ -60,49 +94,6 @@ function makeButton(content, options) {
     return {
         content: buttonTag,
         getValue: () => {},
-        setEnabled: (enabled) => {
-            instance.removeAttribute("disabled");
-            if (!enabled) {
-                instance.setAttribute("disabled", "true");
-            }
-        }
-    }
-}
-
-function makeInput(label, value, options) {
-    if (!options) {
-        options = {}
-    }
-    let inputType = "text";
-    if (options.password) {
-        inputType = "password"
-    }
-    let inputID = rndDivID();
-    let classes = buildClassesForInput(options);
-    if (options.switch) {
-        options.switch((enabled)=>{
-            let div = $("#"+inputID);
-            div.removeAttr("disabled");
-            if (!enabled) {
-                div.attr("disabled", "true");
-            }
-        })
-    }
-    let instance = undefined;
-    return {
-        content: {
-            tag: "div", class: classes, content: [
-                {id: inputID, tag: "input", type: inputType, class: "validate", value: (value ? value : "")},
-                {tag: "label", for: inputID, class: (value ? "active" : ""), content: label}
-            ],
-            afterRender: ()=> {
-                let elems = $("#"+inputID);
-                instance = elems[0];
-            }
-        },
-        getValue: () => {
-            return instance.value;
-        },
         setEnabled: (enabled) => {
             instance.removeAttribute("disabled");
             if (!enabled) {
