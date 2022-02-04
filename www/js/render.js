@@ -137,7 +137,7 @@ function buildHTML(constructor) {
                     postPend += " " + key + "=\"" + optionStr + "\"";
                 }
             }
-            if (content === "" && tagOptions.tag !== "textarea") {
+            if (content === "" && canShortTag(tagOptions.tag)) {
                 return "<" + tagOptions.tag + postPend + " />";
             }
             return "<" + tagOptions.tag + postPend + ">" + content + "</" + tagOptions.tag + ">";
@@ -186,6 +186,10 @@ function buildHTML(constructor) {
             }
         }
     }
+}
+
+function canShortTag(tag) {
+    return ["hr", "br", "img", "input", "meta", "link", "source"].reduce((p, n) => p || n === tag, false);
 }
 
 function MakeCollectionPage(title, collection) {
