@@ -176,8 +176,7 @@ function makeDatePicker(label, value, options) {
                 // we need to reinitialize form
                 form.el.destroy();
             }
-            // todo what about re-enable after disabling?
-            // form.init();
+            form.init(value);
         }
     }
 }
@@ -219,6 +218,33 @@ function makeButton(content, options, onClick) {
     return {
         content: buttonTag,
         getValue: () => {},
+        setEnabled: (enabled) => {
+            instance.removeAttribute("disabled");
+            if (!enabled) {
+                instance.setAttribute("disabled", "true");
+            }
+        }
+    }
+}
+
+function makeFlatCheckBox(value, onChange) {
+    let id = rndDivID();
+    let instance = undefined;
+    return {
+        content: {
+            id: id, tag: "input", type: "checkbox", checked: (value ? "checked" : undefined),
+            afterRender: ()=> {
+                let elems = $("#"+id);
+                instance = elems[0];
+                elems.on("change", ()=>onChange(instance.checked));
+            }
+        },
+        getValue: () => {
+            return instance.checked;
+        },
+        setValue: (value) => {
+            instance.checked = value;
+        },
         setEnabled: (enabled) => {
             instance.removeAttribute("disabled");
             if (!enabled) {
