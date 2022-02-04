@@ -27,6 +27,7 @@ class EditorForm {
     }
 
     build() {
+        let self = this;
         let forms = [];
         for (let i = 0; i < this.attributes.length; i++) {
             let form = this.makeForm(this.attributes[i]);
@@ -34,7 +35,7 @@ class EditorForm {
             forms.push(form.content);
         }
         let btnContainerID = randID();
-        this.saveButton = makeButton("Сохранить", {class: "action-button save-button"});
+        this.saveButton = makeButton("Сохранить", {class: "action-button save-button"}, ()=>self.saveAction());
         return {
             content: [
                 formHeader(this.label),
@@ -54,9 +55,6 @@ class EditorForm {
         } else {
             renderForm.content([build.content, build.footer]);
         }
-        // todo following two lines you must encapsulate
-        let self = this;
-        $("#"+build.footer[0].id+" .save-button").on("click", ()=>self.saveAction());
     }
 
     renderTo(divIDForm, divIDControl) {
