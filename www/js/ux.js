@@ -16,8 +16,9 @@ class inputForm {
     label = "";
     options = {};
     classes = [];
+    type = "text";
 
-    constructor(options, label) {
+    constructor(label, options) {
         this.id = rndDivID();
         this.label = label;
         if (options) {
@@ -26,24 +27,48 @@ class inputForm {
         this.classes = buildClassesForInput(this.options);
     }
 
-    content(inputType, value) {
-        let self = this;
-        return {
-            tag: "div", class: self.classes, content: [
-                {id: self.id, tag: "input", type: inputType, class: "validate", value: (value ? value : "")},
-                {tag: "label", for: self.id, class: (value ? "active" : ""), content: this.label}
-            ],
-            afterRender: ()=> {
-                let elems = $("#"+self.id);
+    init() {
+        let elems = $("#" + this.id);
+        switch (this.type) {
+            case "select":
+                this.el = M.FormSelect.init(elems, this.options)[0];
+                break;
+            default:
                 this.el = elems[0];
-            }
         }
     }
 
+    content(inputType, value) {
+        if (inputType === "select") {
+            // todo ugly case
+            return this.contentSelect(value)
+        }
+        this.type = inputType;
+        let self = this;
+        return {
+            tag: "div", class: self.classes, content: [
+                {tag: "label", for: self.id, class: (value ? "active" : ""), content: this.label},
+                {id: self.id, tag: "input", type: inputType, class: "validate", value: (value ? value : "")},
+            ],
+            afterRender: ()=>self.init()
+        }
+    }
+
+    contentSelect(value) {
+        this.type = "select";
+        let self = this;
+        return {
+            tag: "div", class: this.classes, content: [
+                {tag: "label", for: this.id, class: "active", content: this.label},
+                {id: this.id, tag: "select", content: this.options.options.map((v)=>({tag: "option", content: v, selected: (v === value ? "selected" : undefined)}))},
+            ],
+            afterRender: ()=>self.init()
+        }
+    }
 }
 
 function makeInput(label, value, options) {
-    let form = new inputForm(options);
+    let form = new inputForm(label, options);
     let content = form.content((options.password ? "password" : "text"), value);
     return {
         content: content,
@@ -59,8 +84,29 @@ function makeInput(label, value, options) {
     }
 }
 
+function makeSelect(label, value, options) {
+    let form = new inputForm(label, options);
+    let content = form.content("select", value);
+    return {
+        content: content,
+        getValue: () => {
+            if (form.el.input) {
+                return form.el.input.value;
+            }
+        },
+        setEnabled: (enabled) => {
+            form.el.el.removeAttribute("disabled");
+            if (!enabled) {
+                form.el.el.setAttribute("disabled", "true");
+            }
+            // we need to reinitialize form
+            form.el.destroy();
+            form.init();
+        }
+    }
+}
 
-function makeButton(content, options) {
+function makeButton(content, options, onClick) {
     if (!options) {
         options = {};
     }
@@ -83,6 +129,9 @@ function makeButton(content, options) {
         afterRender: ()=> {
             let elems = $("#"+buttonID);
             instance = elems[0];
+            if (onClick) {
+                elems.on("click", onClick);
+            }
         }
     };
     if (options.onclick) {
@@ -99,53 +148,6 @@ function makeButton(content, options) {
             if (!enabled) {
                 instance.setAttribute("disabled", "true");
             }
-        }
-    }
-}
-
-function makeSelect(label, value, options) {
-    if (!options) {
-        options = {}
-    }
-    let inputID = rndDivID();
-    let classes = buildClassesForInput(options);
-    if (!options.options) {
-        options.options = [];
-    }
-    let instance = undefined;
-    return {
-        content: {
-            tag: "div", class: classes, content: [
-                {tag: "label", class: "active", content: label}, // always active if there is no empty option
-                {id: inputID, tag: "select", content: options.options.map(
-                    (v)=>{
-                        let option = {tag: "option", content: v};
-                        if (v === value) {
-                            option.selected = "selected";
-                        }
-                        return option;
-                    }
-                )}
-            ],
-            afterRender: ()=> {
-                let elems = $("#"+inputID);
-                instance = M.FormSelect.init(elems, options)[0];
-            }
-        },
-        getValue: () => {
-            if (instance.input) {
-                return instance.input.value;
-            }
-        },
-        setEnabled: (enabled) => {
-            instance.el.removeAttribute("disabled");
-            if (!enabled) {
-                instance.el.setAttribute("disabled", "true");
-            }
-            // we need to reinitialize form
-            instance.destroy();
-            let elems = $("#"+inputID);
-            instance = M.FormSelect.init(elems, options)[0];
         }
     }
 }
