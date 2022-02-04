@@ -6,12 +6,15 @@ class navigationManager {
     hashPattern = /(#[a-z]+):?(([a-z0-9_=-]+\/?)*)?/;
     destructorFn = ()=>{};
     navPagesList = [
-        {title: "Вход", anchor: "#login", handler: (prop)=>{return AuthPage(prop)}},
+        // главная
         {title: "Главная", anchor: "#main", handler: ()=>{return ()=>{};}},
-        {title: "Лицевые счета", nav: true, anchor: "#accounts", handler: (prop)=>{return AccountsListPage(prop)}},
+        // реагируют на якорь
+        {title: "Вход", anchor: "#login", handler: (prop)=>{return AuthPage(prop)}},
         {title: "Лицевой счет", anchor: "#account", handler: (prop)=>{return AccountPage(prop)}},
+        // компоненты меню
+        {title: "Лицевые счета", nav: true, anchor: "#accounts", handler: (prop)=>{return AccountsListPage(prop)}},
+        {title: "Участки", nav: true, anchor: "#objects"},
         {title: "Цели", nav: true, anchor: "#targets"},
-        {title: "Бухгалтерия", nav: true, anchor: "#money"},
     ];
 
     constructor(sideNav) {
