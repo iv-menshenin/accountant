@@ -5,7 +5,6 @@ class inputForm {
     label = "";
     options = {};
     classes = [];
-    tag = "input";
     type = "text";
 
     constructor(label, options) {
@@ -17,11 +16,14 @@ class inputForm {
         this.classes = buildClassesForInput(this.options);
     }
 
-    init() {
+    init(value) {
         let elems = $("#" + this.id);
         switch (this.type) {
             case "select":
                 this.el = M.FormSelect.init(elems, this.options)[0];
+                break;
+            case "datepicker":
+                this.el = M.Datepicker.init(elems, datePickerLocalizedOptions(value))[0];
                 break;
             default:
                 this.el = elems[0];
@@ -29,14 +31,22 @@ class inputForm {
     }
 
     formTag(value) {
-        let cl = (this.tag === "textarea" ? "materialize-textarea" : "validate");
-        let construct = {id: this.id, tag: this.tag, type: this.type, class: cl};
+        let area = (this.type === "textarea");
+        let select = (this.type === "select");
+        let dt = (this.type === "datepicker");
+        let tag = (area ? "textarea" : (select ? "select" : "input"));
+        let cl = (area ? "materialize-textarea" : (dt ? "datepicker" : "validate"));
+        let tp = (dt ? "text" : this.type);
+        let construct = {id: this.id, tag: tag, type: tp, class: cl};
         switch (this.type) {
             case "select":
                 construct.content = this.options.options.map((v)=>({tag: "option", content: v, selected: (v === value ? "selected" : undefined)}));
                 break;
             case "textarea":
                 construct.content = (value ? value : "");
+                break;
+            case "datepicker":
+                // todo set value here
                 break;
             default:
                 construct.value = (value ? value : "");
@@ -45,9 +55,6 @@ class inputForm {
     }
 
     content(inputType, value) {
-        let area = (inputType === "textarea");
-        let select = (inputType === "select");
-        this.tag = (area ? "textarea" : (select ? "select" : "input"));
         this.type = inputType;
         let self = this;
         return {
@@ -55,7 +62,7 @@ class inputForm {
                 {tag: "label", for: self.id, class: (value || this.type === "select" ? "active" : ""), content: this.label},
                 this.formTag(value),
             ],
-            afterRender: ()=>self.init()
+            afterRender: ()=>self.init(value)
         }
     }
 }
@@ -71,9 +78,50 @@ function buildClassesForInput(options) {
     return classes;
 }
 
+function datePickerLocalizedOptions(value) {
+    return {
+        defaultDate: new Date(value),
+        maxDate: new Date(),
+        minDate: new Date("1900-01-01T00:00:00Z"),
+        setDefaultDate: true,
+        yearRange: [(new Date()).getFullYear() - 100, (new Date()).getFullYear()],
+        format: "dd.mm.yyyy",
+        showClearBtn: true,
+        showDaysInNextAndPreviousMonths: true,
+        firstDay: 1,
+        i18n: {
+            cancel: "Отмена",
+            clear: "Очистить",
+            done: "Выбрать",
+            months: ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"],
+            monthsShort: ["Янв", "Фев", "Мар", "Апр", "Май", "Июн", "Июл", "Авг", "Сен", "Окт", "Ноя", "Дек"],
+            weekdays: ["Воскресение", "Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота"],
+            weekdaysShort: ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"],
+            weekdaysAbbrev: ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"],
+        },
+    }
+}
+
 function makeInput(label, value, options) {
     let form = new inputForm(label, options);
     let content = form.content((options.password ? "password" : "text"), value);
+    return {
+        content: content,
+        getValue: () => {
+            return form.el.value;
+        },
+        setEnabled: (enabled) => {
+            form.el.removeAttribute("disabled");
+            if (!enabled) {
+                form.el.setAttribute("disabled", "true");
+            }
+        }
+    }
+}
+
+function makeTextArea(label, value, options) {
+    let form = new inputForm(label, options);
+    let content = form.content("textarea", value);
     return {
         content: content,
         getValue: () => {
@@ -110,19 +158,26 @@ function makeSelect(label, value, options) {
     }
 }
 
-function makeTextArea(label, value, options) {
+function makeDatePicker(label, value, options) {
     let form = new inputForm(label, options);
-    let content = form.content("textarea", value);
+    let content = form.content("datepicker", value);
     return {
         content: content,
         getValue: () => {
-            return form.el.value;
+            if (form.el.date) {
+                // format: "yyyy-mm-ddT00:00:00Z"
+                return form.el.date.toISOString();
+            }
         },
         setEnabled: (enabled) => {
-            form.el.removeAttribute("disabled");
+            form.el.el.removeAttribute("disabled");
             if (!enabled) {
-                form.el.setAttribute("disabled", "true");
+                form.el.el.setAttribute("disabled", "true");
+                // we need to reinitialize form
+                form.el.destroy();
             }
+            // todo what about re-enable after disabling?
+            // form.init();
         }
     }
 }
@@ -179,15 +234,6 @@ function makeCheckBox(label, value, options) {
     }
     let textAreaID = rndDivID();
     let classes = buildClassesForInput(options);
-    if (options.switch) {
-        options.switch((enabled)=>{
-            let div = $("#"+textAreaID);
-            div.removeAttr("disabled");
-            if (!enabled) {
-                div.attr("disabled", "true");
-            }
-        })
-    }
     let instance = undefined;
     return {
         content: {
@@ -208,77 +254,6 @@ function makeCheckBox(label, value, options) {
             if (!enabled) {
                 instance.setAttribute("disabled", "true");
             }
-        }
-    }
-}
-
-function datePickerLocalizedOptions(value) {
-    return {
-        defaultDate: new Date(value),
-        maxDate: new Date(),
-        minDate: new Date("1900-01-01T00:00:00Z"),
-        setDefaultDate: true,
-        yearRange: [(new Date()).getFullYear() - 100, (new Date()).getFullYear()],
-        format: "dd.mm.yyyy",
-        showClearBtn: true,
-        showDaysInNextAndPreviousMonths: true,
-        firstDay: 1,
-        i18n: {
-            cancel: "Отмена",
-            clear: "Очистить",
-            done: "Выбрать",
-            months: ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"],
-            monthsShort: ["Янв", "Фев", "Мар", "Апр", "Май", "Июн", "Июл", "Авг", "Сен", "Окт", "Ноя", "Дек"],
-            weekdays: ["Воскресение", "Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота"],
-            weekdaysShort: ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"],
-            weekdaysAbbrev: ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"],
-        },
-    }
-}
-
-function makeDatePicker(label, value, options) {
-    if (!options) {
-        options = {}
-    }
-    let instance = undefined;
-    let datePickerID = rndDivID();
-    let classes = buildClassesForInput(options);
-    if (options && options.switch) {
-        options.switch((enabled)=>{
-            let div = $("#"+datePickerID);
-            div.removeAttr("disabled");
-            if (!enabled) {
-                div.attr("disabled", "true");
-            }
-        })
-    }
-    return {
-        content: {
-            tag: "div", class: classes, content: [
-                {id: datePickerID, tag: "input", type: "text", class: "datepicker", content: ""},
-                {tag: "label", for: datePickerID, class: (value ? "active" : ""), content: label}
-            ],
-            afterRender: ()=>{
-                let elems = $("#"+datePickerID);
-                instance = M.Datepicker.init(elems, datePickerLocalizedOptions(value))[0];
-            }
-        },
-        getValue: () => {
-            if (instance.date) {
-                // format: "yyyy-mm-ddT00:00:00Z"
-                return instance.date.toISOString();
-            }
-        },
-        setEnabled: (enabled) => {
-            instance.el.removeAttribute("disabled");
-            if (!enabled) {
-                instance.el.setAttribute("disabled", "true");
-                // we need to reinitialize form
-                instance.destroy();
-            }
-            // todo what about re-enable after disabling?
-            // let elems = $("#"+datePickerID);
-            // instance = M.FormSelect.init(elems, options)[0];
         }
     }
 }
