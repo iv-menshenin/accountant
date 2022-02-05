@@ -34,10 +34,10 @@ func New() *Resources {
 }
 
 func (r *Resources) SetupRouting(router *mux.Router) {
-	router.Path("/js/{filename:[a-z0-9\\-_]+}.js").Methods(http.MethodGet).Handler(http.HandlerFunc(r.Script))
-	router.Path("/html/{filename:[a-z0-9\\-_]+}.html").Methods(http.MethodGet).Handler(http.HandlerFunc(r.Html))
-	router.Path("/css/{filename:[a-z0-9\\-_]+}.css").Methods(http.MethodGet).Handler(http.HandlerFunc(r.Css))
-	router.Path("/png/{filename:[a-z0-9\\-_]+}.png").Methods(http.MethodGet).Handler(http.HandlerFunc(r.Png))
+	router.Path("/js/{filename:[a-z0-9\\-_/]+}.js").Methods(http.MethodGet).Handler(http.HandlerFunc(r.Script))
+	router.Path("/html/{filename:[a-z0-9\\-_/]+}.html").Methods(http.MethodGet).Handler(http.HandlerFunc(r.Html))
+	router.Path("/css/{filename:[a-z0-9\\-_/]+}.css").Methods(http.MethodGet).Handler(http.HandlerFunc(r.Css))
+	router.Path("/png/{filename:[a-z0-9\\-_/]+}.png").Methods(http.MethodGet).Handler(http.HandlerFunc(r.Png))
 }
 
 func (r *Resources) Script(w http.ResponseWriter, q *http.Request) {

@@ -53,24 +53,28 @@ function getFirstPersonName(account) {
 }
 
 function getAllPersonNames(account) {
-    if (account && account.persons && account.persons.length > 0) {
+    if (isPersonPresent(account)) {
         return account.persons.map(getPersonFullName).join("; ");
     }
     return noOwner;
 }
 
 function personsHeader(account) {
-    if (account && account.persons && account.persons.length > 0) {
+    if (isPersonPresent(account)) {
         let owners = account.persons.map(getPersonFullName).join("; ");
         if (account.persons.length > 1) {
             owners = "(" + account.persons.length + ") " + owners;
         }
-        if (owners.length > 24) {
-            owners = owners.substr(0, 20) + " ..."
-        }
         return owners;
     }
     return noOwner;
+}
+
+function accountHeader(account) {
+    if (!account) {
+        return "None";
+    }
+    return account.account_id;
 }
 
 function getPersonFullName(person) {
@@ -100,9 +104,6 @@ function objectsHeader(account) {
         if (account.objects.length > 1) {
             objects = "(" + account.objects.length + ") " + objects;
         }
-        if (objects.length > 24) {
-            objects = objects.substr(0, 20) + " ..."
-        }
         return objects
     }
     return noObjects;
@@ -110,6 +111,10 @@ function objectsHeader(account) {
 
 function isObjectPresent(account) {
     return (account && account.objects && account.objects.length > 0);
+}
+
+function isPersonPresent(account) {
+    return (account && account.persons && account.persons.length > 0);
 }
 
 function concatObjectsAddr(account, fn) {

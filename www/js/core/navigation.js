@@ -14,7 +14,8 @@ class navigationManager {
         {title: "Проживающий", anchor: "#person", handler: (prop)=>{console.log(prop)}},
         // компоненты меню
         {title: "Лицевые счета", nav: true, anchor: "#accounts", handler: (prop)=>{return AccountsListPage(prop)}},
-        {title: "Участки", nav: true, anchor: "#objects"},
+        {title: "Владельцы", nav: true, anchor: "#persons", handler: (prop)=>{return PersonsListPage(prop)}},
+        {title: "Участки", nav: true, anchor: "#objects", handler: (prop)=>{return ObjectsListPage(prop)}},
         {title: "Цели", nav: true, anchor: "#targets"},
     ];
 

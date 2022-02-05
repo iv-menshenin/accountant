@@ -91,114 +91,20 @@ class accountsManager {
     message(action, account, consumer) {
         consumer(action, account, account.account_id, "#account:uuid="+account.account_id);
     }
+
+    empty() {
+        return this.collection.length === 0;
+    }
 }
 
 let accounts = new(accountsManager);
-
-class personsManager {
-    onDone = () => {};
-    collection = [];
-    consumers = [];
-    account_id = undefined;
-
-    constructor(account_id) {
-        this.account_id = account_id;
-        let self = this;
-        this.onDone = accounts.consume((action, element, id, href) => {
-            if (id !== account_id) {
-                return;
-            }
-            if (action === "add" || action === "replace") {
-                self.collection = element.persons;
-                if (!self.collection) {
-                    self.collection = [];
-                }
-                this.collection.forEach((person)=>{
-                    self.messageAll(action, person)
-                });
-            }
-        })
-    }
-
-    consume(consumer) {
-        let consumer_id = randID();
-        this.consumers.push({id: consumer_id, handler: consumer});
-        this.collection.forEach((el)=>{
-            this.message("add", el, consumer);
-        });
-        return consumer_id;
-    }
-
-    unconsume(consumer_id) {
-        this.consumers = this.consumers.filter((consumer)=>{return consumer.id !== consumer_id});
-    }
-
-    messageAll(action, person) {
-        this.consumers.forEach((consumer) => {
-            this.message(action, person, consumer.handler);
-        });
-    }
-
-    message(action, person, consumer) {
-        consumer(action, person, person.person_id, "#person:uuid="+person.person_id+"/account="+this.account_id);
-    }
-}
-
-class objectsManager {
-    onDone = () => {};
-    collection = [];
-    consumers = [];
-    account_id = undefined;
-
-    constructor(account_id) {
-        this.account_id = account_id;
-        let self = this;
-        this.onDone = accounts.consume((action, element, id, href) => {
-            if (id !== account_id) {
-                return;
-            }
-            if (action === "add" || action === "replace") {
-                self.collection = element.objects;
-                if (!self.collection) {
-                    self.collection = [];
-                }
-                this.collection.forEach((object)=>{
-                    self.messageAll(action, object)
-                });
-            }
-        })
-    }
-
-    consume(consumer) {
-        let consumer_id = randID();
-        this.consumers.push({id: consumer_id, handler: consumer});
-        this.collection.forEach((el)=>{
-            this.message("add", el, consumer);
-        });
-        return consumer_id;
-    }
-
-    unconsume(consumer_id) {
-        this.consumers = this.consumers.filter((consumer)=>{return consumer.id !== consumer_id});
-    }
-
-    messageAll(action, object) {
-        this.consumers.forEach((consumer) => {
-            this.message(action, object, consumer.handler);
-        });
-    }
-
-    message(action, object, consumer) {
-        consumer(action, object, object.object_id, "#object:uuid="+object.object_id+"/account="+this.account_id);
-    }
-}
 
 function AccountsListPage() {
     let destroy = MakeCollectionPage("Лицевые счета", accounts, buildAccountElement);
     let mainPage = new Render("#main-page-container");
     mainPage.registerFloatingButtons({href: "#account:new", icon: "add", color: "brown"})
     // lazy load
-    if (accounts.collection.length === 0) {
+    if (accounts.empty()) {
         accounts.loadAccounts(()=>{}, ()=>{});
     }
     return ()=>{
@@ -220,9 +126,7 @@ function AccountPage(props, retry=true) {
             return false
         }
     }
-
-    let editor = makeAccountEditor(account);
-    let free = [()=>{editor.destroy()}];
+    let editor = undefined;
     let accountInfoBlock = [
         {tag: "div", id: "account-attrs"},
         {tag: "div", id: "account-ctrls"},
@@ -234,12 +138,33 @@ function AccountPage(props, retry=true) {
         accountPage.content(accountInfoBlock);
     }
 
-    editor.renderTo("#account-attrs", "#account-ctrls");
-    if (editMode) {
-        editor.disable();
+    let consumeFn = (action, element, id) => {
+        if (element.account_id !== props.uuid) {
+            return
+        }
+        if (editor) {
+            editor.destroy()
+            editor = undefined;
+        }
+        if (action === "delete") {
+            return
+        }
+        editor = makeAccountEditor(account);
+        editor.renderTo("#account-attrs", "#account-ctrls");
+        if (editMode) {
+            editor.disable();
+        }
+    };
+    let consumer_id = accounts.consume(consumeFn);
+    if (!editMode) {
+        consumeFn("", {}, "");
     }
+
     return ()=>{
-        free.forEach((fn) => fn());
+        accounts.unconsume(consumer_id);
+        if (editor) {
+            editor.destroy();
+        }
     };
 }
 
@@ -285,20 +210,35 @@ function makeTripleAccountBlock(account, accountInfoBlock) {
         getFirstPersonName(account) + "&nbsp;&nbsp;:&nbsp;:&nbsp;&nbsp;" +
         getShortAddress(account);
     let collapsibleAccount = [
-        {tag: "div", class: "collapsible-header", content: [{tag: "i", class: ["material-icons", "small"], content: "assignment"}, accHeader]},
+        {tag: "div", class: "collapsible-header", content:
+            [
+                {tag: "div", class: ["truncate"], content: accHeader},
+                {tag: "span", class: ["right", "badge"], content: {tag: "i", class: ["material-icons", "small", "badge"], content: "assignment"}}
+            ]
+        },
         {tag: "div", class: "collapsible-body", content: accountInfoBlock},
     ];
     let collapsiblePersons = [
-        {tag: "div", class: "collapsible-header", content: [{tag: "i", class: ["material-icons", "small"], content: "account_circle"}, "Зарегистрировано: " + personsHeader(account)]},
+        {tag: "div", class: ["collapsible-header", "center-block"], content:
+            [
+                {tag: "div", class: ["truncate"], content: "Зарегистрировано: " + personsHeader(account)},
+                {tag: "span", class: ["right", "badge"], content: {tag: "a", class: ["material-icons", "small", "deep-orange-text"], href: "#persons:account="+account.account_id, content: "account_circle"}}
+            ]
+        },
         {tag: "div", id: personsID, class: "collapsible-body", content: []},
     ];
     let collapsibleObjects = [
-        {tag: "div", class: "collapsible-header", content: [{tag: "i", class: ["material-icons", "small"], content: "home"}, "Участки: " + objectsHeader(account)]},
+        {tag: "div", class: ["collapsible-header", "center-block"], content:
+            [
+                {tag: "div", class: ["truncate"], content: "Участки: " + objectsHeader(account)},
+                {tag: "span", class: ["right", "badge"], content: {tag: "a", class: ["material-icons", "small", "deep-orange-text"], href: "#objects:account="+account.account_id, content: "home"}}
+            ]
+        },
         {tag: "div", id: objectsID, class: "collapsible-body", content: []},
     ];
     return {
         tag: "ul", id: collapsibleID, class: "collapsible", content: [
-            {tag: "li", content: collapsibleAccount, class: "active"},
+            {tag: "li", content: collapsibleAccount}, // , class: "active"
             {tag: "li", content: collapsiblePersons},
             {tag: "li", content: collapsibleObjects},
         ],
@@ -310,7 +250,6 @@ function makeTripleAccountBlock(account, accountInfoBlock) {
             let pr = new Render("#"+personsID);
             let pm = new personsManager(account.account_id)
             MakeCollection("", pm, buildPersonElement, pr);
-
 
             let or = new Render("#"+objectsID);
             let om = new objectsManager(account.account_id)
