@@ -31,6 +31,7 @@ class inputForm {
     }
 
     formTag(value) {
+        // todo simplify
         let area = (this.type === "textarea");
         let select = (this.type === "select");
         let dt = (this.type === "datepicker");
@@ -48,22 +49,33 @@ class inputForm {
             case "datepicker":
                 // todo set value here
                 break;
+            case "checkbox":
+                construct.checked = (value ? "checked" : undefined);
+                break;
             default:
                 construct.value = (value ? value : "");
         }
         return construct;
     }
 
+    labelTag(value, formTag) {
+        if (this.type === "checkbox") {
+            return {tag: "label", content: [formTag, {tag: "span", content: this.label}]}
+        }
+        return {
+            tag: "div", class: this.classes, content: [
+                {tag: "label", for: this.id, class: (value || this.type === "select" ? "active" : ""), content: this.label},
+                formTag,
+            ],
+        }
+    }
+
     content(inputType, value) {
         this.type = inputType;
         let self = this;
-        return {
-            tag: "div", class: self.classes, content: [
-                {tag: "label", for: self.id, class: (value || this.type === "select" ? "active" : ""), content: this.label},
-                this.formTag(value),
-            ],
-            afterRender: ()=>self.init(value)
-        }
+        let construct = this.labelTag(value, this.formTag(value))
+        construct.afterRender = ()=>self.init(value);
+        return construct;
     }
 }
 
@@ -227,6 +239,26 @@ function makeButton(content, options, onClick) {
     }
 }
 
+function makeCheckBox(label, value, options) {
+    let form = new inputForm(label, options);
+    let content = form.content("checkbox", value);
+    return {
+        content: content,
+        getValue: () => {
+            return form.el.checked;
+        },
+        setValue: (value) => {
+            form.el.checked = value;
+        },
+        setEnabled: (enabled) => {
+            form.el.removeAttribute("disabled");
+            if (!enabled) {
+                form.el.setAttribute("disabled", "true");
+            }
+        }
+    }
+}
+
 function makeFlatCheckBox(value, onChange) {
     let id = rndDivID();
     let instance = undefined;
@@ -244,36 +276,6 @@ function makeFlatCheckBox(value, onChange) {
         },
         setValue: (value) => {
             instance.checked = value;
-        },
-        setEnabled: (enabled) => {
-            instance.removeAttribute("disabled");
-            if (!enabled) {
-                instance.setAttribute("disabled", "true");
-            }
-        }
-    }
-}
-
-function makeCheckBox(label, value, options) {
-    if (!options) {
-        options = {}
-    }
-    let textAreaID = rndDivID();
-    let classes = buildClassesForInput(options);
-    let instance = undefined;
-    return {
-        content: {
-            tag: "label", class: classes, content: [
-                {id: textAreaID, tag: "input", type: "checkbox", checked: (value ? "checked" : "false"), content: value},
-                {tag: "span", content: label}
-            ],
-            afterRender: ()=> {
-                let elems = $("#"+textAreaID);
-                instance = elems[0];
-            }
-        },
-        getValue: () => {
-            return instance.checked;
         },
         setEnabled: (enabled) => {
             instance.removeAttribute("disabled");
