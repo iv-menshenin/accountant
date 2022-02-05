@@ -204,12 +204,14 @@ function MakeCollectionPage(title, collection, builder) {
 function MakeCollection(title, collection, builder, render) {
     let containerID = randID();
     let containerContent = undefined;
-    let defaultContent = {tag: "li", class: "collection-header", content: {tag: "h4", content: title}}
-    let construct = {
-        id: containerID, tag: "ul", class: ["collection", "with-header"], content: defaultContent,
-        afterRender: ()=>{
-            containerContent = new Render("#"+containerID);
-        }
+    let construct = {};
+    if (title) {
+        construct = {id: containerID, tag: "ul", class: ["collection", "with-header"], content: {tag: "li", class: "collection-header", content: {tag: "h4", content: title}}};
+    } else {
+        construct = {id: containerID, tag: "ul", class: ["collection"], content: []};
+    }
+    construct.afterRender = ()=>{
+        containerContent = new Render("#"+containerID);
     };
     render.content(construct);
 

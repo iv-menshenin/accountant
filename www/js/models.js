@@ -21,21 +21,19 @@ function buildPersonElement(person) {
     };
 }
 
-// todo
-function mapObjectToListElement(object) {
-    let obj = [
-        {tag: "img", class: "circle", src: "/www/png/badge_object.png"},
-        {tag: "span", class: ["title", "black-text"], content: getObjectShortAddress(object)},
-        {tag: "p", class: ["grey-text"], content: (object.city ? object.city : "")},
-        {tag: "p", class: ["secondary-content"], content: (object.area ? object.area : "?")},
-    ];
+function buildObjectElement(object) {
     return {
-        tag: "a",
-        class: ["collection-item", "avatar"],
-        href: "#object:uuid=" + object.account_id,
-        content: obj,
+        primary: [
+            {tag: "img", class: "circle", src: "/www/png/badge_object.png"},
+            {tag: "span", class: ["title", "black-text"], content: getObjectShortAddress(object)},
+            {tag: "p", class: ["grey-text"], content: (object.city ? object.city : "")},
+        ],
+        secondary: (object.area ? object.area : "?")
     };
 }
+
+const noOwner = "Нет владельца";
+const noObjects = "Без участка";
 
 function getFirstPersonName(account) {
     if (account && account.persons && account.persons.length > 0) {
@@ -51,14 +49,28 @@ function getFirstPersonName(account) {
         }
         return result.join(" ");
     }
-    return "Неизвестный";
+    return noOwner;
 }
 
 function getAllPersonNames(account) {
     if (account && account.persons && account.persons.length > 0) {
         return account.persons.map(getPersonFullName).join("; ");
     }
-    return "Не зарегистрировано";
+    return noOwner;
+}
+
+function personsHeader(account) {
+    if (account && account.persons && account.persons.length > 0) {
+        let owners = account.persons.map(getPersonFullName).join("; ");
+        if (account.persons.length > 1) {
+            owners = "(" + account.persons.length + ") " + owners;
+        }
+        if (owners.length > 24) {
+            owners = owners.substr(0, 20) + " ..."
+        }
+        return owners;
+    }
+    return noOwner;
 }
 
 function getPersonFullName(person) {
@@ -76,10 +88,32 @@ function getPersonFullName(person) {
 }
 
 function getShortAddress(account) {
-    if (account && account.objects && account.objects.length > 0) {
-        account.objects.map(getObjectShortAddress).join("; ");
+    if (isObjectPresent(account)) {
+        return concatObjectsAddr(account, getObjectShortAddress);
     }
-    return "Без участка";
+    return noObjects;
+}
+
+function objectsHeader(account) {
+    if (isObjectPresent(account)) {
+        let objects = concatObjectsAddr(account, getObjectShortAddress);;
+        if (account.objects.length > 1) {
+            objects = "(" + account.objects.length + ") " + objects;
+        }
+        if (objects.length > 24) {
+            objects = objects.substr(0, 20) + " ..."
+        }
+        return objects
+    }
+    return noObjects;
+}
+
+function isObjectPresent(account) {
+    return (account && account.objects && account.objects.length > 0);
+}
+
+function concatObjectsAddr(account, fn) {
+    return account.objects.map(fn).join("; ");
 }
 
 function getObjectShortAddress(object) {

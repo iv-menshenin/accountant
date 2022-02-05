@@ -133,7 +133,7 @@ class personsManager {
         this.consumers = this.consumers.filter((consumer)=>{return consumer.id !== consumer_id});
     }
 
-    messageAll(action, el) {
+    messageAll(action, person) {
         this.consumers.forEach((consumer) => {
             this.message(action, person, consumer.handler);
         });
@@ -141,6 +141,55 @@ class personsManager {
 
     message(action, person, consumer) {
         consumer(action, person, person.person_id, "#person:uuid="+person.person_id+"/account="+this.account_id);
+    }
+}
+
+class objectsManager {
+    onDone = () => {};
+    collection = [];
+    consumers = [];
+    account_id = undefined;
+
+    constructor(account_id) {
+        this.account_id = account_id;
+        let self = this;
+        this.onDone = accounts.consume((action, element, id, href) => {
+            if (id !== account_id) {
+                return;
+            }
+            if (action === "add" || action === "replace") {
+                self.collection = element.objects;
+                if (!self.collection) {
+                    self.collection = [];
+                }
+                this.collection.forEach((object)=>{
+                    self.messageAll(action, object)
+                });
+            }
+        })
+    }
+
+    consume(consumer) {
+        let consumer_id = randID();
+        this.consumers.push({id: consumer_id, handler: consumer});
+        this.collection.forEach((el)=>{
+            this.message("add", el, consumer);
+        });
+        return consumer_id;
+    }
+
+    unconsume(consumer_id) {
+        this.consumers = this.consumers.filter((consumer)=>{return consumer.id !== consumer_id});
+    }
+
+    messageAll(action, object) {
+        this.consumers.forEach((consumer) => {
+            this.message(action, object, consumer.handler);
+        });
+    }
+
+    message(action, object, consumer) {
+        consumer(action, object, object.object_id, "#object:uuid="+object.object_id+"/account="+this.account_id);
     }
 }
 
@@ -231,6 +280,7 @@ function makeAccountEditor(account) {
 function makeTripleAccountBlock(account, accountInfoBlock) {
     let collapsibleID = rndDivID();
     let personsID = rndDivID();
+    let objectsID = rndDivID();
     let accHeader = (account ? account.account + "&nbsp;&nbsp;:&nbsp;:&nbsp;&nbsp;" : "") +
         getFirstPersonName(account) + "&nbsp;&nbsp;:&nbsp;:&nbsp;&nbsp;" +
         getShortAddress(account);
@@ -239,12 +289,12 @@ function makeTripleAccountBlock(account, accountInfoBlock) {
         {tag: "div", class: "collapsible-body", content: accountInfoBlock},
     ];
     let collapsiblePersons = [
-        {tag: "div", class: "collapsible-header", content: [{tag: "i", class: ["material-icons", "small"], content: "account_circle"}, getAllPersonNames(account)]},
+        {tag: "div", class: "collapsible-header", content: [{tag: "i", class: ["material-icons", "small"], content: "account_circle"}, "Зарегистрировано: " + personsHeader(account)]},
         {tag: "div", id: personsID, class: "collapsible-body", content: []},
     ];
     let collapsibleObjects = [
-        {tag: "div", class: "collapsible-header", content: [{tag: "i", class: ["material-icons", "small"], content: "home"}, getShortAddress(account)]},
-        {tag: "div", class: "collapsible-body", content: []},
+        {tag: "div", class: "collapsible-header", content: [{tag: "i", class: ["material-icons", "small"], content: "home"}, "Участки: " + objectsHeader(account)]},
+        {tag: "div", id: objectsID, class: "collapsible-body", content: []},
     ];
     return {
         tag: "ul", id: collapsibleID, class: "collapsible", content: [
@@ -259,7 +309,13 @@ function makeTripleAccountBlock(account, accountInfoBlock) {
 
             let pr = new Render("#"+personsID);
             let pm = new personsManager(account.account_id)
-            MakeCollection("Проживающие", pm, buildPersonElement, pr);
+            MakeCollection("", pm, buildPersonElement, pr);
+
+
+            let or = new Render("#"+objectsID);
+            let om = new objectsManager(account.account_id)
+            MakeCollection("", om, buildObjectElement, or);
+            // todo release
         }
     };
 }
