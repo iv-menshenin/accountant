@@ -1,8 +1,7 @@
 
 class Render {
     selector = undefined;
-    static iterCounter = 0;
-    static animated = false;
+    actors = undefined;
 
     renderArgs(args, animation) {
         return args.map((arg) => {
@@ -25,6 +24,7 @@ class Render {
 
     constructor(divID) {
         this.selector = $(divID);
+        this.actors = $("#fixed-action-btn");
     }
 
     append(...args) {
@@ -44,11 +44,14 @@ class Render {
     }
 
     clear() {
+        let self = this;
         this.selector.html("");
+        this.actors.hide(200, () => {
+            self.actors.html("");
+        });
     }
 
     registerFloatingButtons(button) {
-        let actBtns = $("#fixed-action-btn");
         if (!button.children) {
             button.children = [];
         }
@@ -56,16 +59,17 @@ class Render {
         if (button.onClick) {
             tagA.onClick = button.onClick;
         }
-        let floating = [tagA];
+        let floating = [];
+        floating.push(tagA);
         if (button.children) {
             let children = button.children.map((btn)=>{
                 return {tag: "li", content: {tag: "a", href: btn.href, class: ["btn-floating", btn.color], content: {tag: "i", class: ["material-icons"], content: btn.icon}}}
             });
             floating.push({tag: "ul", content: children});
         }
-        let render = buildHTML(floating);
-        actBtns.html(render.content).show();
-        render.triggers.forEach((fn) => fn(0, ()=>{}));
+        let render = new Render("#fixed-action-btn")
+        render.content(floating);
+        this.actors.show(200);
     }
 }
 
@@ -192,14 +196,23 @@ function canShortTag(tag) {
     return ["hr", "br", "img", "input", "meta", "link", "source"].reduce((p, n) => p || n === tag, false);
 }
 
-function MakeCollectionPage(title, collection) {
+function MakeCollectionPage(title, collection, builder) {
     let mainPage = new Render("#main-page-container");
+    return MakeCollection(title, collection, builder, mainPage)
+}
+
+function MakeCollection(title, collection, builder, render) {
     let containerID = randID();
+    let containerContent = undefined;
     let defaultContent = {tag: "li", class: "collection-header", content: {tag: "h4", content: title}}
-    mainPage.content([
-        {tag: "div", id: "over-"+containerID, content: {id: containerID, tag: "ul", class: ["collection", "with-header"], content: defaultContent}}
-    ]);
-    let containerContent = new Render("#"+containerID);
+    let construct = {
+        id: containerID, tag: "ul", class: ["collection", "with-header"], content: defaultContent,
+        afterRender: ()=>{
+            containerContent = new Render("#"+containerID);
+        }
+    };
+    render.content(construct);
+
     let rendered = {};
     let consumer_id = collection.consume((action, element, id, href)=>{
         let listItemID = "list-item-"+id;
@@ -208,9 +221,10 @@ function MakeCollectionPage(title, collection) {
             $("#"+listItemID).delete();
             return
         }
+        let construct = builder(element);
         let composed = [
-            element.primary,
-            {tag: "span", class: "secondary-content", content: element.secondary},
+            construct.primary,
+            {tag: "span", class: "secondary-content", content: construct.secondary},
         ];
         if (rendered[id]) {
             rendered[id].content(composed);
@@ -220,7 +234,11 @@ function MakeCollectionPage(title, collection) {
         containerContent.append(newItem);
         rendered[id] = new Render("#"+listItemID);
     });
-    return ()=>{collection.unconsume(consumer_id)}
+    return ()=>{
+        collection.unconsume(consumer_id);
+        containerContent.clear();
+        render.clear();
+    }
 }
 
 function randID() {

@@ -20,9 +20,11 @@ class inputForm {
         let elems = $("#" + this.id);
         switch (this.type) {
             case "select":
+                // todo add it to destroy?
                 this.el = M.FormSelect.init(elems, this.options)[0];
                 break;
             case "datepicker":
+                // todo add it to destroy?
                 this.el = M.Datepicker.init(elems, datePickerLocalizedOptions(value))[0];
                 break;
             default:

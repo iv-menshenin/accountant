@@ -11,6 +11,7 @@ class navigationManager {
         // реагируют на якорь
         {title: "Вход", anchor: "#login", handler: (prop)=>{return AuthPage(prop)}},
         {title: "Лицевой счет", anchor: "#account", handler: (prop)=>{return AccountPage(prop)}},
+        {title: "Проживающий", anchor: "#person", handler: (prop)=>{console.log(prop)}},
         // компоненты меню
         {title: "Лицевые счета", nav: true, anchor: "#accounts", handler: (prop)=>{return AccountsListPage(prop)}},
         {title: "Участки", nav: true, anchor: "#objects"},

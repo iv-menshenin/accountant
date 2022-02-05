@@ -10,19 +10,14 @@ function buildAccountElement(account) {
     };
 }
 
-// todo
-function mapPersonToListElement(person) {
-    let obj = [
-        {tag: "img", class: "circle", src: "/www/png/butterfly.png"},
-        {tag: "span", class: ["title", "black-text"], content: getPersonFullName(person)}, // ФИО
-        {tag: "p", class: ["grey-text"], content: (person.phone ? person.phone : "")},     // телефон
-        {tag: "p", class: ["secondary-content"], content: (person.is_member ? "член" : "не член")},
-    ];
+function buildPersonElement(person) {
     return {
-        tag: "a",
-        class: ["collection-item", "avatar"],
-        href: "#person:uuid=" + person.account_id,
-        content: obj,
+        primary: [
+            {tag: "img", class: "circle", src: "/www/png/butterfly.png"},
+            {tag: "span", class: ["title", "black-text"], content: getPersonFullName(person)}, // ФИО
+            {tag: "p", class: ["grey-text"], content: (person.phone ? person.phone : "")},     // телефон
+        ],
+        secondary: (person.is_member ? "член" : "не член")
     };
 }
 
