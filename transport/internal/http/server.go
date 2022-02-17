@@ -2,7 +2,6 @@ package http
 
 import (
 	"context"
-	"flag"
 	"fmt"
 	"log"
 	"net"
@@ -10,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/iv-menshenin/accountant/configstorage"
+	"github.com/iv-menshenin/accountant/model"
 	"github.com/iv-menshenin/accountant/transport/internal/http/ep"
 )
 
@@ -40,25 +39,27 @@ func (t *Server) Shutdown(ctx context.Context) error {
 	return t.err
 }
 
-var (
-	httpPort = flag.Int("http-port", configstorage.EnvInt("HTTP_PORT", 8080), "http-server port")
-	httpHost = flag.String("http-host", configstorage.EnvString("HTTP_HOST", ""), "http-server host")
+func makeServer(config model.Config, handler http.Handler, logger *log.Logger) http.Server {
+	var (
+		httpPort = config.IntegerConfig("http-port", "http-port", "HTTP_PORT", 8080, "http-server port")
+		httpHost = config.StringConfig("http-host", "http-host", "HTTP_HOST", "", "http-server host")
 
-	httpReadTimeout  = flag.Duration("http-read-timeout", configstorage.EnvDuration("HTTP_READ_TIMEOUT", time.Second), "http-read timeout duration")
-	httpWriteTimeout = flag.Duration("http-write-timeout", configstorage.EnvDuration("HTTP_WRITE_TIMEOUT", time.Second), "http-write timeout duration")
-	httpIdleTimeout  = flag.Duration("http-idle-timeout", configstorage.EnvDuration("HTTP_IDLE_TIMEOUT", time.Minute), "http-idle timeout duration")
+		httpReadTimeout  = config.DurationConfig("http-read-timeout", "http-read-timeout", "HTTP_READ_TIMEOUT", time.Second, "http-read timeout duration")
+		httpWriteTimeout = config.DurationConfig("http-write-timeout", "http-write-timeout", "HTTP_WRITE_TIMEOUT", time.Second, "http-write timeout duration")
+		httpIdleTimeout  = config.DurationConfig("http-idle-timeout", "http-idle-timeout", "HTTP_IDLE_TIMEOUT", time.Second, "http-idle timeout duration")
 
-	httpMaxHeaderBytes = flag.Int("http-max-header-bytes", configstorage.EnvInt("HTTP_MAX_HEADER_BYTES", 4098), "maximum of http-header bytes")
-)
-
-func makeServer(handler http.Handler, logger *log.Logger) http.Server {
+		httpMaxHeaderBytes = config.IntegerConfig("http-max-header-bytes", "http-max-header-bytes", "HTTP_MAX_HEADER_BYTES", 4098, "maximum of http-header bytes")
+	)
+	if err := config.Init(); err != nil {
+		panic(err)
+	}
 	return http.Server{
 		Addr:           fmt.Sprintf("%s:%d", *httpHost, *httpPort),
 		Handler:        handler,
 		ReadTimeout:    *httpReadTimeout,
 		WriteTimeout:   *httpWriteTimeout,
 		IdleTimeout:    *httpIdleTimeout,
-		MaxHeaderBytes: *httpMaxHeaderBytes,
+		MaxHeaderBytes: int(*httpMaxHeaderBytes),
 		ErrorLog:       logger,
 	}
 }
@@ -72,9 +73,8 @@ func (t *Server) ConnState(_ net.Conn, state http.ConnState) {
 	}
 }
 
-func New(logger *log.Logger, rp RequestProcessor, auth AuthCore) *Server {
-	flag.Parse()
-	var httpServer = makeServer(makeRouter(rp, auth), logger)
+func New(config model.Config, logger *log.Logger, rp RequestProcessor, auth AuthCore) *Server {
+	var httpServer = makeServer(config, makeRouter(rp, auth), logger)
 	var server = Server{
 		server: &httpServer,
 	}
