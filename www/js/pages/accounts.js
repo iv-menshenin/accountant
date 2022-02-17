@@ -69,6 +69,25 @@ class accountsManager {
         }
     }
 
+    addOrReplaceObject(accountID, newObject) {
+        for (let i = 0; i < this.collection.length; i++) {
+            if (this.collection[i].account_id === accountID) {
+                let objects = [];
+                if (this.collection[i].objects) {
+                    objects = this.collection[i].objects;
+                }
+                let objectPos = objects.findIndex((object) => object.object_id === newObject.object_id);
+                if (objectPos < 0) {
+                    this.collection[i].objects.push(newObject);
+                } else {
+                    this.collection[i].objects[objectPos] = newObject;
+                }
+                this.messageAll("replace", this.collection[i]);
+                return
+            }
+        }
+    }
+
     consume(consumer) {
         let consumer_id = randID();
         this.consumers.push({id: consumer_id, handler: consumer});

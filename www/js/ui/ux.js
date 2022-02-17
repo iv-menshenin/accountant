@@ -116,13 +116,30 @@ function datePickerLocalizedOptions(value) {
     }
 }
 
-function makeInput(label, value, options) {
+function makeTextInput(label, value, options) {
     let form = new inputForm(label, options);
     let content = form.content((options.password ? "password" : "text"), value);
     return {
         content: content,
         getValue: () => {
             return form.el.value;
+        },
+        setEnabled: (enabled) => {
+            form.el.removeAttribute("disabled");
+            if (!enabled) {
+                form.el.setAttribute("disabled", "true");
+            }
+        }
+    }
+}
+
+function makeNumberInput(label, value, options) {
+    let form = new inputForm(label, options);
+    let content = form.content("number", value);
+    return {
+        content: content,
+        getValue: () => {
+            return parseInt(form.el.value);
         },
         setEnabled: (enabled) => {
             form.el.removeAttribute("disabled");

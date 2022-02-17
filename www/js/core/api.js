@@ -249,9 +249,43 @@ class apiManager {
         this.apiExecute(path, "PUT", undefined, body, onSuccess, onError);
     }
 
-    // GetAccounts получает список зарегистрированых ЛС
+    // GetAccountPersons получает список владельцев для указанного ЛС
     GetAccountPersons(accountID, onSuccess, onError) {
         this.apiExecute(this.accountsPath + "/" + accountID + this.personsPath, "GET", undefined, undefined, onSuccess, onError);
+    }
+
+    objectsPath = "/objects";
+
+    // CreateObject создает новый объект (участок) и привязывает его к лиуевому счету
+    CreateObject(accountID, object, onSuccess, onError) {
+        let body = {
+            postal_code: object.postal_code,
+            city: object.city,
+            village: object.village,
+            street: object.street,
+            number: object.number,
+            area: object.area,
+        };
+        this.apiExecute(this.accountsPath + "/" + accountID + this.objectsPath, "POST", undefined, body, onSuccess, onError);
+    }
+
+    // UpdateObject обновляет объект (участок) указанными полями
+    UpdateObject(accountID, object, onSuccess, onError) {
+        let path = this.accountsPath + "/" + accountID + this.objectsPath + "/" + object.object_id;
+        let body = {
+            postal_code: object.postal_code,
+            city: object.city,
+            village: object.village,
+            street: object.street,
+            number: object.number,
+            area: object.area,
+        };
+        this.apiExecute(path, "PUT", undefined, body, onSuccess, onError);
+    }
+
+    // GetAccountObjects получает список участков для указанного ЛС
+    GetAccountObjects(accountID, onSuccess, onError) {
+        this.apiExecute(this.accountsPath + "/" + accountID + this.objectsPath, "GET", undefined, undefined, onSuccess, onError);
     }
 }
 

@@ -96,8 +96,9 @@ class EditorForm {
 
     makeForm(attr) {
         switch (attr.type) {
-            case "text": return makeInput(attr.label, attr.value, {short: attr.short});
-            case "password": return makeInput(attr.label, attr.value, {short: attr.short, password: true});
+            case "text": return makeTextInput(attr.label, attr.value, {short: attr.short});
+            case "number": return makeNumberInput(attr.label, attr.value, {short: attr.short});
+            case "password": return makeTextInput(attr.label, attr.value, {short: attr.short, password: true});
             case "select": return makeSelect(attr.label, attr.value, {short: attr.short, options: attr.options});
             case "date": return makeDatePicker(attr.label, attr.value, {short: attr.short});
             case "checkbox": return makeCheckBox(attr.label, attr.value, {short: attr.short});

@@ -89,7 +89,7 @@ function PersonsListPage(options) {
     }
     let destroy = MakeCollectionPage(account.account + " Владельцы", persons, buildPersonElement);
     let mainPage = new Render("#main-page-container");
-    mainPage.registerFloatingButtons({href: "#person:new/account:" + options.account, icon: "add", color: "brown"})
+    mainPage.registerFloatingButtons({href: "#person:new/account=" + options.account, icon: "add", color: "brown"})
     return ()=>{
         destroy();
         persons.onDone();
@@ -102,7 +102,10 @@ function PersonEditPage(options) {
         return;
     }
     let account = accounts.collection.find((account) => {
-        return account.persons.find((person) => person.person_id === options.uuid);
+        if (options.uuid) {
+            return account.persons.find((person) => person.person_id === options.uuid);
+        }
+        return account.account_id === options.account;
     })
     let editor = undefined;
     let personInfoBlock = [
@@ -112,7 +115,11 @@ function PersonEditPage(options) {
     let personPage = new Render("#main-page-container");
     personPage.content(personInfoBlock);
     if (account) {
-        editor = makePersonEditor(account.account_id, account.persons.find((person) => person.person_id === options.uuid));
+        let person = {}
+        if (options.uuid) {
+            person = account.persons.find((person) => person.person_id === options.uuid);
+        }
+        editor = makePersonEditor(account.account_id, person);
         editor.renderTo("#person-attrs", "#person-ctrls");
     }
 }
@@ -128,8 +135,8 @@ function makePersonEditor(account_id, person) {
         pat_name: {label: "Отчество", type: "text", value: person.pat_name, short: true},
         dob: {label: "Дата рождения", type: "date", value: person.dob, short: true},
         is_member: {label: "Член товарищества", type: "checkbox", value: person.is_member, short: true},
-        phone: {label: "Телефон", type: "multiline", value: person.phone, short: false},
-        email: {label: "Электронная почта", type: "multiline", value: person.email, short: false},
+        phone: {label: "Телефон", type: "text", value: person.phone, short: false},
+        email: {label: "Электронная почта", type: "text", value: person.email, short: false},
     }, (updated)=>{
         if (person.person_id) {
             updated.person_id = person.person_id;

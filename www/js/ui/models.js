@@ -78,6 +78,9 @@ function accountHeader(account) {
 }
 
 function getPersonFullName(person) {
+    if (!person) {
+        return ""
+    }
     let result = [];
     if (person.surname) {
         result.push(person.surname);
@@ -122,6 +125,9 @@ function concatObjectsAddr(account, fn) {
 }
 
 function getObjectShortAddress(object) {
+    if (!object) {
+        return ""
+    }
     let result = [];
     if (object.village) {
         result.push(object.village);
