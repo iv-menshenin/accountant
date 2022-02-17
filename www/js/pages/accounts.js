@@ -9,6 +9,7 @@ class accountsManager {
         manager.GetAccounts(
             (accounts) => {
                 let self = this;
+                accounts.sort((a, b)=> a.account - b.account);
                 this.collection = accounts;
                 this.collection.forEach((account)=>{
                     self.messageAll("add", account)
@@ -17,8 +18,7 @@ class accountsManager {
             },
             (message, status) => {
                 if (status === 404) {
-                    onDone([]);
-                    return
+                    message = "Нет данных";
                 }
                 toast(message);
                 onError(message);
@@ -57,7 +57,7 @@ class accountsManager {
                 if (this.collection[i].persons) {
                     persons = this.collection[i].persons;
                 }
-                let personPos = persons.find((person) => person.person_id === newPerson.person_id);
+                let personPos = persons.findIndex((person) => person.person_id === newPerson.person_id);
                 if (personPos < 0) {
                     this.collection[i].persons.push(newPerson);
                 } else {
@@ -168,6 +168,10 @@ function AccountPage(props, retry=true) {
     };
 }
 
+let agreementKinds = [
+    "", "договор к/п", "наследство", "постановление", "дарение"
+];
+
 function makeAccountEditor(account) {
     let header = getFirstPersonName(account);
     if (!account.account_id) {
@@ -178,7 +182,7 @@ function makeAccountEditor(account) {
         cad_number: {label: "Кадастровый номер", type: "text", value: account.cad_number, short: true},
         agreement: {label: "Номер договора", type: "text", value: account.agreement, short: true},
         agreement_date: {label: "Дата договора", type: "date", value: account.agreement_date, short: true},
-        purchase_kind: {label: "Вид собственности", type: "select", options: ["купля-продажа", "наследство"], value: account.purchase_kind, short: true},
+        purchase_kind: {label: "Вид собственности", type: "select", options: agreementKinds, value: account.purchase_kind, short: true},
         purchase_date: {label: "Дата приобретения", type: "date", value: account.purchase_date, short: true},
         comment: {label: "Комментарий", type: "multiline", value: account.comment, short: false},
     }, (updated)=>{

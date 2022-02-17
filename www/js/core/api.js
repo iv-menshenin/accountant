@@ -220,7 +220,7 @@ class apiManager {
 
     personsPath = "/persons";
 
-    // CreatePerson создает новый лицевой счет в ответе на запрос присылает полную структуру данных созданного ЛС
+    // CreatePerson создает нового владельца и привязывает его к лиуевому счету
     CreatePerson(accountID, person, onSuccess, onError) {
         let body = {
             name: person.name,
@@ -232,6 +232,21 @@ class apiManager {
             email: person.email,
         };
         this.apiExecute(this.accountsPath + "/" + accountID + this.personsPath, "POST", undefined, body, onSuccess, onError);
+    }
+
+    // UpdatePerson обновляет владельца указанными полями
+    UpdatePerson(accountID, person, onSuccess, onError) {
+        let path = this.accountsPath + "/" + accountID + this.personsPath + "/" + person.person_id;
+        let body = {
+            name: person.name,
+            surname: person.surname,
+            pat_name: person.pat_name,
+            dob: person.dob,
+            is_member: person.is_member,
+            phone: person.phone,
+            email: person.email,
+        };
+        this.apiExecute(path, "PUT", undefined, body, onSuccess, onError);
     }
 
     // GetAccounts получает список зарегистрированых ЛС

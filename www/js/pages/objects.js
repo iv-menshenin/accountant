@@ -51,7 +51,11 @@ class objectsManager {
     }
 
     message(action, object, consumer) {
-        consumer(action, object, object.object_id, "#object:uuid="+object.object_id+"/account="+this.account_id);
+        if (this.account_id) {
+            consumer(action, object, object.object_id, "#object:uuid="+object.object_id+"/account="+this.account_id);
+        } else {
+            consumer(action, object, object.object_id, "#object:uuid="+object.object_id);
+        }
     }
 
     delete(object_id) {
@@ -85,6 +89,9 @@ function ObjectsListPage(options) {
     }
     let objects = new objectsManager(options.account);
     let account = accounts.getAccount(options.account);
+    if (!account) {
+        account = {account: "Все"}; // todo
+    }
     let destroy = MakeCollectionPage(account.account + " Участки", objects, buildObjectElement);
     let mainPage = new Render("#main-page-container");
     mainPage.registerFloatingButtons({href: "#object:new/account:" + options.account, icon: "add", color: "brown"})

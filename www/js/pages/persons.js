@@ -52,7 +52,11 @@ class personsManager {
     }
 
     message(action, person, consumer) {
-        consumer(action, person, person.person_id, "#person:uuid="+person.person_id+"/account="+this.account_id);
+        if (this.account_id) {
+            consumer(action, person, person.person_id, "#person:uuid="+person.person_id+"/account="+this.account_id);
+        } else {
+            consumer(action, person, person.person_id, "#person:uuid="+person.person_id);
+        }
     }
 
     delete(person_id) {
@@ -76,16 +80,13 @@ class personsManager {
 
 function PersonsListPage(options) {
     if (accounts.empty()) {
-        accounts.loadAccounts(()=>{
-            ObjectsListPage(options)
-        }, (message)=>{
-            console.log(message);
-            toast("Не удалось загрузить");
-        });
-        return
+        accounts.loadAccounts(()=>{}, (message)=>{console.log(message); toast("Не удалось загрузить")});
     }
     let persons = new personsManager(options.account);
     let account = accounts.getAccount(options.account);
+    if (!account) {
+        account = {account: "Все"}; // todo
+    }
     let destroy = MakeCollectionPage(account.account + " Владельцы", persons, buildPersonElement);
     let mainPage = new Render("#main-page-container");
     mainPage.registerFloatingButtons({href: "#person:new/account:" + options.account, icon: "add", color: "brown"})
@@ -93,4 +94,59 @@ function PersonsListPage(options) {
         destroy();
         persons.onDone();
     }
+}
+
+function PersonEditPage(options) {
+    if (accounts.empty()) {
+        accounts.loadAccounts(()=>{PersonEditPage(options)}, (message)=>{console.log(message); toast("Не удалось загрузить")});
+        return;
+    }
+    let account = accounts.collection.find((account) => {
+        return account.persons.find((person) => person.person_id === options.uuid);
+    })
+    let editor = undefined;
+    let personInfoBlock = [
+        {tag: "div", id: "person-attrs"},
+        {tag: "div", id: "person-ctrls"},
+    ];
+    let personPage = new Render("#main-page-container");
+    personPage.content(personInfoBlock);
+    if (account) {
+        editor = makePersonEditor(account.account_id, account.persons.find((person) => person.person_id === options.uuid));
+        editor.renderTo("#person-attrs", "#person-ctrls");
+    }
+}
+
+function makePersonEditor(account_id, person) {
+    let header = getPersonFullName(person);
+    if (!person.person_id) {
+        header = "Новый";
+    }
+    return new EditorForm(header, {
+        name: {label: "Имя", type: "text", value: person.name, short: true},
+        surname: {label: "Фамилия", type: "text", value: person.surname, short: true},
+        pat_name: {label: "Отчество", type: "text", value: person.pat_name, short: true},
+        dob: {label: "Дата рождения", type: "date", value: person.dob, short: true},
+        is_member: {label: "Член товарищества", type: "checkbox", value: person.is_member, short: true},
+        phone: {label: "Телефон", type: "multiline", value: person.phone, short: false},
+        email: {label: "Электронная почта", type: "multiline", value: person.email, short: false},
+    }, (updated)=>{
+        if (person.person_id) {
+            updated.person_id = person.person_id;
+            manager.UpdatePerson(account_id, updated, (updatedPerson)=>{
+                accounts.addOrReplacePerson(account_id, updatedPerson)
+            }, (message)=>{
+                console.log(message);
+                toast("Что-то пошло не так");
+            })
+        } else {
+            manager.CreatePerson(account_id, updated, (updatedPerson)=>{
+                accounts.addOrReplacePerson(account_id, updatedPerson)
+                document.location.replace("#person:uuid="+updatedPerson.person_id);
+            }, (message)=>{
+                console.log(message);
+                toast("Что-то пошло не так");
+            })
+        }
+    })
 }
