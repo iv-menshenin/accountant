@@ -103,8 +103,7 @@ function ObjectsListPage(options) {
 
 function ObjectEditPage(options) {
     if (accounts.empty()) {
-        accounts.loadAccounts(()=>{ObjectEditPage(options)}, (message)=>{console.log(message); toast("Не удалось загрузить")});
-        return;
+        accounts.loadAccounts(()=>{}, (message)=>{console.log(message); toast("Не удалось загрузить")});
     }
     let editor = undefined;
     let objectInfoBlock = [
