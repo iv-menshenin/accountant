@@ -98,15 +98,8 @@ function PersonsListPage(options) {
 
 function PersonEditPage(options) {
     if (accounts.empty()) {
-        accounts.loadAccounts(()=>{PersonEditPage(options)}, (message)=>{console.log(message); toast("Не удалось загрузить")});
-        return;
+        accounts.loadAccounts(()=>{}, (message)=>{console.log(message); toast("Не удалось загрузить")});
     }
-    let account = accounts.collection.find((account) => {
-        if (options.uuid) {
-            return account.persons.find((person) => person.person_id === options.uuid);
-        }
-        return account.account_id === options.account;
-    })
     let editor = undefined;
     let personInfoBlock = [
         {tag: "div", id: "person-attrs"},
@@ -114,14 +107,29 @@ function PersonEditPage(options) {
     ];
     let personPage = new Render("#main-page-container");
     personPage.content(personInfoBlock);
-    if (account) {
-        let person = {}
-        if (options.uuid) {
-            person = account.persons.find((person) => person.person_id === options.uuid);
+
+    let consumer_id = accounts.consume(()=>{
+        let account = accounts.collection.find((account) => {
+            if (options.uuid) {
+                return account.persons.find((person) => person.person_id === options.uuid);
+            }
+            return account.account_id === options.account;
+        })
+        if (account) {
+            let person = {}
+            if (options.uuid) {
+                person = account.persons.find((person) => person.person_id === options.uuid);
+            }
+            editor = makePersonEditor(account.account_id, person);
+            editor.renderTo("#person-attrs", "#person-ctrls");
         }
-        editor = makePersonEditor(account.account_id, person);
-        editor.renderTo("#person-attrs", "#person-ctrls");
-    }
+    });
+    return ()=>{
+        accounts.unconsume(consumer_id);
+        if (editor) {
+            editor.destroy();
+        }
+    };
 }
 
 function makePersonEditor(account_id, person) {
@@ -134,9 +142,9 @@ function makePersonEditor(account_id, person) {
         surname: {label: "Фамилия", type: "text", value: person.surname, short: true},
         pat_name: {label: "Отчество", type: "text", value: person.pat_name, short: true},
         dob: {label: "Дата рождения", type: "date", value: person.dob, short: true},
-        is_member: {label: "Член товарищества", type: "checkbox", value: person.is_member, short: true},
-        phone: {label: "Телефон", type: "text", value: person.phone, short: false},
-        email: {label: "Электронная почта", type: "text", value: person.email, short: false},
+        phone: {label: "Телефон", type: "text", value: person.phone, short: true},
+        email: {label: "Электронная почта", type: "text", value: person.email, short: true},
+        is_member: {label: "Член товарищества", type: "checkbox", value: person.is_member, short: false},
     }, (updated)=>{
         if (person.person_id) {
             updated.person_id = person.person_id;

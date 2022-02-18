@@ -106,12 +106,6 @@ function ObjectEditPage(options) {
         accounts.loadAccounts(()=>{ObjectEditPage(options)}, (message)=>{console.log(message); toast("Не удалось загрузить")});
         return;
     }
-    let account = accounts.collection.find((account) => {
-        if (options.uuid) {
-            return account.objects.find((object) => object.object_id === options.uuid);
-        }
-        return account.account_id === options.account;
-    })
     let editor = undefined;
     let objectInfoBlock = [
         {tag: "div", id: "object-attrs"},
@@ -119,14 +113,29 @@ function ObjectEditPage(options) {
     ];
     let personPage = new Render("#main-page-container");
     personPage.content(objectInfoBlock);
-    if (account) {
-        let object = {}
-        if (options.uuid) {
-            object = account.objects.find((object) => object.object_id === options.uuid);
+
+    let consumer_id = accounts.consume(()=>{
+        let account = accounts.collection.find((account) => {
+            if (options.uuid) {
+                return account.objects.find((object) => object.object_id === options.uuid);
+            }
+            return account.account_id === options.account;
+        })
+        if (account) {
+            let object = {}
+            if (options.uuid) {
+                object = account.objects.find((object) => object.object_id === options.uuid);
+            }
+            editor = makeObjectEditor(account.account_id, object);
+            editor.renderTo("#object-attrs", "#object-ctrls");
         }
-        editor = makeObjectEditor(account.account_id, object);
-        editor.renderTo("#object-attrs", "#object-ctrls");
-    }
+    })
+    return ()=>{
+        accounts.unconsume(consumer_id);
+        if (editor) {
+            editor.destroy();
+        }
+    };
 }
 
 function makeObjectEditor(account_id, object) {
