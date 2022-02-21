@@ -2,10 +2,10 @@ package business
 
 import (
 	"context"
-	"github.com/iv-menshenin/accountant/store"
 
 	"github.com/iv-menshenin/accountant/model"
 	"github.com/iv-menshenin/accountant/model/uuid"
+	"github.com/iv-menshenin/accountant/storage"
 )
 
 func (a *App) ObjectCreate(ctx context.Context, q model.PostObjectQuery) (*model.Object, error) {
@@ -22,7 +22,7 @@ func (a *App) ObjectCreate(ctx context.Context, q model.PostObjectQuery) (*model
 
 func (a *App) ObjectGet(ctx context.Context, q model.GetObjectQuery) (*model.Object, error) {
 	object, err := a.objects.Lookup(ctx, q.AccountID, q.ObjectID)
-	if err == store.ErrNotFound {
+	if err == storage.ErrNotFound {
 		return nil, model.NotFound{}
 	}
 	return object, nil
@@ -30,7 +30,7 @@ func (a *App) ObjectGet(ctx context.Context, q model.GetObjectQuery) (*model.Obj
 
 func (a *App) ObjectSave(ctx context.Context, q model.PutObjectQuery) (*model.Object, error) {
 	object, err := a.objects.Lookup(ctx, q.AccountID, q.ObjectID)
-	if err == store.ErrNotFound {
+	if err == storage.ErrNotFound {
 		return nil, model.NotFound{}
 	}
 	object.ObjectData = q.ObjectData
@@ -42,18 +42,18 @@ func (a *App) ObjectSave(ctx context.Context, q model.PutObjectQuery) (*model.Ob
 
 func (a *App) ObjectDelete(ctx context.Context, q model.DeleteObjectQuery) error {
 	err := a.objects.Delete(ctx, q.AccountID, q.ObjectID)
-	if err == store.ErrNotFound {
+	if err == storage.ErrNotFound {
 		return model.NotFound{}
 	}
 	return err
 }
 
 func (a *App) ObjectsFind(ctx context.Context, q model.FindObjectsQuery) ([]model.Object, error) {
-	var findOption store.FindObjectOption
+	var findOption model.FindObjectOption
 	findOption.FillFromQuery(q)
 	objects, err := a.objects.Find(ctx, findOption)
 	if err != nil {
-		if err == store.ErrNotFound {
+		if err == storage.ErrNotFound {
 			return nil, model.NotFound{}
 		}
 		return nil, err

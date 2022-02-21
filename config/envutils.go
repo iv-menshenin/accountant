@@ -1,4 +1,4 @@
-package configstorage
+package config
 
 import (
 	"os"

@@ -5,7 +5,7 @@ import (
 
 	"github.com/iv-menshenin/accountant/model"
 	"github.com/iv-menshenin/accountant/model/uuid"
-	"github.com/iv-menshenin/accountant/store"
+	"github.com/iv-menshenin/accountant/storage"
 )
 
 func (a *App) PersonCreate(ctx context.Context, q model.PostPersonQuery) (*model.Person, error) {
@@ -22,7 +22,7 @@ func (a *App) PersonCreate(ctx context.Context, q model.PostPersonQuery) (*model
 
 func (a *App) PersonGet(ctx context.Context, q model.GetPersonQuery) (*model.Person, error) {
 	person, err := a.persons.Lookup(ctx, q.AccountID, q.PersonID)
-	if err == store.ErrNotFound {
+	if err == storage.ErrNotFound {
 		return nil, model.NotFound{}
 	}
 	return person, nil
@@ -30,7 +30,7 @@ func (a *App) PersonGet(ctx context.Context, q model.GetPersonQuery) (*model.Per
 
 func (a *App) PersonSave(ctx context.Context, q model.PutPersonQuery) (*model.Person, error) {
 	person, err := a.persons.Lookup(ctx, q.AccountID, q.PersonID)
-	if err == store.ErrNotFound {
+	if err == storage.ErrNotFound {
 		return nil, model.NotFound{}
 	}
 	person.PersonData = q.PersonData
@@ -42,18 +42,18 @@ func (a *App) PersonSave(ctx context.Context, q model.PutPersonQuery) (*model.Pe
 
 func (a *App) PersonDelete(ctx context.Context, q model.DeletePersonQuery) error {
 	err := a.persons.Delete(ctx, q.AccountID, q.PersonID)
-	if err == store.ErrNotFound {
+	if err == storage.ErrNotFound {
 		return model.NotFound{}
 	}
 	return err
 }
 
 func (a *App) PersonsFind(ctx context.Context, q model.FindPersonsQuery) ([]model.Person, error) {
-	var findOption store.FindPersonOption
+	var findOption model.FindPersonOption
 	findOption.FillFromQuery(q)
 	persons, err := a.persons.Find(ctx, findOption)
 	if err != nil {
-		if err == store.ErrNotFound {
+		if err == storage.ErrNotFound {
 			return nil, model.NotFound{}
 		}
 		return nil, err

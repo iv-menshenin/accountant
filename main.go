@@ -9,7 +9,10 @@ import (
 
 	"github.com/iv-menshenin/accountant/auth"
 	"github.com/iv-menshenin/accountant/business"
-	"github.com/iv-menshenin/accountant/store"
+	"github.com/iv-menshenin/accountant/config"
+	"github.com/iv-menshenin/accountant/logger"
+	"github.com/iv-menshenin/accountant/storage"
+	"github.com/iv-menshenin/accountant/storage/memory"
 	"github.com/iv-menshenin/accountant/transport"
 	"github.com/iv-menshenin/appctl"
 )
@@ -34,14 +37,16 @@ func mainFunc(ctx context.Context, halt <-chan struct{}) (err error) {
 		return err
 	}
 	var (
-		listeningError    = make(chan error)
-		logger            = log.Default()
-		accountCollection = store.NewAccountMemoryCollection()
-		personsCollection = store.NewPersonMemoryCollection(accountCollection)
-		objectsCollection = store.NewObjectMemoryCollection(accountCollection)
+		listeningError = make(chan error)
+		logWriter      = log.Default()
+		appLogger      = logger.NewFromLogger(logWriter, logger.LogLevelDebug)
 
-		appHnd         = business.New(accountCollection, personsCollection, objectsCollection)
-		queryTransport = transport.NewHTTPServer(logger, appHnd, authCore)
+		accountCollection = memory.NewAccountCollection(storage.MapError)
+		personsCollection = memory.NewPersonCollection(accountCollection, storage.MapError)
+		objectsCollection = memory.NewObjectCollection(accountCollection, storage.MapError)
+
+		appHnd         = business.New(appLogger, accountCollection, personsCollection, objectsCollection)
+		queryTransport = transport.NewHTTPServer(config.New("http"), logWriter, appHnd, authCore)
 	)
 	go queryTransport.ListenAndServe(listeningError)
 	select {

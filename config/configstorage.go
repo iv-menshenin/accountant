@@ -1,10 +1,11 @@
-package configstorage
+package config
 
 import (
 	"flag"
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -33,17 +34,24 @@ type (
 		dest *int64
 		cmd  *int64
 	}
+	boolClaim struct {
+		dest *bool
+		cmd  *bool
+	}
 	durClaim struct {
 		dest *time.Duration
 		cmd  *time.Duration
 	}
 )
 
-func New(prefix string) *ConfigStorage {
+func New(prefix string, args ...string) *ConfigStorage {
 	flagSet := flag.NewFlagSet(prefix, flag.ContinueOnError)
+	if len(args) == 0 {
+		args = os.Args[1:]
+	}
 	return &ConfigStorage{
 		prefix:    prefix,
-		arguments: os.Args[1:],
+		arguments: args,
 		flagSet:   flagSet,
 	}
 }
@@ -53,7 +61,7 @@ func (c *ConfigStorage) StringConfig(name, cmd, env string, defaultValue, usage 
 	var cnf = c.makeConfig(name, cmd, env)
 	cnf.claim = &strClaim{
 		dest: dest,
-		cmd:  c.flagSet.String(cmd, defaultValue, usage),
+		cmd:  c.flagSet.String(cnf.cmdName, defaultValue, usage),
 	}
 	c.registered = append(c.registered, cnf)
 	return dest
@@ -64,7 +72,18 @@ func (c *ConfigStorage) IntegerConfig(name, cmd, env string, defaultValue int64,
 	var cnf = c.makeConfig(name, cmd, env)
 	cnf.claim = &intClaim{
 		dest: dest,
-		cmd:  c.flagSet.Int64(cmd, defaultValue, usage),
+		cmd:  c.flagSet.Int64(cnf.cmdName, defaultValue, usage),
+	}
+	c.registered = append(c.registered, cnf)
+	return dest
+}
+
+func (c *ConfigStorage) BooleanConfig(name, cmd, env string, usage string) *bool {
+	var dest = new(bool)
+	var cnf = c.makeConfig(name, cmd, env)
+	cnf.claim = &boolClaim{
+		dest: dest,
+		cmd:  c.flagSet.Bool(cnf.cmdName, false, usage),
 	}
 	c.registered = append(c.registered, cnf)
 	return dest
@@ -75,7 +94,7 @@ func (c *ConfigStorage) DurationConfig(name, cmd, env string, defaultValue time.
 	var cnf = c.makeConfig(name, cmd, env)
 	cnf.claim = &durClaim{
 		dest: dest,
-		cmd:  c.flagSet.Duration(cmd, defaultValue, usage),
+		cmd:  c.flagSet.Duration(cnf.cmdName, defaultValue, usage),
 	}
 	c.registered = append(c.registered, cnf)
 	return dest
@@ -84,7 +103,7 @@ func (c *ConfigStorage) DurationConfig(name, cmd, env string, defaultValue time.
 func (c *ConfigStorage) makeConfig(name, cmd, env string) config {
 	if c.prefix != "" {
 		cmd = fmt.Sprintf("%s.%s", c.prefix, cmd)
-		env = fmt.Sprintf("%s_%s", c.prefix, env)
+		env = strings.ToUpper(fmt.Sprintf("%s_%s", c.prefix, env))
 	}
 	return config{
 		name:    name,
@@ -137,6 +156,22 @@ func (s *intClaim) initEnv(name string) (bool, error) {
 }
 
 func (s *intClaim) initCmd() {
+	*s.dest = *s.cmd
+}
+
+func (s *boolClaim) initEnv(name string) (bool, error) {
+	if env, ok := os.LookupEnv(name); ok {
+		i, err := strconv.ParseBool(env)
+		if err != nil {
+			return false, err
+		}
+		*s.dest = i
+		return true, nil
+	}
+	return false, nil
+}
+
+func (s *boolClaim) initCmd() {
 	*s.dest = *s.cmd
 }
 

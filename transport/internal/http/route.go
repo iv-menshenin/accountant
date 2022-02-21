@@ -15,14 +15,20 @@ type (
 	}
 )
 
+const (
+	PathAuth = "/auth"
+	PathAPI  = "/api"
+	PathWWW  = "/www"
+)
+
 func makeRouter(rp RequestProcessor, auth AuthCore) http.Handler {
 	router := mux.NewRouter()
-	wwwSubRouter := router.PathPrefix("/www").Subrouter()
+	wwwSubRouter := router.PathPrefix(PathWWW).Subrouter()
 
 	stat := static.New()
 	stat.SetupRouting(wwwSubRouter)
 
-	apiSubRouter := router.PathPrefix("/api").Subrouter()
+	apiSubRouter := router.PathPrefix(PathAPI).Subrouter()
 	if auth != nil {
 		apiSubRouter.Use(auth.Middleware())
 	}
@@ -36,7 +42,7 @@ func makeRouter(rp RequestProcessor, auth AuthCore) http.Handler {
 	objects := ep.NewObjectsEP(rp)
 	objects.SetupRouting(apiSubRouter)
 
-	authSubRouter := router.PathPrefix("/auth").Subrouter()
+	authSubRouter := router.PathPrefix(PathAuth).Subrouter()
 
 	authP := ep.NewAuthEP(auth)
 	authP.SetupRouting(authSubRouter)

@@ -1,7 +1,8 @@
-package store
+package memory
 
 import (
 	"context"
+	"github.com/iv-menshenin/accountant/storage"
 
 	"github.com/iv-menshenin/accountant/model"
 	"github.com/iv-menshenin/accountant/model/uuid"
@@ -9,6 +10,7 @@ import (
 
 type (
 	PersonCollection struct {
+		mapError func(error) error
 		accounts *AccountCollection
 	}
 )
@@ -16,65 +18,65 @@ type (
 func (p *PersonCollection) Create(ctx context.Context, accountID uuid.UUID, person model.Person) error {
 	account, err := p.accounts.Lookup(ctx, accountID)
 	if err != nil {
-		return mapError(err)
+		return p.mapError(err)
 	}
-	account.Person = append(account.Person, person)
-	return mapError(p.accounts.Replace(ctx, accountID, *account))
+	account.Persons = append(account.Persons, person)
+	return p.mapError(p.accounts.Replace(ctx, accountID, *account))
 }
 
 func (p *PersonCollection) Lookup(ctx context.Context, accountID uuid.UUID, personID uuid.UUID) (*model.Person, error) {
 	account, err := p.accounts.Lookup(ctx, accountID)
 	if err != nil {
-		return nil, mapError(err)
+		return nil, p.mapError(err)
 	}
-	for i := range account.Person {
-		person := account.Person[i]
+	for i := range account.Persons {
+		person := account.Persons[i]
 		if person.PersonID.Equal(personID) {
 			return &person, nil
 		}
 	}
-	return nil, ErrNotFound
+	return nil, storage.ErrNotFound
 }
 
 func (p *PersonCollection) Replace(ctx context.Context, accountID uuid.UUID, personID uuid.UUID, person model.Person) error {
 	account, err := p.accounts.Lookup(ctx, accountID)
 	if err != nil {
-		return mapError(err)
+		return p.mapError(err)
 	}
-	for i := range account.Person {
-		current := account.Person[i]
+	for i := range account.Persons {
+		current := account.Persons[i]
 		if current.PersonID.Equal(personID) {
-			account.Person[i] = person
-			return mapError(p.accounts.Replace(ctx, accountID, *account))
+			account.Persons[i] = person
+			return p.mapError(p.accounts.Replace(ctx, accountID, *account))
 		}
 	}
-	return ErrNotFound
+	return storage.ErrNotFound
 }
 
 func (p *PersonCollection) Delete(ctx context.Context, accountID uuid.UUID, personID uuid.UUID) error {
 	account, err := p.accounts.Lookup(ctx, accountID)
 	if err != nil {
-		return mapError(err)
+		return p.mapError(err)
 	}
-	for i := range account.Person {
-		current := account.Person[i]
+	for i := range account.Persons {
+		current := account.Persons[i]
 		if current.PersonID.Equal(personID) {
 			var tail []model.Person
-			if i+1 < len(account.Person) {
-				tail = account.Person[i+1:]
+			if i+1 < len(account.Persons) {
+				tail = account.Persons[i+1:]
 			}
-			account.Person = append(account.Person[:i], tail...)
-			return mapError(p.accounts.Replace(ctx, accountID, *account))
+			account.Persons = append(account.Persons[:i], tail...)
+			return p.mapError(p.accounts.Replace(ctx, accountID, *account))
 		}
 	}
-	return ErrNotFound
+	return storage.ErrNotFound
 }
 
-func (p *PersonCollection) Find(ctx context.Context, option FindPersonOption) ([]model.Person, error) {
+func (p *PersonCollection) Find(ctx context.Context, option model.FindPersonOption) ([]model.Person, error) {
 	var err error
 	var accounts = make([]model.Account, 0, 10)
 	if option.AccountID == nil {
-		accounts, err = p.accounts.Find(ctx, FindAccountOption{
+		accounts, err = p.accounts.Find(ctx, model.FindAccountOption{
 			PersonFullName: option.PersonFullName,
 		})
 	} else {
@@ -85,11 +87,11 @@ func (p *PersonCollection) Find(ctx context.Context, option FindPersonOption) ([
 		}
 	}
 	if err != nil {
-		return nil, mapError(err)
+		return nil, p.mapError(err)
 	}
 	var persons = make([]model.Person, 0, len(accounts))
 	for _, account := range accounts {
-		for _, person := range account.Person {
+		for _, person := range account.Persons {
 			if option.PersonFullName == nil || checkPersonFullName(person, *option.PersonFullName) {
 				persons = append(persons, person)
 			}
@@ -98,8 +100,9 @@ func (p *PersonCollection) Find(ctx context.Context, option FindPersonOption) ([
 	return persons, nil
 }
 
-func NewPersonMemoryCollection(accounts *AccountCollection) *PersonCollection {
+func NewPersonCollection(accounts *AccountCollection, mapError func(error) error) *PersonCollection {
 	return &PersonCollection{
+		mapError: mapError,
 		accounts: accounts,
 	}
 }

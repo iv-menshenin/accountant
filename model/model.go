@@ -9,10 +9,10 @@ import (
 type (
 	// Account представляет собой верхний уровень иерархии - лицевой счет
 	Account struct {
-		AccountID   uuid.UUID `bson:"account_id" json:"account_id"`
-		Person      []Person  `bson:"persons" json:"persons"`
-		Object      []Object  `bson:"objects" json:"objects"`
-		AccountData `bson:",inline" json:",inline"`
+		AccountID   uuid.UUID `json:"account_id"`
+		Persons     []Person  `json:"persons"`
+		Objects     []Object  `json:"objects"`
+		AccountData `json:",inline"`
 	}
 	AccountData struct {
 		// Account это номер лицевого счета. Т.к. не является первичным ключем, то может изменяться без проблем с консистентностью

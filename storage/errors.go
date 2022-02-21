@@ -1,9 +1,9 @@
-package store
+package storage
 
 import (
 	"errors"
 
-	"github.com/iv-menshenin/accountant/store/internal/memory"
+	"github.com/iv-menshenin/accountant/storage/internal/memory"
 )
 
 var (
@@ -11,7 +11,7 @@ var (
 	ErrDuplicate = errors.New("duplicate entity")
 )
 
-func mapError(err error) error {
+func MapError(err error) error {
 	if err == nil {
 		return nil
 	}

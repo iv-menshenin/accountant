@@ -4,8 +4,8 @@ import (
 	"context"
 	"log"
 
-	"github.com/iv-menshenin/accountant/configstorage"
-	ht "github.com/iv-menshenin/accountant/transport/internal/http"
+	"github.com/iv-menshenin/accountant/model"
+	"github.com/iv-menshenin/accountant/transport/internal/http"
 )
 
 type (
@@ -15,6 +15,6 @@ type (
 	}
 )
 
-func NewHTTPServer(logger *log.Logger, rp ht.RequestProcessor, auth ht.AuthCore) Transport {
-	return ht.New(configstorage.New(""), logger, rp, auth)
+func NewHTTPServer(config model.Config, logger *log.Logger, rp http.RequestProcessor, auth http.AuthCore) Transport {
+	return http.New(config, logger, rp, auth)
 }

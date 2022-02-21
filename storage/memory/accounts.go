@@ -1,16 +1,16 @@
-package store
+package memory
 
 import (
 	"context"
-
 	"github.com/iv-menshenin/accountant/model"
 	"github.com/iv-menshenin/accountant/model/uuid"
-	"github.com/iv-menshenin/accountant/store/internal/memory"
+	"github.com/iv-menshenin/accountant/storage/internal/memory"
 )
 
 type (
 	AccountCollection struct {
-		mem *memory.Memory
+		mapError func(error) error
+		mem      *memory.Memory
 	}
 )
 
@@ -19,7 +19,7 @@ func (a *AccountCollection) Create(ctx context.Context, account model.Account) e
 	case <-ctx.Done():
 		return ctx.Err()
 	default:
-		return mapError(a.mem.Create(account.AccountID, &account))
+		return a.mapError(a.mem.Create(account.AccountID, &account))
 	}
 }
 
@@ -30,7 +30,7 @@ func (a *AccountCollection) Lookup(ctx context.Context, id uuid.UUID) (*model.Ac
 	default:
 		acc, err := a.mem.Lookup(id)
 		if err != nil {
-			return nil, mapError(err)
+			return nil, a.mapError(err)
 		}
 		return acc.(*model.Account), nil
 	}
@@ -41,7 +41,7 @@ func (a *AccountCollection) Replace(ctx context.Context, id uuid.UUID, account m
 	case <-ctx.Done():
 		return ctx.Err()
 	default:
-		return mapError(a.mem.Replace(id, &account))
+		return a.mapError(a.mem.Replace(id, &account))
 	}
 }
 
@@ -50,11 +50,11 @@ func (a *AccountCollection) Delete(ctx context.Context, id uuid.UUID) error {
 	case <-ctx.Done():
 		return ctx.Err()
 	default:
-		return mapError(a.mem.Delete(id))
+		return a.mapError(a.mem.Delete(id))
 	}
 }
 
-func (a *AccountCollection) Find(ctx context.Context, option FindAccountOption) ([]model.Account, error) {
+func (a *AccountCollection) Find(ctx context.Context, option model.FindAccountOption) ([]model.Account, error) {
 	collection := a.mem.Find(func(i interface{}) bool {
 		account := i.(*model.Account)
 		return checkAccountFilter(*account, option)
@@ -71,8 +71,9 @@ func (a *AccountCollection) Find(ctx context.Context, option FindAccountOption) 
 	}
 }
 
-func NewAccountMemoryCollection() *AccountCollection {
+func NewAccountCollection(mapError func(error) error) *AccountCollection {
 	return &AccountCollection{
-		mem: memory.New(),
+		mapError: mapError,
+		mem:      memory.New(),
 	}
 }

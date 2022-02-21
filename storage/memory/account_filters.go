@@ -1,4 +1,4 @@
-package store
+package memory
 
 import (
 	"strings"
@@ -6,35 +6,7 @@ import (
 	"github.com/iv-menshenin/accountant/model"
 )
 
-type (
-	FindAccountOption struct {
-		Account        *string
-		Street         *string
-		Building       *int
-		PersonFullName *string
-		SumArea        *float64
-	}
-)
-
-func (q FindAccountOption) FillFromQuery(query model.FindAccountsQuery) {
-	if query.Building != nil {
-		q.Building = query.Building
-	}
-	if query.Street != nil {
-		q.Street = query.Street
-	}
-	if query.SumArea != nil {
-		q.SumArea = query.SumArea
-	}
-	if query.PersonFullName != nil {
-		q.PersonFullName = query.PersonFullName
-	}
-	if query.Account != nil {
-		q.Account = query.Account
-	}
-}
-
-func checkAccountFilter(account model.Account, filter FindAccountOption) bool {
+func checkAccountFilter(account model.Account, filter model.FindAccountOption) bool {
 	if filter.Account != nil {
 		if !checkAccount(account, *filter.Account) {
 			return false
@@ -68,7 +40,7 @@ func checkAccount(account model.Account, pattern string) bool {
 }
 
 func checkAccountFullName(account model.Account, pattern string) bool {
-	for _, person := range account.Person {
+	for _, person := range account.Persons {
 		if checkPersonFullName(person, pattern) {
 			return true
 		}
@@ -78,7 +50,7 @@ func checkAccountFullName(account model.Account, pattern string) bool {
 
 func checkAccountStreet(account model.Account, pattern string) bool {
 	var correct bool
-	for _, object := range account.Object {
+	for _, object := range account.Objects {
 		if correct = strings.Contains(object.Street, pattern); correct {
 			break
 		}
@@ -88,7 +60,7 @@ func checkAccountStreet(account model.Account, pattern string) bool {
 
 func checkAccountBuilding(account model.Account, pattern int) bool {
 	var correct bool
-	for _, object := range account.Object {
+	for _, object := range account.Objects {
 		if correct = object.Number == pattern; correct {
 			break
 		}
@@ -98,7 +70,7 @@ func checkAccountBuilding(account model.Account, pattern int) bool {
 
 func checkAccountSumArea(account model.Account, pattern float64) bool {
 	var area float64
-	for _, object := range account.Object {
+	for _, object := range account.Objects {
 		area += object.Area
 	}
 	return area >= pattern
