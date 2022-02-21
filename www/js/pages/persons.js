@@ -82,15 +82,34 @@ function PersonsListPage(options) {
     if (accounts.empty()) {
         accounts.loadAccounts(()=>{}, (message)=>{console.log(message); toast("Не удалось загрузить")});
     }
-    let persons = new personsManager(options.account);
-    let account = accounts.getAccount(options.account);
-    if (!account) {
-        account = {account: "Все"}; // todo
-    }
-    let destroy = MakeCollectionPage(account.account + " Владельцы", persons, buildPersonElement);
     let mainPage = new Render("#main-page-container");
+    let persons = new personsManager(options.account);
+    let consumer_id = undefined;
+    let destroy = ()=>{};
+
+    if (options.account) {
+        consumer_id = accounts.consume((action, account)=>{
+            if (account.account_id === options.account) {
+                let title = {
+                    tag: "div",
+                    class: "row",
+                    content: [
+                        {tag: "a", class: ["col", "s2"], href: "#account:uuid="+options.account, content: account.account},
+                        {tag: "div", class: ["col", "s10"], content: "садоводы"}
+                    ]
+                };
+                destroy = MakeCollectionPage(title, persons, buildPersonElement);
+            }
+        })
+    } else {
+        destroy = MakeCollectionPage("Все садоводы", persons, buildPersonElement);
+    }
+
     mainPage.registerFloatingButtons({href: "#person:new/account=" + options.account, icon: "add", color: "brown"})
     return ()=>{
+        if (consumer_id) {
+            accounts.unconsume(consumer_id);
+        }
         destroy();
         persons.onDone();
     }
@@ -100,32 +119,43 @@ function PersonEditPage(options) {
     if (accounts.empty()) {
         accounts.loadAccounts(()=>{}, (message)=>{console.log(message); toast("Не удалось загрузить")});
     }
+    let consumer_id = undefined;
     let editor = undefined;
+    let title = function(account_id, caption) {
+        return {
+            tag: "div",
+            class: "row",
+            content: [
+                {tag: "a", class: ["col", "s12"], href: "#account:uuid="+account_id, content: caption},
+            ]
+        }
+    };
     let personInfoBlock = [
+        {tag: "div", id: "person-head", content: title(options.account)},
         {tag: "div", id: "person-attrs"},
         {tag: "div", id: "person-ctrls"},
     ];
     let personPage = new Render("#main-page-container");
     personPage.content(personInfoBlock);
+    let pageTitle = new Render("#person-head");
 
-    let consumer_id = accounts.consume(()=>{
-        let account = accounts.collection.find((account) => {
-            if (options.uuid) {
-                return account.persons.find((person) => person.person_id === options.uuid);
+    if (options.uuid) {
+        consumer_id = accounts.consume((event, account)=>{
+            let person = account.persons.find((person) => person.person_id === options.uuid);
+            if (person) {
+                pageTitle.content(title(account.account_id, accountHeader(account)));
+                editor = makePersonEditor(account.account_id, person);
+                editor.renderTo("#person-attrs", "#person-ctrls");
             }
-            return account.account_id === options.account;
-        })
-        if (account) {
-            let person = {}
-            if (options.uuid) {
-                person = account.persons.find((person) => person.person_id === options.uuid);
-            }
-            editor = makePersonEditor(account.account_id, person);
-            editor.renderTo("#person-attrs", "#person-ctrls");
-        }
-    });
+        });
+    } else {
+        editor = makePersonEditor(options.account, {});
+        editor.renderTo("#person-attrs", "#person-ctrls");
+    }
     return ()=>{
-        accounts.unconsume(consumer_id);
+        if (consumer_id) {
+            accounts.unconsume(consumer_id);
+        }
         if (editor) {
             editor.destroy();
         }

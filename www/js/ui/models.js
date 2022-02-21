@@ -74,7 +74,7 @@ function accountHeader(account) {
     if (!account) {
         return "None";
     }
-    return account.account_id;
+    return account.account;
 }
 
 function getPersonFullName(person) {

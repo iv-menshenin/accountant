@@ -12,9 +12,18 @@
 <body>
     <nav style="overflow: hidden">
         <div class="nav-wrapper theme-nav">
+            <form id="search-form" class="hide" onsubmit="return false;">
+                <div class="input-field">
+                    <input id="search" onkeyup="return false;" type="search" required>
+                    <label class="label-icon" for="search"><i class="material-icons">search</i></label>
+                    <i class="material-icons" onclick="return false;">close</i>
+                </div>
+            </form>
+
             <a href="#" data-target="nav-slide-out" class="sidenav-trigger"><i class="material-icons">menu</i></a>
             &nbsp;&nbsp;<a href="#" class="brand-logo"><i class="material-icons">cloud</i><span id="page-title">Main</span></a>
             <ul id="navigation-full" class="right">
+                <!--            <a href="#" onclick="return false"><i class="material-icons">search</i></a>-->
                 <!-- navigation links -->
             </ul>
         </div>
