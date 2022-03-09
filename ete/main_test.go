@@ -50,6 +50,9 @@ func Test_ete(t *testing.T) {
 	t.Run("PersonTesting", func(t *testing.T) {
 		account = testPerson(t, logData, actor, account)
 	})
+	t.Run("PersonObject", func(t *testing.T) {
+		account = testObject(t, logData, actor, account)
+	})
 	t.Run("Finalization", func(t *testing.T) {
 		wipeAccount(t, logData, actor, account)
 	})
@@ -162,6 +165,9 @@ func testPerson(t *testing.T, logData fmt.Stringer, actor httpActor, account *mo
 		if err != nil {
 			t.Log(logData.String())
 			t.Fatal(err)
+		} else if !reflect.DeepEqual(gotPerson.PersonData, person) {
+			t.Log(logData.String())
+			t.Fatalf("error while person creating\nwant: %+v\n got: %+v", person, gotPerson.PersonData)
 		}
 
 		account.Persons = append(account.Persons, *gotPerson)
@@ -179,6 +185,9 @@ func testPerson(t *testing.T, logData fmt.Stringer, actor httpActor, account *mo
 		if err != nil {
 			t.Log(logData.String())
 			t.Fatal(err)
+		} else if !reflect.DeepEqual(gotPerson.PersonData, person) {
+			t.Log(logData.String())
+			t.Fatalf("error while person creating\nwant: %+v\n got: %+v", person, gotPerson.PersonData)
 		}
 
 		account.Persons = append(account.Persons, *gotPerson)
@@ -209,13 +218,111 @@ func testPerson(t *testing.T, logData fmt.Stringer, actor httpActor, account *mo
 		person.IsMember = false
 		account.Persons[0] = person
 
-		_, err := actor.updatePerson(account.AccountID, account.Persons[0].PersonID, person.PersonData)
+		gotPerson, err := actor.updatePerson(account.AccountID, account.Persons[0].PersonID, person.PersonData)
+		if err != nil {
+			t.Log(logData.String())
+			t.Fatal(err)
+		} else if !reflect.DeepEqual(gotPerson.PersonData, person.PersonData) {
+			t.Log(logData.String())
+			t.Fatalf("error while person updating\nwant: %+v\n got: %+v", person.PersonData, gotPerson.PersonData)
+		}
+	})
+	t.Run("check_deleted_persons", func(t *testing.T) {
+		got, err := actor.getAccount(account.AccountID)
+		if err != nil {
+			t.Log(logData.String())
+			t.Fatalf("error while account getting\nwant: %+v\n", account.AccountData)
+		} else if !reflect.DeepEqual(got, account) {
+			t.Log(logData.String())
+			t.Fatalf("error while account creating\nwant: %+v\n got: %+v", account, got)
+		}
+	})
+	return account
+}
+
+func testObject(t *testing.T, logData fmt.Stringer, actor httpActor, account *model.Account) *model.Account {
+	t.Run("create_object", func(t *testing.T) {
+
+		var object = model.ObjectData{
+			PostalCode: "663451",
+			City:       "г. Краснокрыльск",
+			Village:    "пос. Прозорливый",
+			Street:     "ул. Ответственности",
+			Number:     99,
+			Area:       422.5,
+		}
+		gotObject, err := actor.createObject(account.AccountID, object)
+		if err != nil {
+			t.Log(logData.String())
+			t.Fatal(err)
+		} else if !reflect.DeepEqual(gotObject.ObjectData, object) {
+			t.Log(logData.String())
+			t.Fatalf("error while object creating\nwant: %+v\n got: %+v", object, gotObject.ObjectData)
+		}
+
+		account.Objects = append(account.Objects, *gotObject)
+	})
+	t.Run("add_new_object", func(t *testing.T) {
+		var object = model.ObjectData{
+			PostalCode: "",
+			City:       "г. Краснокрыльск",
+			Village:    "пос. Прозорливый",
+			Street:     "ул. Ответственности",
+			Number:     98,
+			Area:       422.5,
+		}
+		gotObject, err := actor.createObject(account.AccountID, object)
+		if err != nil {
+			t.Log(logData.String())
+			t.Fatal(err)
+		} else if !reflect.DeepEqual(gotObject.ObjectData, object) {
+			t.Log(logData.String())
+			t.Fatalf("error while object creating\nwant: %+v\n got: %+v", object, gotObject.ObjectData)
+		}
+
+		account.Objects = append(account.Objects, *gotObject)
+	})
+	t.Run("add_new_object", func(t *testing.T) {
+		var object = account.Objects[1]
+		object.Number = 89
+		object.PostalCode = "333423"
+		account.Objects[1] = object
+		gotObject, err := actor.updateObject(account.AccountID, object.ObjectID, object.ObjectData)
+		if err != nil {
+			t.Log(logData.String())
+			t.Fatal(err)
+		} else if !reflect.DeepEqual(gotObject.ObjectData, object.ObjectData) {
+			t.Log(logData.String())
+			t.Fatalf("error while object updating\nwant: %+v\n got: %+v", object.ObjectData, gotObject.ObjectData)
+		}
+	})
+	t.Run("check_objects", func(t *testing.T) {
+		got, err := actor.getAccount(account.AccountID)
+		if err != nil {
+			t.Log(logData.String())
+			t.Fatalf("error while account getting\nwant: %+v\n", account.AccountData)
+		} else if !reflect.DeepEqual(got, account) {
+			t.Log(logData.String())
+			t.Fatalf("error while account creating\nwant: %+v\n got: %+v", account, got)
+		}
+	})
+	t.Run("delete_object", func(t *testing.T) {
+		err := actor.deleteObject(account.AccountID, account.Objects[0].ObjectID)
 		if err != nil {
 			t.Log(logData.String())
 			t.Fatal(err)
 		}
+		account.Objects = account.Objects[1:]
 	})
-	t.Run("check_deleted_persons", func(t *testing.T) {
+	t.Run("delete_last_object", func(t *testing.T) {
+		err := actor.deleteObject(account.AccountID, account.Objects[0].ObjectID)
+		if err != nil {
+			t.Log(logData.String())
+			t.Fatal(err)
+		}
+		account.Objects = account.Objects[1:]
+	})
+	t.Run("check_empty_objects", func(t *testing.T) {
 		got, err := actor.getAccount(account.AccountID)
 		if err != nil {
 			t.Log(logData.String())
@@ -299,6 +406,10 @@ type (
 	PersonDataResponse struct {
 		Meta ResponseMeta  `json:"meta"`
 		Data *model.Person `json:"data,omitempty"`
+	}
+	ObjectDataResponse struct {
+		Meta ResponseMeta  `json:"meta"`
+		Data *model.Object `json:"data,omitempty"`
 	}
 )
 
@@ -415,6 +526,60 @@ func (a *httpActor) deletePerson(accID, personID uuid.UUID) error {
 		return err
 	}
 	var respData PersonDataResponse
+	if err = a.exec(req, &respData); err != nil {
+		if err == io.EOF {
+			return nil
+		}
+		return err
+	}
+	return fmt.Errorf("unexpected status: %s %s", respData.Meta.Status, respData.Meta.Message)
+}
+
+func (a *httpActor) createObject(accID uuid.UUID, data model.ObjectData) (result *model.Object, err error) {
+	var buf = bytes.NewBufferString("")
+	enc := json.NewEncoder(buf)
+	if err = enc.Encode(data); err != nil {
+		return
+	}
+	var req *http.Request
+	req, err = http.NewRequest(http.MethodPost, a.accountsURL+"/"+accID.String()+"/objects", buf)
+	if err != nil {
+		return nil, err
+	}
+	var respData ObjectDataResponse
+	if err = a.exec(req, &respData); err != nil {
+		return nil, err
+	}
+	result = respData.Data
+	return
+}
+
+func (a *httpActor) updateObject(accID, objID uuid.UUID, data model.ObjectData) (result *model.Object, err error) {
+	var buf = bytes.NewBufferString("")
+	enc := json.NewEncoder(buf)
+	if err = enc.Encode(data); err != nil {
+		return
+	}
+	var req *http.Request
+	req, err = http.NewRequest(http.MethodPut, a.accountsURL+"/"+accID.String()+"/objects/"+objID.String(), buf)
+	if err != nil {
+		return nil, err
+	}
+	var respData ObjectDataResponse
+	if err = a.exec(req, &respData); err != nil {
+		return nil, err
+	}
+	result = respData.Data
+	return
+}
+
+func (a *httpActor) deleteObject(accID, objID uuid.UUID) error {
+	var req *http.Request
+	req, err := http.NewRequest(http.MethodDelete, a.accountsURL+"/"+accID.String()+"/objects/"+objID.String(), nil)
+	if err != nil {
+		return err
+	}
+	var respData ObjectDataResponse
 	if err = a.exec(req, &respData); err != nil {
 		if err == io.EOF {
 			return nil
