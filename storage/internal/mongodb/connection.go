@@ -40,6 +40,10 @@ func New(config model.Config, logger *log.Logger) (*Database, error) {
 	return &db, err
 }
 
+func (d *Database) Close() error {
+	return d.client.Disconnect(context.Background())
+}
+
 func (d *Database) newOptions(config model.Config) (*options.ClientOptions, error) {
 	var (
 		port   = config.IntegerConfig("mongo-port", "mongo-port", "MONGO_PORT", 27017, "mongodb server port")
@@ -89,7 +93,7 @@ func makeMongoDbConnectionURI(hostPort, dbName, user, password string) url.URL {
 		Scheme: "mongodb",
 		User:   url.UserPassword(user, password),
 		Host:   hostPort,
-		Path:   "/" + dbName,
+		// Path:   "/" + dbName,
 	}
 }
 

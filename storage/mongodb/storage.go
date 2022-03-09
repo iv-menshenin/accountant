@@ -24,3 +24,7 @@ func NewStorage(config *config.ConfigStorage, logger *log.Logger) (*Storage, err
 		mongo:  db,
 	}, nil
 }
+
+func (s *Storage) Close() error {
+	return s.mongo.Close()
+}

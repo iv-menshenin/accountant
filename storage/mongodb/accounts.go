@@ -34,7 +34,7 @@ func (a *AccountCollection) Create(ctx context.Context, account model.Account) e
 	case <-ctx.Done():
 		return ctx.Err()
 	default:
-		var record = ar(ctx, account)
+		var record = mapAccountToAccountRecord(ctx, account)
 		_, err := a.storage.InsertOne(ctx, record, options.InsertOne())
 		return a.mapError(err)
 	}
@@ -64,10 +64,32 @@ func (a *AccountCollection) Replace(ctx context.Context, id uuid.UUID, account m
 		return ctx.Err()
 	default:
 		var filter = accountIdFilter(id)
-		var record = ar(ctx, account)
-		_, err := a.storage.UpdateOne(ctx, filter, updateDocument(record), options.Update())
+		var record = mapAccountToAccountRecord(ctx, account)
+		var document = updateDocument(record)
+		_, err := a.storage.UpdateOne(ctx, filter, document, options.Update())
 		return a.mapError(err)
 	}
+}
+
+func mapAccountToAccountRecord(ctx context.Context, account model.Account) accountRecord {
+	return accountRecord{
+		ID:       mid.UUID(account.AccountID),
+		Data:     account.AccountData,
+		Persons:  account.Persons,
+		Objects:  account.Objects,
+		Created:  time.Now(),
+		Updated:  time.Now(),
+		OwnerCtx: getOwnerCtx(ctx),
+	}
+}
+
+func updateDocument(record accountRecord) interface{} {
+	return bson.M{"$set": bson.D{
+		{"updated", record.Updated},
+		{"data", record.Data},
+		{"persons", record.Persons},
+		{"objects", record.Objects},
+	}}
 }
 
 func (a *AccountCollection) Delete(ctx context.Context, id uuid.UUID) error {
@@ -111,27 +133,6 @@ func accountFilter(options model.FindAccountOption) interface{} {
 	}
 	// TODO filters
 	return filter
-}
-
-func updateDocument(record accountRecord) interface{} {
-	return bson.A{
-		bson.D{{"updated", record.Updated}},
-		bson.D{{"data", record.Data}},
-		bson.D{{"persons", record.Persons}},
-		bson.D{{"objects", record.Objects}},
-	}
-}
-
-func ar(ctx context.Context, account model.Account) accountRecord {
-	return accountRecord{
-		ID:       mid.UUID(account.AccountID),
-		Data:     account.AccountData,
-		Persons:  account.Persons,
-		Objects:  account.Objects,
-		Created:  time.Now(),
-		Updated:  time.Now(),
-		OwnerCtx: getOwnerCtx(ctx),
-	}
 }
 
 func ra(record accountRecord) *model.Account {

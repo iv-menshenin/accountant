@@ -103,12 +103,12 @@ func (p *Persons) PostHandler() http.HandlerFunc {
 			writeQueryError(w, err)
 			return
 		}
-		account, err := p.processor.PersonCreate(r.Context(), q)
+		person, err := p.processor.PersonCreate(r.Context(), q)
 		if err != nil {
 			writeError(w, err)
 			return
 		}
-		writeData(w, account)
+		writeData(w, person)
 	}
 }
 
