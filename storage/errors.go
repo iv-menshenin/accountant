@@ -3,6 +3,8 @@ package storage
 import (
 	"errors"
 
+	"go.mongodb.org/mongo-driver/mongo"
+
 	"github.com/iv-menshenin/accountant/storage/internal/memory"
 )
 
@@ -11,7 +13,7 @@ var (
 	ErrDuplicate = errors.New("duplicate entity")
 )
 
-func MapError(err error) error {
+func MapMemoryErrors(err error) error {
 	if err == nil {
 		return nil
 	}
@@ -19,6 +21,19 @@ func MapError(err error) error {
 		return ErrNotFound
 	}
 	if err == memory.ErrDuplicate {
+		return ErrDuplicate
+	}
+	return err
+}
+
+func MapMongodbErrors(err error) error {
+	if err == nil {
+		return nil
+	}
+	if err == mongo.ErrNoDocuments {
+		return ErrNotFound
+	}
+	if err == mongo.ErrInvalidIndexValue {
 		return ErrDuplicate
 	}
 	return err

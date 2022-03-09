@@ -41,9 +41,9 @@ func mainFunc(ctx context.Context, halt <-chan struct{}) (err error) {
 		logWriter      = log.Default()
 		appLogger      = logger.NewFromLogger(logWriter, logger.LogLevelDebug)
 
-		accountCollection = memory.NewAccountCollection(storage.MapError)
-		personsCollection = memory.NewPersonCollection(accountCollection, storage.MapError)
-		objectsCollection = memory.NewObjectCollection(accountCollection, storage.MapError)
+		accountCollection = memory.NewAccountCollection(storage.MapMemoryErrors)
+		personsCollection = memory.NewPersonCollection(accountCollection, storage.MapMemoryErrors)
+		objectsCollection = memory.NewObjectCollection(accountCollection, storage.MapMemoryErrors)
 
 		appHnd         = business.New(appLogger, accountCollection, personsCollection, objectsCollection)
 		queryTransport = transport.NewHTTPServer(config.New("http"), logWriter, appHnd, authCore)
