@@ -14,7 +14,7 @@ class apiManager {
     constructor() {
         if (document.domain === "localhost") {
             this.server = "localhost";
-            this.port = "8080";
+            this.port = document.location.port;
             this.proto = "http:";
         } else {
             this.server = document.location.hostname;
