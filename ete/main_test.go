@@ -42,19 +42,41 @@ func Test_ete(t *testing.T) {
 	logData := bytes.NewBufferString("")
 	var actor = upService(t, logData)
 
-	var account *model.Account
+	var (
+		account1 *model.Account
+		account2 *model.Account
+	)
 
 	t.Run("AccountTesting", func(t *testing.T) {
-		account = testAccount(t, logData, actor, account)
+		account1 = testAccount(t, logData, actor, account1)
+		account2 = testAccount(t, logData, actor, account2)
 	})
 	t.Run("PersonTesting", func(t *testing.T) {
-		account = testPerson(t, logData, actor, account)
+		account1 = testPerson(t, logData, actor, account1)
+		account2 = testPerson(t, logData, actor, account2)
 	})
 	t.Run("PersonObject", func(t *testing.T) {
-		account = testObject(t, logData, actor, account)
+		account1 = testObject(t, logData, actor, account1)
+		account2 = testObject(t, logData, actor, account2)
 	})
+
+	t.Run("GetAccounts", func(t *testing.T) {
+		_, err := actor.getAccounts("")
+		if err != nil {
+			t.Errorf("cannot get accounts: %s", err)
+		}
+		accs, err := actor.getAccounts("person=" + account1.Persons[0].Name)
+		if err != nil {
+			t.Errorf("cannot get accounts: %s", err)
+		}
+		if len(accs) != 1 || !accs[0].AccountID.Equal(account1.AccountID) {
+			t.Errorf("unexpected result: %+v", accs)
+		}
+	})
+
 	t.Run("Finalization", func(t *testing.T) {
-		wipeAccount(t, logData, actor, account)
+		wipeAccount(t, logData, actor, account1)
+		wipeAccount(t, logData, actor, account2)
 	})
 
 	if err := actor.release(); err != nil {
@@ -212,7 +234,7 @@ func testPerson(t *testing.T, logData fmt.Stringer, actor httpActor, account *mo
 	})
 	t.Run("update_person", func(t *testing.T) {
 		var person = account.Persons[0]
-		person.Name = "Измененный"
+		person.Name = fmt.Sprintf("Измененный_%d", rand.Intn(8999)+1000)
 		person.Surname = "Васильев"
 		person.PatName = "Веникович"
 		person.IsMember = false
@@ -349,8 +371,8 @@ func upService(t *testing.T, logData io.Writer) httpActor {
 		)
 		httpConfig = config.New(
 			"http",
-			fmt.Sprintf("-http.http-port=%d", port),
-			fmt.Sprintf("-http.http-host=%s", host),
+			fmt.Sprintf("-http.port=%d", port),
+			fmt.Sprintf("-http.host=%s", host),
 		)
 		accountsURL = fmt.Sprintf("%s://%s:%d%s%s", proto, host, port, pathAPI, pathAccounts)
 	)
@@ -399,6 +421,10 @@ type (
 		Status  string `json:"status"`
 		Message string `json:"message,omitempty"`
 	}
+	AccountsDataResponse struct {
+		Meta ResponseMeta    `json:"meta"`
+		Data []model.Account `json:"data,omitempty"`
+	}
 	AccountDataResponse struct {
 		Meta ResponseMeta   `json:"meta"`
 		Data *model.Account `json:"data,omitempty"`
@@ -444,6 +470,20 @@ func (a *httpActor) updateAccount(accID uuid.UUID, data model.AccountData) (resu
 		return
 	}
 	var respData AccountDataResponse
+	if err = a.exec(req, &respData); err != nil {
+		return nil, err
+	}
+	result = respData.Data
+	return
+}
+
+func (a *httpActor) getAccounts(query string) (result []model.Account, err error) {
+	var req *http.Request
+	req, err = http.NewRequest(http.MethodGet, a.accountsURL+"?"+query, nil)
+	if err != nil {
+		return nil, err
+	}
+	var respData AccountsDataResponse
 	if err = a.exec(req, &respData); err != nil {
 		return nil, err
 	}

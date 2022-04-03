@@ -217,7 +217,8 @@ func (p *Persons) FindHandler() http.HandlerFunc {
 }
 
 func findPersonMapper(r *http.Request) (q model.FindPersonsQuery, err error) {
-	id := mux.Vars(r)[accountID]
+	params := queryParams{r: r}
+	id, _ := params.vars(accountID)
 	if id == "" {
 		err = errors.New(accountID + " must not be empty")
 		return
@@ -225,7 +226,7 @@ func findPersonMapper(r *http.Request) (q model.FindPersonsQuery, err error) {
 	if err = q.AccountID.FromString(id); err != nil {
 		return
 	}
-	if person, ok := mux.Vars(r)[personNameField]; ok {
+	if person, ok := params.vars(personNameField); ok {
 		q.PersonFullName = &person
 	}
 	return

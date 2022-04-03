@@ -218,7 +218,8 @@ func (p *Objects) FindHandler() http.HandlerFunc {
 }
 
 func findObjectMapper(r *http.Request) (q model.FindObjectsQuery, err error) {
-	id := mux.Vars(r)[accountID]
+	params := queryParams{r: r}
+	id, _ := params.vars(accountID)
 	if id == "" {
 		err = errors.New(accountID + " must not be empty")
 		return
@@ -226,10 +227,10 @@ func findObjectMapper(r *http.Request) (q model.FindObjectsQuery, err error) {
 	if err = q.AccountID.FromString(id); err != nil {
 		return
 	}
-	if address, ok := mux.Vars(r)[addressField]; ok {
+	if address, ok := params.vars(addressField); ok {
 		q.Address = &address
 	}
-	if numStr, ok := mux.Vars(r)[objectNumField]; ok {
+	if numStr, ok := params.vars(objectNumField); ok {
 		var num int
 		if num, err = strconv.Atoi(numStr); err != nil {
 			return

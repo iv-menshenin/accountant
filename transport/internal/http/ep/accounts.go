@@ -194,24 +194,24 @@ const (
 )
 
 func findAccountMapper(r *http.Request) (q model.FindAccountsQuery, err error) {
-	vars := mux.Vars(r)
-	if account, ok := vars[accountField]; ok {
+	params := queryParams{r: r}
+	if account, ok := params.vars(accountField); ok {
 		q.Account = &account
 	}
-	if street, ok := vars[streetField]; ok {
+	if street, ok := params.vars(streetField); ok {
 		q.Street = &street
 	}
-	if building, ok := vars[buildingField]; ok {
+	if building, ok := params.vars(buildingField); ok {
 		num, err := strconv.Atoi(building)
 		if err != nil {
 			return q, err
 		}
 		q.Building = &num
 	}
-	if person, ok := vars[personNameField]; ok {
+	if person, ok := params.vars(personNameField); ok {
 		q.PersonFullName = &person
 	}
-	if area, ok := vars[sumAreaField]; ok {
+	if area, ok := params.vars(sumAreaField); ok {
 		f, err := strconv.ParseFloat(area, 64)
 		if err != nil {
 			return q, err

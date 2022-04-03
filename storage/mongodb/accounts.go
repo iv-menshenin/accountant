@@ -103,7 +103,7 @@ func (a *AccountCollection) Delete(ctx context.Context, id uuid.UUID) error {
 	}
 }
 
-func (a *AccountCollection) Find(ctx context.Context, option model.FindAccountOption) ([]model.Account, error) {
+func (a *AccountCollection) Find(ctx context.Context, option model.FindAccountOption) (accounts []model.Account, eut error) {
 	select {
 	case <-ctx.Done():
 		return nil, ctx.Err()
@@ -113,8 +113,11 @@ func (a *AccountCollection) Find(ctx context.Context, option model.FindAccountOp
 		if err != nil {
 			return nil, a.mapError(err)
 		}
-		defer cur.Close(ctx)
-		var accounts []model.Account
+		defer func() {
+			if e := cur.Close(ctx); e != nil && eut == nil {
+				eut = e
+			}
+		}()
 		if err = cur.All(ctx, &accounts); err != nil {
 			return nil, a.mapError(err)
 		}
@@ -127,9 +130,13 @@ func accountIdFilter(id uuid.UUID) interface{} {
 }
 
 func accountFilter(options model.FindAccountOption) interface{} {
-	var filter = bson.A{}
+	var filter = bson.D{}
 	if options.Account != nil {
-		filter = append(filter, bson.D{{"data.account", *options.Account}})
+		filter = append(filter, bson.E{Key: "data.account", Value: *options.Account})
+	}
+	if options.PersonFullName != nil {
+		matchCondition := bson.M{"$elemMatch": bson.M{"name": *options.PersonFullName}}
+		filter = append(filter, bson.E{Key: "persons", Value: matchCondition})
 	}
 	// TODO filters
 	return filter

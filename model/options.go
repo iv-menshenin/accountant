@@ -23,7 +23,7 @@ type (
 	}
 )
 
-func (q FindAccountOption) FillFromQuery(query FindAccountsQuery) {
+func (q *FindAccountOption) FillFromQuery(query FindAccountsQuery) {
 	if query.Building != nil {
 		q.Building = query.Building
 	}
@@ -41,7 +41,7 @@ func (q FindAccountOption) FillFromQuery(query FindAccountsQuery) {
 	}
 }
 
-func (q FindObjectOption) FillFromQuery(query FindObjectsQuery) {
+func (q *FindObjectOption) FillFromQuery(query FindObjectsQuery) {
 	if query.Address != nil {
 		q.Address = query.Address
 	}
@@ -53,7 +53,7 @@ func (q FindObjectOption) FillFromQuery(query FindObjectsQuery) {
 	}
 }
 
-func (q FindPersonOption) FillFromQuery(query FindPersonsQuery) {
+func (q *FindPersonOption) FillFromQuery(query FindPersonsQuery) {
 	if query.PersonFullName != nil {
 		q.PersonFullName = query.PersonFullName
 	}
