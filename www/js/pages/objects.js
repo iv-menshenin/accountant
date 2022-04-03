@@ -153,15 +153,17 @@ function makeObjectEditor(account_id, object) {
         if (object.object_id) {
             updated.object_id = object.object_id;
             manager.UpdateObject(account_id, updated, (updatedObject)=>{
-                accounts.addOrReplaceObject(account_id, updatedObject)
+                accounts.addOrReplaceObject(account_id, updatedObject);
+                toast("Участок обновлен");
             }, (message)=>{
                 console.log(message);
                 toast("Что-то пошло не так");
             })
         } else {
             manager.CreateObject(account_id, updated, (updatedObject)=>{
-                accounts.addOrReplaceObject(account_id, updatedObject)
-                document.location.replace("#object:uuid="+updatedObject.person_id);
+                accounts.addOrReplaceObject(account_id, updatedObject);
+                toast("Участок создан");
+                document.location.replace("#objects:account="+account_id);
             }, (message)=>{
                 console.log(message);
                 toast("Что-то пошло не так");

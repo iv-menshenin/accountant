@@ -59,10 +59,11 @@ class accountsManager {
                 }
                 let personPos = persons.findIndex((person) => person.person_id === newPerson.person_id);
                 if (personPos < 0) {
-                    this.collection[i].persons.push(newPerson);
+                    persons.push(newPerson);
                 } else {
-                    this.collection[i].persons[personPos] = newPerson;
+                    persons[personPos] = newPerson;
                 }
+                this.collection[i].persons = persons;
                 this.messageAll("replace", this.collection[i]);
                 return
             }
@@ -208,7 +209,8 @@ function makeAccountEditor(account) {
         if (account.account_id) {
             updated.account_id = account.account_id;
             manager.UpdateAccount(updated, (updatedAccount)=>{
-                accounts.addOrReplaceAccount(updatedAccount)
+                accounts.addOrReplaceAccount(updatedAccount);
+                toast("Владелец обновлен");
             }, (message)=>{
                 console.log(message);
                 toast("Что-то пошло не так");
@@ -216,6 +218,7 @@ function makeAccountEditor(account) {
         } else {
             manager.CreateAccount(updated, (updatedAccount)=>{
                 accounts.addOrReplaceAccount(updatedAccount);
+                toast("Владелец добавлен");
                 document.location.replace("#account:uuid="+updatedAccount.account_id);
             }, (message)=>{
                 console.log(message);
