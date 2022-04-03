@@ -2,8 +2,6 @@ package main
 
 import (
 	"context"
-	"flag"
-	"github.com/iv-menshenin/accountant/storage/mongodb"
 	"log"
 	"os"
 	"time"
@@ -13,12 +11,12 @@ import (
 	"github.com/iv-menshenin/accountant/config"
 	"github.com/iv-menshenin/accountant/logger"
 	"github.com/iv-menshenin/accountant/storage"
+	"github.com/iv-menshenin/accountant/storage/mongodb"
 	"github.com/iv-menshenin/accountant/transport"
 	"github.com/iv-menshenin/appctl"
 )
 
 func main() {
-	flag.Parse()
 	var app = appctl.Application{
 		MainFunc:              mainFunc,
 		Resources:             nil,

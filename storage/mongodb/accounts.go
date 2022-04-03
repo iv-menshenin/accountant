@@ -118,8 +118,12 @@ func (a *AccountCollection) Find(ctx context.Context, option model.FindAccountOp
 				eut = e
 			}
 		}()
-		if err = cur.All(ctx, &accounts); err != nil {
-			return nil, a.mapError(err)
+		for cur.Next(ctx) {
+			var record accountRecord
+			if err = cur.Decode(&record); err != nil {
+				return nil, err
+			}
+			accounts = append(accounts, *ra(record))
 		}
 		return accounts, a.mapError(cur.Err())
 	}

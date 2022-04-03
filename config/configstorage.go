@@ -47,7 +47,11 @@ type (
 func New(prefix string, args ...string) *ConfigStorage {
 	flagSet := flag.NewFlagSet(prefix, flag.ContinueOnError)
 	if len(args) == 0 {
-		args = os.Args[1:]
+		for _, a := range os.Args[1:] {
+			if strings.HasPrefix(a, "--"+prefix+".") || strings.HasPrefix(a, "-"+prefix+".") {
+				args = append(args, a)
+			}
+		}
 	}
 	return &ConfigStorage{
 		prefix:    prefix,
