@@ -43,6 +43,28 @@ type (
 		Delete(context.Context, uuid.UUID) error
 		Find(context.Context, model.FindAccountOption) ([]model.Account, error)
 	}
+
+	PaymentCollection interface {
+		Create(context.Context, model.Payment) error
+		Delete(context.Context, uuid.UUID) error
+		FindByAccount(context.Context, uuid.UUID) ([]model.Payment, error)
+		FindByIDs(context.Context, []uuid.UUID) ([]model.Payment, error)
+	}
+
+	TargetCollection interface {
+		Create(context.Context, model.Target) error
+		Lookup(context.Context, uuid.UUID) (*model.Target, error)
+		Delete(context.Context, uuid.UUID) error
+		FindByPeriod(context.Context, model.Period) ([]model.Target, error)
+	}
+
+	BillsCollection interface {
+		Create(context.Context, model.Bill) error
+		Lookup(context.Context, uuid.UUID) (*model.Bill, error)
+		FindByAccount(context.Context, uuid.UUID) ([]model.Bill, error)
+		FindByPeriod(context.Context, model.Period) ([]model.Bill, error)
+		Delete(context.Context, uuid.UUID) error
+	}
 )
 
 func New(

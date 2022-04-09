@@ -2,8 +2,6 @@ package mongodb
 
 import (
 	"context"
-	"strings"
-
 	"github.com/iv-menshenin/accountant/model"
 	"github.com/iv-menshenin/accountant/model/uuid"
 	"github.com/iv-menshenin/accountant/storage"
@@ -76,11 +74,7 @@ func (p *PersonCollection) Delete(ctx context.Context, accountID uuid.UUID, pers
 func (p *PersonCollection) Find(ctx context.Context, option model.FindPersonOption) ([]model.Person, error) {
 	var err error
 	var accounts = make([]model.Account, 0, 10)
-	if option.AccountID == nil {
-		accounts, err = p.accounts.Find(ctx, model.FindAccountOption{
-			PersonFullName: option.PersonFullName,
-		})
-	} else {
+	if option.AccountID != nil {
 		var account *model.Account
 		account, err = p.accounts.Lookup(ctx, *option.AccountID)
 		if account != nil {
@@ -92,19 +86,9 @@ func (p *PersonCollection) Find(ctx context.Context, option model.FindPersonOpti
 	}
 	var persons = make([]model.Person, 0, len(accounts))
 	for _, account := range accounts {
-		for _, person := range account.Persons {
-			if option.PersonFullName == nil || checkPersonFullName(person, *option.PersonFullName) {
-				persons = append(persons, person)
-			}
-		}
+		persons = append(persons, account.Persons...)
 	}
 	return persons, nil
-}
-
-func checkPersonFullName(person model.Person, pattern string) bool {
-	return strings.Contains(person.Name, pattern) ||
-		strings.Contains(person.Surname, pattern) ||
-		strings.Contains(person.PatName, pattern)
 }
 
 func (s *Storage) NewPersonCollection(accounts *AccountCollection, mapError func(error) error) *PersonCollection {

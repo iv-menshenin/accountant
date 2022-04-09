@@ -65,7 +65,7 @@ func Test_ete(t *testing.T) {
 		if err != nil {
 			t.Errorf("cannot get accounts: %s", err)
 		}
-		accs, err := actor.getAccounts("person=" + account1.Persons[0].Name)
+		accs, err := actor.getAccounts("account=" + account1.Account)
 		if err != nil {
 			t.Errorf("cannot get accounts: %s", err)
 		}
@@ -234,7 +234,7 @@ func testPerson(t *testing.T, logData fmt.Stringer, actor httpActor, account *mo
 	})
 	t.Run("update_person", func(t *testing.T) {
 		var person = account.Persons[0]
-		person.Name = fmt.Sprintf("Измененный_%d", rand.Intn(8999)+1000)
+		person.Name = fmt.Sprintf("Updated_%d", rand.Intn(8999)+1000)
 		person.Surname = "Васильев"
 		person.PatName = "Веникович"
 		person.IsMember = false

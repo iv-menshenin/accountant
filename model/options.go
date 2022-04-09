@@ -6,11 +6,7 @@ import (
 
 type (
 	FindAccountOption struct {
-		Account        *string
-		Street         *string
-		Building       *int
-		PersonFullName *string
-		SumArea        *float64
+		Account *string
 	}
 	FindObjectOption struct {
 		AccountID *uuid.UUID
@@ -18,24 +14,11 @@ type (
 		Number    *int
 	}
 	FindPersonOption struct {
-		AccountID      *uuid.UUID
-		PersonFullName *string
+		AccountID *uuid.UUID
 	}
 )
 
 func (q *FindAccountOption) FillFromQuery(query FindAccountsQuery) {
-	if query.Building != nil {
-		q.Building = query.Building
-	}
-	if query.Street != nil {
-		q.Street = query.Street
-	}
-	if query.SumArea != nil {
-		q.SumArea = query.SumArea
-	}
-	if query.PersonFullName != nil {
-		q.PersonFullName = query.PersonFullName
-	}
 	if query.Account != nil {
 		q.Account = query.Account
 	}
@@ -54,9 +37,6 @@ func (q *FindObjectOption) FillFromQuery(query FindObjectsQuery) {
 }
 
 func (q *FindPersonOption) FillFromQuery(query FindPersonsQuery) {
-	if query.PersonFullName != nil {
-		q.PersonFullName = query.PersonFullName
-	}
 	if query.AccountID != nil {
 		q.AccountID = query.AccountID
 	}

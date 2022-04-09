@@ -34,7 +34,7 @@ func (a *AccountCollection) Create(ctx context.Context, account model.Account) e
 	case <-ctx.Done():
 		return ctx.Err()
 	default:
-		var record = mapAccountToAccountRecord(ctx, account)
+		var record = mapAccountToRecord(ctx, account)
 		_, err := a.storage.InsertOne(ctx, record, options.InsertOne())
 		return a.mapError(err)
 	}
@@ -54,7 +54,7 @@ func (a *AccountCollection) Lookup(ctx context.Context, id uuid.UUID) (*model.Ac
 		if err := result.Decode(&acc); err != nil {
 			return nil, a.mapError(err)
 		}
-		return ra(acc), nil
+		return mapRecordToAccount(acc), nil
 	}
 }
 
@@ -64,14 +64,14 @@ func (a *AccountCollection) Replace(ctx context.Context, id uuid.UUID, account m
 		return ctx.Err()
 	default:
 		var filter = accountIdFilter(id)
-		var record = mapAccountToAccountRecord(ctx, account)
+		var record = mapAccountToRecord(ctx, account)
 		var document = updateDocument(record)
 		_, err := a.storage.UpdateOne(ctx, filter, document, options.Update())
 		return a.mapError(err)
 	}
 }
 
-func mapAccountToAccountRecord(ctx context.Context, account model.Account) accountRecord {
+func mapAccountToRecord(ctx context.Context, account model.Account) accountRecord {
 	return accountRecord{
 		ID:       mid.UUID(account.AccountID),
 		Data:     account.AccountData,
@@ -123,7 +123,7 @@ func (a *AccountCollection) Find(ctx context.Context, option model.FindAccountOp
 			if err = cur.Decode(&record); err != nil {
 				return nil, err
 			}
-			accounts = append(accounts, *ra(record))
+			accounts = append(accounts, *mapRecordToAccount(record))
 		}
 		return accounts, a.mapError(cur.Err())
 	}
@@ -138,15 +138,10 @@ func accountFilter(options model.FindAccountOption) interface{} {
 	if options.Account != nil {
 		filter = append(filter, bson.E{Key: "data.account", Value: *options.Account})
 	}
-	if options.PersonFullName != nil {
-		matchCondition := bson.M{"$elemMatch": bson.M{"name": *options.PersonFullName}}
-		filter = append(filter, bson.E{Key: "persons", Value: matchCondition})
-	}
-	// TODO filters
 	return filter
 }
 
-func ra(record accountRecord) *model.Account {
+func mapRecordToAccount(record accountRecord) *model.Account {
 	return &model.Account{
 		AccountID:   uuid.UUID(record.ID),
 		Persons:     record.Persons,

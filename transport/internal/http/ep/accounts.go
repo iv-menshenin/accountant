@@ -8,7 +8,6 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/iv-menshenin/accountant/model"
 	"net/http"
-	"strconv"
 )
 
 type (
@@ -185,10 +184,7 @@ func (a *Accounts) FindHandler() http.HandlerFunc {
 
 const (
 	accountField    = "account"
-	streetField     = "street"
-	buildingField   = "building"
 	personNameField = "person"
-	sumAreaField    = "area"
 	addressField    = "address"
 	objectNumField  = "number"
 )
@@ -197,26 +193,6 @@ func findAccountMapper(r *http.Request) (q model.FindAccountsQuery, err error) {
 	params := queryParams{r: r}
 	if account, ok := params.vars(accountField); ok {
 		q.Account = &account
-	}
-	if street, ok := params.vars(streetField); ok {
-		q.Street = &street
-	}
-	if building, ok := params.vars(buildingField); ok {
-		num, err := strconv.Atoi(building)
-		if err != nil {
-			return q, err
-		}
-		q.Building = &num
-	}
-	if person, ok := params.vars(personNameField); ok {
-		q.PersonFullName = &person
-	}
-	if area, ok := params.vars(sumAreaField); ok {
-		f, err := strconv.ParseFloat(area, 64)
-		if err != nil {
-			return q, err
-		}
-		q.SumArea = &f
 	}
 	return
 }
