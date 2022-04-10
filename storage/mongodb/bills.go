@@ -45,7 +45,7 @@ func mapBillToRecord(ctx context.Context, bill model.Bill) billRecord {
 		Data:     bill,
 		Created:  time.Now(),
 		Updated:  time.Now(),
-		OwnerCtx: getOwnerCtx(ctx),
+		OwnerCtx: mid.UUID(getOwnerCtx(ctx)),
 	}
 }
 
@@ -146,14 +146,14 @@ func (b *BillsCollection) Delete(ctx context.Context, billID uuid.UUID) error {
 		return ctx.Err()
 	default:
 		var filter = billIdFilter(billID)
-		_, err := b.storage.UpdateOne(ctx, filter, bson.D{{Key: "deleted", Value: time.Now()}}, options.Update())
+		_, err := b.storage.UpdateOne(ctx, filter, bson.M{"$set": bson.D{{Key: "deleted", Value: time.Now()}}}, options.Update())
 		return b.mapError(err)
 	}
 }
 
 func (s *Storage) NewBillsCollection(mapError func(error) error) *BillsCollection {
 	return &BillsCollection{
-		storage:  s.mongo.Targets(),
+		storage:  s.mongo.Bills(),
 		mapError: mapError,
 	}
 }

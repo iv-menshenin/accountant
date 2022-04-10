@@ -7,6 +7,9 @@ import (
 type (
 	FindAccountOption struct {
 		Account *string
+		// hidden options
+		Address *string
+		Number  *int
 	}
 	FindObjectOption struct {
 		AccountID *uuid.UUID

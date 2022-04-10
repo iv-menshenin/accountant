@@ -45,7 +45,7 @@ func mapPaymentToRecord(ctx context.Context, payment model.Payment) paymentRecor
 		Data:     payment,
 		Created:  time.Now(),
 		Updated:  time.Now(),
-		OwnerCtx: getOwnerCtx(ctx),
+		OwnerCtx: mid.UUID(getOwnerCtx(ctx)),
 	}
 }
 
@@ -55,7 +55,7 @@ func (p *PaymentCollection) Delete(ctx context.Context, paymentID uuid.UUID) err
 		return ctx.Err()
 	default:
 		var filter = paymentIdFilter(paymentID)
-		_, err := p.storage.UpdateOne(ctx, filter, bson.D{{Key: "deleted", Value: time.Now()}}, options.Update())
+		_, err := p.storage.UpdateOne(ctx, filter, bson.M{"$set": bson.D{{Key: "deleted", Value: time.Now()}}}, options.Update())
 		return p.mapError(err)
 	}
 }

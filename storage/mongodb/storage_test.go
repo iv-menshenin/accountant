@@ -6,10 +6,10 @@ import (
 	"github.com/iv-menshenin/accountant/config"
 	"github.com/iv-menshenin/accountant/model"
 	"github.com/iv-menshenin/accountant/model/uuid"
-	"github.com/iv-menshenin/accountant/storage"
+	"go.mongodb.org/mongo-driver/bson"
 	"log"
 	"math/rand"
-	"reflect"
+	"os"
 	"sync"
 	"testing"
 	"time"
@@ -18,11 +18,21 @@ import (
 var testStorage *Storage
 var once sync.Once
 
+func TestMain(m *testing.M) {
+	once.Do(initTestEnv)
+	defer testStorage.Close()
+	os.Exit(m.Run())
+}
+
 func initTestEnv() {
 	rand.Seed(time.Now().UnixNano())
 	var err error
 	var logger = log.Default()
 	testStorage, err = NewStorage(config.New("tst"), logger)
+	if err != nil {
+		panic(err)
+	}
+	_, err = testStorage.mongo.Accounts().DeleteMany(context.Background(), bson.D{})
 	if err != nil {
 		panic(err)
 	}
@@ -34,7 +44,6 @@ type mock struct {
 
 const (
 	defaultMockSize = 128
-	lightMockSize   = 32
 )
 
 func newMock(mockSize int) *mock {
@@ -83,234 +92,6 @@ func (m *accManipulator) uploadAccount(ctx context.Context, acc model.Account) e
 		}
 	}
 	return nil
-}
-
-func Test_StorageAccounts(t *testing.T) {
-	once.Do(initTestEnv)
-
-	accounts := testStorage.NewAccountCollection(storage.MapMongodbErrors)
-	persons := testStorage.NewPersonCollection(accounts, storage.MapMongodbErrors)
-	objects := testStorage.NewObjectCollection(accounts, storage.MapMongodbErrors)
-
-	var manipulator = accManipulator{
-		accounts,
-		persons,
-		objects,
-	}
-	var data = newMock(defaultMockSize)
-	var accountMock = data.accountMock
-
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*15)
-	defer cancel()
-	var wg sync.WaitGroup
-	var errCh = make(chan error)
-
-	wg.Add(len(accountMock))
-	for i := range accountMock {
-		go func(acc *model.Account) {
-			defer wg.Done()
-			if err := manipulator.uploadAccount(ctx, *acc); err != nil {
-				errCh <- err
-			}
-		}(&accountMock[i])
-	}
-
-	var closed = make(chan struct{})
-	go func() {
-		defer close(closed)
-		for err := range errCh {
-			t.Error(err)
-		}
-	}()
-	wg.Wait()
-
-	wg.Add(len(accountMock))
-	for i := range accountMock {
-		go func(acc *model.Account) {
-			defer wg.Done()
-
-			found, err := accounts.Lookup(ctx, acc.AccountID)
-			if err != nil {
-				errCh <- err
-				return
-			}
-			if !reflect.DeepEqual(acc, found) {
-				errCh <- fmt.Errorf("[ACCOUNT] want: %+v, got: %+v", *acc, *found)
-				return
-			}
-
-			accs, err := accounts.Find(ctx, model.FindAccountOption{Account: &acc.Account})
-			if err != nil {
-				errCh <- err
-				return
-			}
-			if len(accs) != 1 || !reflect.DeepEqual(accs[0], *acc) {
-				errCh <- fmt.Errorf("[ACCOUNT] want: %+v, got: %+v", *acc, accs)
-				return
-			}
-
-			var foundPersons []model.Person
-			foundPersons, err = persons.Find(ctx, model.FindPersonOption{
-				AccountID: &acc.AccountID,
-			})
-			if !reflect.DeepEqual(acc.Persons, foundPersons) {
-				errCh <- fmt.Errorf("[PERSONS] want: %+v, got: %+v", acc.Persons, foundPersons)
-				return
-			}
-
-			var foundObjects []model.Object
-			foundObjects, err = objects.Find(ctx, model.FindObjectOption{
-				AccountID: &acc.AccountID,
-			})
-			if !reflect.DeepEqual(acc.Objects, foundObjects) {
-				errCh <- fmt.Errorf("[OBJECTS] want: %+v, got: %+v", acc.Objects, foundObjects)
-				return
-			}
-
-			if err = accounts.Delete(ctx, acc.AccountID); err != nil {
-				errCh <- err
-				return
-			}
-			accs, err = accounts.Find(ctx, model.FindAccountOption{Account: &found.Account})
-			if err != nil {
-				errCh <- err
-				return
-			}
-			if len(accs) != 0 {
-				errCh <- fmt.Errorf("[ACCOUNT] must be deleted, but found: %+v", accs)
-				return
-			}
-
-		}(&accountMock[i])
-	}
-
-	wg.Wait()
-	close(errCh)
-	<-closed
-}
-
-func Test_StorageObjects(t *testing.T) {
-	once.Do(initTestEnv)
-
-	accounts := testStorage.NewAccountCollection(storage.MapMongodbErrors)
-	persons := testStorage.NewPersonCollection(accounts, storage.MapMongodbErrors)
-	objects := testStorage.NewObjectCollection(accounts, storage.MapMongodbErrors)
-
-	var manipulator = accManipulator{
-		accounts,
-		persons,
-		objects,
-	}
-	var data = newMock(lightMockSize)
-	var accountMock = data.accountMock
-	var wg sync.WaitGroup
-	var errCh = make(chan error)
-	wg.Add(len(accountMock))
-
-	var closed = make(chan struct{})
-	go func() {
-		defer close(closed)
-		for err := range errCh {
-			t.Error(err)
-		}
-	}()
-
-	for i := range accountMock {
-		go func(acc *model.Account) {
-			defer wg.Done()
-
-			if len(acc.Objects) == 0 {
-				return
-			}
-			ctx, cancel := context.WithTimeout(context.Background(), time.Second*15)
-			defer cancel()
-
-			err := manipulator.uploadAccount(ctx, *acc)
-			if err != nil {
-				errCh <- fmt.Errorf("cant upload account: %w", err)
-				return
-			}
-
-			for _, obj := range acc.Objects {
-				found, err := objects.Find(ctx, model.FindObjectOption{
-					AccountID: nil,
-					Address:   &obj.Street,
-					Number:    &obj.Number,
-				})
-				if err != nil {
-					errCh <- fmt.Errorf("cant find objects by address: %w", err)
-					return
-				}
-				var itsOk bool
-				for _, f := range found {
-					itsOk = itsOk || reflect.DeepEqual(f, obj)
-				}
-				if !itsOk {
-					errCh <- fmt.Errorf("cant find object by address: %v", obj)
-					return
-				}
-			}
-
-			rndObjNum := rand.Intn(len(acc.Objects))
-			rndObj := acc.Objects[rndObjNum]
-			looked, err := objects.Lookup(ctx, acc.AccountID, rndObj.ObjectID)
-			if err != nil {
-				errCh <- fmt.Errorf("cant lookup objects by ID: %w", err)
-				return
-			}
-			if looked == nil || !reflect.DeepEqual(rndObj, *looked) {
-				errCh <- fmt.Errorf("cant lookup object by ID: want: %v, got: %v", rndObj, looked)
-				return
-			}
-
-			rndObj.Street = "replaced"
-			rndObj.Number = 9901
-			rndObj.PostalCode = "000000"
-			err = objects.Replace(ctx, acc.AccountID, rndObj.ObjectID, rndObj)
-			if err != nil {
-				errCh <- fmt.Errorf("cant replace objects by ID: %w", err)
-				return
-			}
-
-			acc.Objects[rndObjNum] = rndObj
-			objs, err := objects.Find(ctx, model.FindObjectOption{AccountID: &acc.AccountID})
-			if err != nil {
-				errCh <- fmt.Errorf("cant find object: %w", err)
-				return
-			}
-			if !reflect.DeepEqual(objs, acc.Objects) {
-				errCh <- fmt.Errorf("error matching objects: %v, got: %v", acc.Objects, objs)
-				return
-			}
-
-			err = objects.Delete(ctx, acc.AccountID, rndObj.ObjectID)
-			if err != nil {
-				errCh <- fmt.Errorf("cant delete object: %w", err)
-				return
-			}
-			acc.Objects = append(acc.Objects[:rndObjNum], acc.Objects[rndObjNum+1:]...)
-			objs, err = objects.Find(ctx, model.FindObjectOption{AccountID: &acc.AccountID})
-			if err != nil {
-				errCh <- fmt.Errorf("cant find object: %w", err)
-				return
-			}
-			if !reflect.DeepEqual(objs, acc.Objects) {
-				errCh <- fmt.Errorf("error matching objects: %v, got: %v", acc.Objects, objs)
-				return
-			}
-
-			err = objects.Delete(ctx, acc.AccountID, uuid.NewUUID())
-			if err != storage.ErrNotFound {
-				errCh <- fmt.Errorf("expected storage.ErrNotFound, got: %w", err)
-				return
-			}
-
-		}(&accountMock[i])
-	}
-
-	wg.Wait()
-	close(errCh)
-	<-closed
 }
 
 func makeAccount(nn int) model.Account {

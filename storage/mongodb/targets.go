@@ -45,7 +45,7 @@ func mapTargetToRecord(ctx context.Context, target model.Target) targetRecord {
 		Data:     target,
 		Created:  time.Now(),
 		Updated:  time.Now(),
-		OwnerCtx: getOwnerCtx(ctx),
+		OwnerCtx: mid.UUID(getOwnerCtx(ctx)),
 	}
 }
 
@@ -81,7 +81,7 @@ func (t *TargetCollection) Delete(ctx context.Context, targetID uuid.UUID) error
 		return ctx.Err()
 	default:
 		var filter = targetIdFilter(targetID)
-		_, err := t.storage.UpdateOne(ctx, filter, bson.D{{Key: "deleted", Value: time.Now()}}, options.Update())
+		_, err := t.storage.UpdateOne(ctx, filter, bson.M{"$set": bson.D{{Key: "deleted", Value: time.Now()}}}, options.Update())
 		return t.mapError(err)
 	}
 }
@@ -115,7 +115,7 @@ func (t *TargetCollection) FindByPeriod(ctx context.Context, period model.Period
 func targetPeriodFilter(period model.Period) interface{} {
 	var filter = bson.D{
 		bson.E{Key: "deleted", Value: nil},
-		bson.E{Key: "period", Value: bson.M{"$eq": period}},
+		bson.E{Key: "data.period", Value: period},
 	}
 	return filter
 }

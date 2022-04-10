@@ -78,7 +78,7 @@ func (o *ObjectCollection) Find(ctx context.Context, option model.FindObjectOpti
 	var err error
 	var accounts = make([]model.Account, 0, 10)
 	if option.AccountID == nil {
-		accounts, err = o.accounts.Find(ctx, model.FindAccountOption{}) // find all ?
+		accounts, err = o.accounts.Find(ctx, findAccountByObject(option))
 	} else {
 		var account *model.Account
 		account, err = o.accounts.Lookup(ctx, *option.AccountID)
@@ -98,6 +98,13 @@ func (o *ObjectCollection) Find(ctx context.Context, option model.FindObjectOpti
 		}
 	}
 	return objects, nil
+}
+
+func findAccountByObject(filter model.FindObjectOption) model.FindAccountOption {
+	return model.FindAccountOption{
+		Address: filter.Address,
+		Number:  filter.Number,
+	}
 }
 
 func checkObjectFilter(object model.Object, filter model.FindObjectOption) bool {

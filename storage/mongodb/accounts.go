@@ -79,7 +79,7 @@ func mapAccountToRecord(ctx context.Context, account model.Account) accountRecor
 		Objects:  account.Objects,
 		Created:  time.Now(),
 		Updated:  time.Now(),
-		OwnerCtx: getOwnerCtx(ctx),
+		OwnerCtx: mid.UUID(getOwnerCtx(ctx)),
 	}
 }
 
@@ -137,6 +137,12 @@ func accountFilter(options model.FindAccountOption) interface{} {
 	var filter = bson.D{}
 	if options.Account != nil {
 		filter = append(filter, bson.E{Key: "data.account", Value: *options.Account})
+	}
+	if options.Address != nil {
+		filter = append(filter, bson.E{Key: "objects.street", Value: *options.Address})
+	}
+	if options.Number != nil {
+		filter = append(filter, bson.E{Key: "objects.number", Value: *options.Number})
 	}
 	return filter
 }
