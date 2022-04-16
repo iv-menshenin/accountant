@@ -8,7 +8,7 @@ import (
 	"github.com/iv-menshenin/accountant/storage"
 )
 
-func (a *App) PersonCreate(ctx context.Context, q model.PostPersonQuery) (*model.Person, error) {
+func (a *Acc) PersonCreate(ctx context.Context, q model.PostPersonQuery) (*model.Person, error) {
 	var person = model.Person{
 		PersonID:   uuid.NewUUID(),
 		PersonData: q.PersonData,
@@ -20,7 +20,7 @@ func (a *App) PersonCreate(ctx context.Context, q model.PostPersonQuery) (*model
 	return a.persons.Lookup(ctx, q.AccountID, person.PersonID)
 }
 
-func (a *App) PersonGet(ctx context.Context, q model.GetPersonQuery) (*model.Person, error) {
+func (a *Acc) PersonGet(ctx context.Context, q model.GetPersonQuery) (*model.Person, error) {
 	person, err := a.persons.Lookup(ctx, q.AccountID, q.PersonID)
 	if err == storage.ErrNotFound {
 		return nil, model.NotFound{}
@@ -28,7 +28,7 @@ func (a *App) PersonGet(ctx context.Context, q model.GetPersonQuery) (*model.Per
 	return person, nil
 }
 
-func (a *App) PersonSave(ctx context.Context, q model.PutPersonQuery) (*model.Person, error) {
+func (a *Acc) PersonSave(ctx context.Context, q model.PutPersonQuery) (*model.Person, error) {
 	person, err := a.persons.Lookup(ctx, q.AccountID, q.PersonID)
 	if err == storage.ErrNotFound {
 		return nil, model.NotFound{}
@@ -40,7 +40,7 @@ func (a *App) PersonSave(ctx context.Context, q model.PutPersonQuery) (*model.Pe
 	return person, nil
 }
 
-func (a *App) PersonDelete(ctx context.Context, q model.DeletePersonQuery) error {
+func (a *Acc) PersonDelete(ctx context.Context, q model.DeletePersonQuery) error {
 	err := a.persons.Delete(ctx, q.AccountID, q.PersonID)
 	if err == storage.ErrNotFound {
 		return model.NotFound{}
@@ -48,7 +48,7 @@ func (a *App) PersonDelete(ctx context.Context, q model.DeletePersonQuery) error
 	return err
 }
 
-func (a *App) PersonsFind(ctx context.Context, q model.FindPersonsQuery) ([]model.Person, error) {
+func (a *Acc) PersonsFind(ctx context.Context, q model.FindPersonsQuery) ([]model.Person, error) {
 	var findOption model.FindPersonOption
 	findOption.FillFromQuery(q)
 	persons, err := a.persons.Find(ctx, findOption)

@@ -14,7 +14,7 @@ import (
 )
 
 type (
-	AccountCollection struct {
+	AccountsCollection struct {
 		storage  *mongo.Collection
 		mapError func(error) error
 	}
@@ -29,7 +29,7 @@ type (
 	}
 )
 
-func (a *AccountCollection) Create(ctx context.Context, account model.Account) error {
+func (a *AccountsCollection) Create(ctx context.Context, account model.Account) error {
 	select {
 	case <-ctx.Done():
 		return ctx.Err()
@@ -40,7 +40,7 @@ func (a *AccountCollection) Create(ctx context.Context, account model.Account) e
 	}
 }
 
-func (a *AccountCollection) Lookup(ctx context.Context, id uuid.UUID) (*model.Account, error) {
+func (a *AccountsCollection) Lookup(ctx context.Context, id uuid.UUID) (*model.Account, error) {
 	select {
 	case <-ctx.Done():
 		return nil, ctx.Err()
@@ -58,7 +58,7 @@ func (a *AccountCollection) Lookup(ctx context.Context, id uuid.UUID) (*model.Ac
 	}
 }
 
-func (a *AccountCollection) Replace(ctx context.Context, id uuid.UUID, account model.Account) error {
+func (a *AccountsCollection) Replace(ctx context.Context, id uuid.UUID, account model.Account) error {
 	select {
 	case <-ctx.Done():
 		return ctx.Err()
@@ -92,7 +92,7 @@ func updateDocument(record accountRecord) interface{} {
 	}}
 }
 
-func (a *AccountCollection) Delete(ctx context.Context, id uuid.UUID) error {
+func (a *AccountsCollection) Delete(ctx context.Context, id uuid.UUID) error {
 	select {
 	case <-ctx.Done():
 		return ctx.Err()
@@ -103,7 +103,7 @@ func (a *AccountCollection) Delete(ctx context.Context, id uuid.UUID) error {
 	}
 }
 
-func (a *AccountCollection) Find(ctx context.Context, option model.FindAccountOption) (accounts []model.Account, eut error) {
+func (a *AccountsCollection) Find(ctx context.Context, option model.FindAccountOption) (accounts []model.Account, eut error) {
 	select {
 	case <-ctx.Done():
 		return nil, ctx.Err()
@@ -156,8 +156,8 @@ func mapRecordToAccount(record accountRecord) *model.Account {
 	}
 }
 
-func (s *Storage) NewAccountCollection(mapError func(error) error) *AccountCollection {
-	return &AccountCollection{
+func (s *Storage) NewAccountsCollection(mapError func(error) error) *AccountsCollection {
+	return &AccountsCollection{
 		storage:  s.mongo.Accounts(),
 		mapError: mapError,
 	}

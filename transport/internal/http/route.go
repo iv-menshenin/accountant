@@ -1,10 +1,12 @@
 package http
 
 import (
+	"net/http"
+
 	"github.com/gorilla/mux"
+
 	"github.com/iv-menshenin/accountant/transport/internal/http/ep"
 	"github.com/iv-menshenin/accountant/transport/internal/http/static"
-	"net/http"
 )
 
 type (
@@ -12,6 +14,8 @@ type (
 		ep.AccountProcessor
 		ep.PersonProcessor
 		ep.ObjectProcessor
+
+		ep.TargetProcessor
 	}
 )
 
@@ -41,6 +45,9 @@ func makeRouter(rp RequestProcessor, auth AuthCore) http.Handler {
 
 	objects := ep.NewObjectsEP(rp)
 	objects.SetupRouting(apiSubRouter)
+
+	targets := ep.NewTargetsEP(rp)
+	targets.SetupRouting(apiSubRouter)
 
 	authSubRouter := router.PathPrefix(PathAuth).Subrouter()
 

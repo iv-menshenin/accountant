@@ -17,9 +17,9 @@ import (
 func Test_Persons(t *testing.T) {
 	once.Do(initTestEnv)
 
-	accounts := testStorage.NewAccountCollection(storage.MapMongodbErrors)
-	persons := testStorage.NewPersonCollection(accounts, storage.MapMongodbErrors)
-	objects := testStorage.NewObjectCollection(accounts, storage.MapMongodbErrors)
+	accounts := testStorage.NewAccountsCollection(storage.MapMongodbErrors)
+	persons := testStorage.NewPersonsCollection(accounts, storage.MapMongodbErrors)
+	objects := testStorage.NewObjectsCollection(accounts, storage.MapMongodbErrors)
 
 	var manipulator = accManipulator{
 		accounts,

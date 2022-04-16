@@ -82,6 +82,21 @@ type (
 		Address   *string
 		Number    *int
 	}
+
+	GetTargetQuery struct {
+		TargetID uuid.UUID
+	}
+	PostTargetQuery struct {
+		Type   string
+		Target TargetData
+	}
+	DeleteTargetQuery struct {
+		TargetID uuid.UUID
+	}
+	FindTargetQuery struct {
+		ShowClosed bool
+		Period     *Period
+	}
 )
 
 func (u Unauthorized) Error() string {

@@ -89,9 +89,14 @@ type (
 	// Target содержит описание целевых взносов
 	Target struct {
 		TargetHead `bson:",inline" json:",inline"`
-		Period     Period  `bson:"period" json:"period"`
-		Cost       float64 `bson:"cost" json:"cost"`
-		Comment    string  `bson:"comment" json:"comment"`
+		TargetData `bson:",inline" json:",inline"`
+	}
+	// TargetData содержит изменяемые данные структуры Target
+	TargetData struct {
+		Period  Period     `bson:"period" json:"period"`
+		Closed  *time.Time `bson:"closed" json:"closed"`
+		Cost    float64    `bson:"cost" json:"cost"`
+		Comment string     `bson:"comment" json:"comment"`
 	}
 	// Bill описывает начисления (счет на оплату)
 	Bill struct {

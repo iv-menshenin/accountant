@@ -382,11 +382,18 @@ func upService(t *testing.T, logData io.Writer) httpActor {
 	}
 
 	var (
-		accountCollection = mongoStorage.NewAccountCollection(storage.MapMongodbErrors)
-		personsCollection = mongoStorage.NewPersonCollection(accountCollection, storage.MapMongodbErrors)
-		objectsCollection = mongoStorage.NewObjectCollection(accountCollection, storage.MapMongodbErrors)
+		accountCollection = mongoStorage.NewAccountsCollection(storage.MapMongodbErrors)
+		personsCollection = mongoStorage.NewPersonsCollection(accountCollection, storage.MapMongodbErrors)
+		objectsCollection = mongoStorage.NewObjectsCollection(accountCollection, storage.MapMongodbErrors)
+		targetsCollection = mongoStorage.NewTargetsCollection(storage.MapMongodbErrors)
 
-		appHnd         = business.New(&testLogger{l: logger}, accountCollection, personsCollection, objectsCollection)
+		appHnd = business.New(
+			&testLogger{l: logger},
+			accountCollection,
+			personsCollection,
+			objectsCollection,
+			targetsCollection,
+		)
 		queryTransport = transport.NewHTTPServer(httpConfig, logger, appHnd, nil)
 	)
 	go queryTransport.ListenAndServe(listeningError)

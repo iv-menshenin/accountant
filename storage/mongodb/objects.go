@@ -11,13 +11,13 @@ import (
 )
 
 type (
-	ObjectCollection struct {
+	ObjectsCollection struct {
 		mapError func(error) error
-		accounts *AccountCollection
+		accounts *AccountsCollection
 	}
 )
 
-func (o *ObjectCollection) Create(ctx context.Context, accountID uuid.UUID, object model.Object) error {
+func (o *ObjectsCollection) Create(ctx context.Context, accountID uuid.UUID, object model.Object) error {
 	account, err := o.accounts.Lookup(ctx, accountID)
 	if err != nil {
 		return o.mapError(err)
@@ -26,7 +26,7 @@ func (o *ObjectCollection) Create(ctx context.Context, accountID uuid.UUID, obje
 	return o.mapError(o.accounts.Replace(ctx, accountID, *account))
 }
 
-func (o *ObjectCollection) Lookup(ctx context.Context, accountID uuid.UUID, objectID uuid.UUID) (*model.Object, error) {
+func (o *ObjectsCollection) Lookup(ctx context.Context, accountID uuid.UUID, objectID uuid.UUID) (*model.Object, error) {
 	account, err := o.accounts.Lookup(ctx, accountID)
 	if err != nil {
 		return nil, o.mapError(err)
@@ -40,7 +40,7 @@ func (o *ObjectCollection) Lookup(ctx context.Context, accountID uuid.UUID, obje
 	return nil, storage.ErrNotFound
 }
 
-func (o *ObjectCollection) Replace(ctx context.Context, accountID uuid.UUID, objectID uuid.UUID, object model.Object) error {
+func (o *ObjectsCollection) Replace(ctx context.Context, accountID uuid.UUID, objectID uuid.UUID, object model.Object) error {
 	account, err := o.accounts.Lookup(ctx, accountID)
 	if err != nil {
 		return o.mapError(err)
@@ -55,7 +55,7 @@ func (o *ObjectCollection) Replace(ctx context.Context, accountID uuid.UUID, obj
 	return storage.ErrNotFound
 }
 
-func (o *ObjectCollection) Delete(ctx context.Context, accountID uuid.UUID, objectID uuid.UUID) error {
+func (o *ObjectsCollection) Delete(ctx context.Context, accountID uuid.UUID, objectID uuid.UUID) error {
 	account, err := o.accounts.Lookup(ctx, accountID)
 	if err != nil {
 		return o.mapError(err)
@@ -74,7 +74,7 @@ func (o *ObjectCollection) Delete(ctx context.Context, accountID uuid.UUID, obje
 	return storage.ErrNotFound
 }
 
-func (o *ObjectCollection) Find(ctx context.Context, option model.FindObjectOption) ([]model.Object, error) {
+func (o *ObjectsCollection) Find(ctx context.Context, option model.FindObjectOption) ([]model.Object, error) {
 	var err error
 	var accounts = make([]model.Account, 0, 10)
 	if option.AccountID == nil {
@@ -131,8 +131,8 @@ func checkObjectNumber(object model.Object, number int) bool {
 	return object.Number == number
 }
 
-func (s *Storage) NewObjectCollection(accounts *AccountCollection, mapError func(error) error) *ObjectCollection {
-	return &ObjectCollection{
+func (s *Storage) NewObjectsCollection(accounts *AccountsCollection, mapError func(error) error) *ObjectsCollection {
+	return &ObjectsCollection{
 		mapError: mapError,
 		accounts: accounts,
 	}

@@ -5,10 +5,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/gorilla/mux"
-	"github.com/iv-menshenin/accountant/model"
 	"net/http"
 	"strconv"
+
+	"github.com/gorilla/mux"
+
+	"github.com/iv-menshenin/accountant/model"
 )
 
 type (
@@ -216,6 +218,11 @@ func (p *Objects) FindHandler() http.HandlerFunc {
 		writeData(w, accounts)
 	}
 }
+
+const (
+	objectNumField = "number"
+	addressField   = "address"
+)
 
 func findObjectMapper(r *http.Request) (q model.FindObjectsQuery, err error) {
 	params := queryParams{r: r}

@@ -8,7 +8,7 @@ import (
 	"github.com/iv-menshenin/accountant/storage"
 )
 
-func (a *App) ObjectCreate(ctx context.Context, q model.PostObjectQuery) (*model.Object, error) {
+func (a *Acc) ObjectCreate(ctx context.Context, q model.PostObjectQuery) (*model.Object, error) {
 	var object = model.Object{
 		ObjectID:   uuid.NewUUID(),
 		ObjectData: q.ObjectData,
@@ -20,7 +20,7 @@ func (a *App) ObjectCreate(ctx context.Context, q model.PostObjectQuery) (*model
 	return a.objects.Lookup(ctx, q.AccountID, object.ObjectID)
 }
 
-func (a *App) ObjectGet(ctx context.Context, q model.GetObjectQuery) (*model.Object, error) {
+func (a *Acc) ObjectGet(ctx context.Context, q model.GetObjectQuery) (*model.Object, error) {
 	object, err := a.objects.Lookup(ctx, q.AccountID, q.ObjectID)
 	if err == storage.ErrNotFound {
 		return nil, model.NotFound{}
@@ -28,7 +28,7 @@ func (a *App) ObjectGet(ctx context.Context, q model.GetObjectQuery) (*model.Obj
 	return object, nil
 }
 
-func (a *App) ObjectSave(ctx context.Context, q model.PutObjectQuery) (*model.Object, error) {
+func (a *Acc) ObjectSave(ctx context.Context, q model.PutObjectQuery) (*model.Object, error) {
 	object, err := a.objects.Lookup(ctx, q.AccountID, q.ObjectID)
 	if err == storage.ErrNotFound {
 		return nil, model.NotFound{}
@@ -40,7 +40,7 @@ func (a *App) ObjectSave(ctx context.Context, q model.PutObjectQuery) (*model.Ob
 	return object, nil
 }
 
-func (a *App) ObjectDelete(ctx context.Context, q model.DeleteObjectQuery) error {
+func (a *Acc) ObjectDelete(ctx context.Context, q model.DeleteObjectQuery) error {
 	err := a.objects.Delete(ctx, q.AccountID, q.ObjectID)
 	if err == storage.ErrNotFound {
 		return model.NotFound{}
@@ -48,7 +48,7 @@ func (a *App) ObjectDelete(ctx context.Context, q model.DeleteObjectQuery) error
 	return err
 }
 
-func (a *App) ObjectsFind(ctx context.Context, q model.FindObjectsQuery) ([]model.Object, error) {
+func (a *Acc) ObjectsFind(ctx context.Context, q model.FindObjectsQuery) ([]model.Object, error) {
 	var findOption model.FindObjectOption
 	findOption.FillFromQuery(q)
 	objects, err := a.objects.Find(ctx, findOption)

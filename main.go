@@ -6,6 +6,8 @@ import (
 	"os"
 	"time"
 
+	"github.com/iv-menshenin/appctl"
+
 	"github.com/iv-menshenin/accountant/auth"
 	"github.com/iv-menshenin/accountant/business"
 	"github.com/iv-menshenin/accountant/config"
@@ -13,7 +15,6 @@ import (
 	"github.com/iv-menshenin/accountant/storage"
 	"github.com/iv-menshenin/accountant/storage/mongodb"
 	"github.com/iv-menshenin/accountant/transport"
-	"github.com/iv-menshenin/appctl"
 )
 
 func main() {
@@ -44,11 +45,18 @@ func mainFunc(ctx context.Context, halt <-chan struct{}) (err error) {
 		listeningError = make(chan error)
 		appLogger      = logger.NewFromLogger(logWriter, logger.LogLevelDebug)
 
-		accountCollection = mongoStorage.NewAccountCollection(storage.MapMongodbErrors)
-		personsCollection = mongoStorage.NewPersonCollection(accountCollection, storage.MapMongodbErrors)
-		objectsCollection = mongoStorage.NewObjectCollection(accountCollection, storage.MapMongodbErrors)
+		accountCollection = mongoStorage.NewAccountsCollection(storage.MapMongodbErrors)
+		personsCollection = mongoStorage.NewPersonsCollection(accountCollection, storage.MapMongodbErrors)
+		objectsCollection = mongoStorage.NewObjectsCollection(accountCollection, storage.MapMongodbErrors)
+		targetsCollection = mongoStorage.NewTargetsCollection(storage.MapMongodbErrors)
 
-		appHnd         = business.New(appLogger, accountCollection, personsCollection, objectsCollection)
+		appHnd = business.New(
+			appLogger,
+			accountCollection,
+			personsCollection,
+			objectsCollection,
+			targetsCollection,
+		)
 		queryTransport = transport.NewHTTPServer(config.New("http"), logWriter, appHnd, authCore)
 	)
 

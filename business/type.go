@@ -8,11 +8,19 @@ import (
 )
 
 type (
+	Tar struct {
+		targets   TargetsCollection
+		getLogger func() Logger
+	}
+	Acc struct {
+		accounts  AccountsCollection
+		persons   PersonsCollection
+		objects   ObjectsCollection
+		getLogger func() Logger
+	}
 	App struct {
-		logger   Logger
-		accounts AccountCollection
-		persons  PersonCollection
-		objects  ObjectsCollection
+		Acc
+		Tar
 	}
 	Logger interface {
 		Warning(format string, args ...interface{})
@@ -20,7 +28,7 @@ type (
 		Error(format string, args ...interface{})
 	}
 
-	PersonCollection interface {
+	PersonsCollection interface {
 		Create(context.Context, uuid.UUID, model.Person) error
 		Lookup(context.Context, uuid.UUID, uuid.UUID) (*model.Person, error)
 		Replace(context.Context, uuid.UUID, uuid.UUID, model.Person) error
@@ -36,7 +44,7 @@ type (
 		Find(context.Context, model.FindObjectOption) ([]model.Object, error)
 	}
 
-	AccountCollection interface {
+	AccountsCollection interface {
 		Create(context.Context, model.Account) error
 		Lookup(context.Context, uuid.UUID) (*model.Account, error)
 		Replace(context.Context, uuid.UUID, model.Account) error
@@ -44,18 +52,18 @@ type (
 		Find(context.Context, model.FindAccountOption) ([]model.Account, error)
 	}
 
-	PaymentCollection interface {
+	PaymentsCollection interface {
 		Create(context.Context, model.Payment) error
 		Delete(context.Context, uuid.UUID) error
 		FindByAccount(context.Context, uuid.UUID) ([]model.Payment, error)
 		FindByIDs(context.Context, []uuid.UUID) ([]model.Payment, error)
 	}
 
-	TargetCollection interface {
+	TargetsCollection interface {
 		Create(context.Context, model.Target) error
 		Lookup(context.Context, uuid.UUID) (*model.Target, error)
 		Delete(context.Context, uuid.UUID) error
-		FindByPeriod(context.Context, model.Period) ([]model.Target, error)
+		FindByPeriod(context.Context, model.FindTargetOption) ([]model.Target, error)
 	}
 
 	BillsCollection interface {
@@ -69,14 +77,25 @@ type (
 
 func New(
 	logger Logger,
-	accounts AccountCollection,
-	persons PersonCollection,
+	accounts AccountsCollection,
+	persons PersonsCollection,
 	objects ObjectsCollection,
+	targets TargetsCollection,
 ) *App {
 	return &App{
-		logger:   logger,
-		accounts: accounts,
-		persons:  persons,
-		objects:  objects,
+		Acc: Acc{
+			accounts: accounts,
+			persons:  persons,
+			objects:  objects,
+			getLogger: func() Logger {
+				return logger
+			},
+		},
+		Tar: Tar{
+			targets: targets,
+			getLogger: func() Logger {
+				return logger
+			},
+		},
 	}
 }

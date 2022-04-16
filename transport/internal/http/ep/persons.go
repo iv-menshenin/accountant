@@ -5,9 +5,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/gorilla/mux"
-	"github.com/iv-menshenin/accountant/model"
 	"net/http"
+
+	"github.com/gorilla/mux"
+
+	"github.com/iv-menshenin/accountant/model"
 )
 
 type (
@@ -215,6 +217,8 @@ func (p *Persons) FindHandler() http.HandlerFunc {
 		writeData(w, accounts)
 	}
 }
+
+const personNameField = "person"
 
 func findPersonMapper(r *http.Request) (q model.FindPersonsQuery, err error) {
 	params := queryParams{r: r}

@@ -19,6 +19,11 @@ type (
 	FindPersonOption struct {
 		AccountID *uuid.UUID
 	}
+	FindTargetOption struct {
+		ShowClosed bool
+		Year       int
+		Month      int
+	}
 )
 
 func (q *FindAccountOption) FillFromQuery(query FindAccountsQuery) {

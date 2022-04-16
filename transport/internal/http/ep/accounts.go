@@ -5,9 +5,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/gorilla/mux"
-	"github.com/iv-menshenin/accountant/model"
 	"net/http"
+
+	"github.com/gorilla/mux"
+
+	"github.com/iv-menshenin/accountant/model"
 )
 
 type (
@@ -182,12 +184,7 @@ func (a *Accounts) FindHandler() http.HandlerFunc {
 	}
 }
 
-const (
-	accountField    = "account"
-	personNameField = "person"
-	addressField    = "address"
-	objectNumField  = "number"
-)
+const accountField = "account"
 
 func findAccountMapper(r *http.Request) (q model.FindAccountsQuery, err error) {
 	params := queryParams{r: r}

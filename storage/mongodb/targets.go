@@ -14,7 +14,7 @@ import (
 )
 
 type (
-	TargetCollection struct {
+	TargetsCollection struct {
 		storage  *mongo.Collection
 		mapError func(error) error
 	}
@@ -28,7 +28,7 @@ type (
 	}
 )
 
-func (t *TargetCollection) Create(ctx context.Context, target model.Target) error {
+func (t *TargetsCollection) Create(ctx context.Context, target model.Target) error {
 	select {
 	case <-ctx.Done():
 		return ctx.Err()
@@ -49,7 +49,7 @@ func mapTargetToRecord(ctx context.Context, target model.Target) targetRecord {
 	}
 }
 
-func (t *TargetCollection) Lookup(ctx context.Context, targetID uuid.UUID) (*model.Target, error) {
+func (t *TargetsCollection) Lookup(ctx context.Context, targetID uuid.UUID) (*model.Target, error) {
 	select {
 	case <-ctx.Done():
 		return nil, ctx.Err()
@@ -75,7 +75,7 @@ func mapRecordToTarget(rec targetRecord) *model.Target {
 	return &rec.Data
 }
 
-func (t *TargetCollection) Delete(ctx context.Context, targetID uuid.UUID) error {
+func (t *TargetsCollection) Delete(ctx context.Context, targetID uuid.UUID) error {
 	select {
 	case <-ctx.Done():
 		return ctx.Err()
@@ -86,12 +86,12 @@ func (t *TargetCollection) Delete(ctx context.Context, targetID uuid.UUID) error
 	}
 }
 
-func (t *TargetCollection) FindByPeriod(ctx context.Context, period model.Period) (targets []model.Target, eut error) {
+func (t *TargetsCollection) FindByPeriod(ctx context.Context, option model.FindTargetOption) (targets []model.Target, eut error) {
 	select {
 	case <-ctx.Done():
 		return nil, ctx.Err()
 	default:
-		var filter = targetPeriodFilter(period)
+		var filter = targetPeriodFilter(option)
 		cur, err := t.storage.Find(ctx, filter, options.Find().SetShowRecordID(true))
 		if err != nil {
 			return nil, t.mapError(err)
@@ -112,16 +112,24 @@ func (t *TargetCollection) FindByPeriod(ctx context.Context, period model.Period
 	}
 }
 
-func targetPeriodFilter(period model.Period) interface{} {
+func targetPeriodFilter(option model.FindTargetOption) interface{} {
 	var filter = bson.D{
 		bson.E{Key: "deleted", Value: nil},
-		bson.E{Key: "data.period", Value: period},
+	}
+	if option.Year > 0 {
+		filter = append(filter, bson.E{Key: "data.period.year", Value: option.Year})
+	}
+	if option.Month > 0 {
+		filter = append(filter, bson.E{Key: "data.period.month", Value: option.Month})
+	}
+	if !option.ShowClosed {
+		filter = append(filter, bson.E{Key: "data.closed", Value: nil})
 	}
 	return filter
 }
 
-func (s *Storage) NewTargetCollection(mapError func(error) error) *TargetCollection {
-	return &TargetCollection{
+func (s *Storage) NewTargetsCollection(mapError func(error) error) *TargetsCollection {
+	return &TargetsCollection{
 		storage:  s.mongo.Targets(),
 		mapError: mapError,
 	}

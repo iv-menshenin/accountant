@@ -25,18 +25,22 @@ func Test_Targets(t *testing.T) {
 		t.Fatalf("cannot delete targets: %s", err)
 	}
 
-	targets := testStorage.NewTargetCollection(storage.MapMongodbErrors)
+	var closed = time.Now().Round(time.Second).UTC()
+	targets := testStorage.NewTargetsCollection(storage.MapMongodbErrors)
 	testTarget := model.Target{
 		TargetHead: model.TargetHead{
 			TargetID: uuid.NewUUID(),
 			Type:     "TEST-T",
 		},
-		Period: model.Period{
-			Month: 12,
-			Year:  2021,
+		TargetData: model.TargetData{
+			Period: model.Period{
+				Month: 12,
+				Year:  2021,
+			},
+			Closed:  &closed,
+			Cost:    123000,
+			Comment: "test",
 		},
-		Cost:    123000,
-		Comment: "test",
 	}
 	arrTarget := []model.Target{testTarget}
 
@@ -50,12 +54,14 @@ func Test_Targets(t *testing.T) {
 				TargetID: uuid.NewUUID(),
 				Type:     fmt.Sprintf("Noice-%d", n),
 			},
-			Period: model.Period{
-				Month: n,
-				Year:  2021,
+			TargetData: model.TargetData{
+				Period: model.Period{
+					Month: n,
+					Year:  2021,
+				},
+				Cost:    77764,
+				Comment: "test",
 			},
-			Cost:    77764,
-			Comment: "test",
 		}); err != nil {
 			t.Fatalf("cannot create target: %s", err)
 		}
@@ -68,12 +74,14 @@ func Test_Targets(t *testing.T) {
 				TargetID: uuid.NewUUID(),
 				Type:     fmt.Sprintf("Dec-%d", n),
 			},
-			Period: model.Period{
-				Month: 12,
-				Year:  y,
+			TargetData: model.TargetData{
+				Period: model.Period{
+					Month: 12,
+					Year:  y,
+				},
+				Cost:    30000,
+				Comment: "test-payload",
 			},
-			Cost:    30000,
-			Comment: "test-payload",
 		}
 		if err := targets.Create(ctx, target); err != nil {
 			t.Fatalf("cannot create target: %s", err)
@@ -91,12 +99,13 @@ func Test_Targets(t *testing.T) {
 		t.Fatalf("cannot lookup target: returned nil")
 	}
 	if !reflect.DeepEqual(testTarget, *look) {
-		t.Fatalf("want: %v, get: %v", testTarget, *look)
+		t.Fatalf("want: %v, got: %v", testTarget, *look)
 	}
 
-	found, err := targets.FindByPeriod(ctx, model.Period{
-		Month: 12,
-		Year:  2021,
+	found, err := targets.FindByPeriod(ctx, model.FindTargetOption{
+		ShowClosed: true,
+		Month:      12,
+		Year:       2021,
 	})
 	if err != nil {
 		t.Fatalf("cannot find targets: %s", err)
@@ -111,7 +120,7 @@ func Test_Targets(t *testing.T) {
 	}
 	arrTarget = arrTarget[1:]
 
-	found, err = targets.FindByPeriod(ctx, model.Period{
+	found, err = targets.FindByPeriod(ctx, model.FindTargetOption{
 		Month: 12,
 		Year:  2021,
 	})

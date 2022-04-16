@@ -3,16 +3,18 @@ package mongodb
 import (
 	"context"
 	"fmt"
-	"github.com/iv-menshenin/accountant/config"
-	"github.com/iv-menshenin/accountant/model"
-	"github.com/iv-menshenin/accountant/model/uuid"
-	"go.mongodb.org/mongo-driver/bson"
 	"log"
 	"math/rand"
 	"os"
 	"sync"
 	"testing"
 	"time"
+
+	"go.mongodb.org/mongo-driver/bson"
+
+	"github.com/iv-menshenin/accountant/config"
+	"github.com/iv-menshenin/accountant/model"
+	"github.com/iv-menshenin/accountant/model/uuid"
 )
 
 var testStorage *Storage
@@ -64,13 +66,13 @@ func newMock(mockSize int) *mock {
 }
 
 type accManipulator struct {
-	*AccountCollection
-	*PersonCollection
-	*ObjectCollection
+	*AccountsCollection
+	*PersonsCollection
+	*ObjectsCollection
 }
 
 func (m *accManipulator) uploadAccount(ctx context.Context, acc model.Account) error {
-	err := m.AccountCollection.Create(ctx, model.Account{
+	err := m.AccountsCollection.Create(ctx, model.Account{
 		AccountID:   acc.AccountID,
 		Persons:     nil,
 		Objects:     nil,
@@ -80,13 +82,13 @@ func (m *accManipulator) uploadAccount(ctx context.Context, acc model.Account) e
 		return err
 	}
 	for _, person := range acc.Persons {
-		err = m.PersonCollection.Create(ctx, acc.AccountID, person)
+		err = m.PersonsCollection.Create(ctx, acc.AccountID, person)
 		if err != nil {
 			return err
 		}
 	}
 	for _, object := range acc.Objects {
-		err = m.ObjectCollection.Create(ctx, acc.AccountID, object)
+		err = m.ObjectsCollection.Create(ctx, acc.AccountID, object)
 		if err != nil {
 			return err
 		}

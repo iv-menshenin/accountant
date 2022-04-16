@@ -146,6 +146,12 @@ func Test_Bills(t *testing.T) {
 	if err != nil {
 		t.Errorf("cannot found bills by period: %s", err)
 	}
+	sort.Slice(testPeriod, func(i, j int) bool {
+		return testPeriod[i].BillID.String() < testPeriod[j].BillID.String()
+	})
+	sort.Slice(found, func(i, j int) bool {
+		return found[i].BillID.String() < found[j].BillID.String()
+	})
 	if !reflect.DeepEqual(found, testPeriod) {
 		t.Errorf("matching error.\nwant: %v\n got: %v", testPeriod, found)
 	}
