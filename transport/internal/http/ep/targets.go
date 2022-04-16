@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gorilla/mux"
 
@@ -44,7 +45,8 @@ func NewTargetsEP(ap TargetProcessor) *Targets {
 }
 
 const (
-	targetID = "target_id"
+	targetID   = "target_id"
+	targetType = "type"
 )
 
 func (t *Targets) SetupRouting(router *mux.Router) {
@@ -101,6 +103,12 @@ func (t *Targets) PostHandler() http.HandlerFunc {
 }
 
 func postTargetMapper(r *http.Request) (q model.PostTargetQuery, err error) {
+	if rs, ok := r.URL.Query()[targetType]; ok {
+		q.Type = strings.Join(rs, ",")
+	}
+	if q.Type == "" {
+		return q, fmt.Errorf("%s parameter must not be empty", targetType)
+	}
 	decoder := json.NewDecoder(r.Body)
 	decoder.DisallowUnknownFields()
 	err = decoder.Decode(&q.Target)

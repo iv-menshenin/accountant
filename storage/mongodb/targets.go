@@ -123,7 +123,7 @@ func targetPeriodFilter(option model.FindTargetOption) interface{} {
 		filter = append(filter, bson.E{Key: "data.period.month", Value: option.Month})
 	}
 	if !option.ShowClosed {
-		filter = append(filter, bson.E{Key: "data.closed", Value: nil})
+		// filter = append(filter, bson.E{Key: "data.closed", Value: nil})
 	}
 	return filter
 }

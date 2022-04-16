@@ -9,7 +9,7 @@ import (
 )
 
 func (a *Tar) TargetGet(ctx context.Context, q model.GetTargetQuery) (*model.Target, error) {
-	account, err := a.targets.Lookup(ctx, q.TargetID)
+	target, err := a.targets.Lookup(ctx, q.TargetID)
 	if err == storage.ErrNotFound {
 		a.getLogger().Warning("target not found %s", q.TargetID)
 		return nil, model.NotFound{}
@@ -18,7 +18,7 @@ func (a *Tar) TargetGet(ctx context.Context, q model.GetTargetQuery) (*model.Tar
 		a.getLogger().Error("unable to lookup target %s: %s", q.TargetID, err)
 		return nil, err
 	}
-	return account, nil
+	return target, nil
 }
 
 func (a *Tar) TargetCreate(ctx context.Context, data model.PostTargetQuery) (*model.Target, error) {
