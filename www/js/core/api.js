@@ -29,7 +29,9 @@ class apiManager {
             let keys = Object.keys(paramsMap);
             let outResult = "";
             for (let nn = 0;nn < keys.length;nn++) {
-                outResult += (outResult ? "&" : "") + keys[nn] + "=" + encodeURIComponent(paramsMap[keys[nn]]);
+                if (paramsMap[keys[nn]] !== undefined) {
+                    outResult += (outResult ? "&" : "") + keys[nn] + "=" + encodeURIComponent(paramsMap[keys[nn]]);
+                }
             }
             return outResult;
         } else {
@@ -287,6 +289,33 @@ class apiManager {
     GetAccountObjects(accountID, onSuccess, onError) {
         this.apiExecute(this.accountsPath + "/" + accountID + this.objectsPath, "GET", undefined, undefined, onSuccess, onError);
     }
+
+    targetsPath = "/targets"
+
+    // CreateTarget создает новый целевой сбор
+    CreateTarget(target, onSuccess, onError) {
+        let body = {
+            period: {
+                year: target.year,
+                month: target.month,
+            },
+            closed: target.closed,
+            cost: target.cost,
+            comment: target.comment,
+        };
+        this.apiExecute(this.targetsPath, "POST", {type: target.type}, body, onSuccess, onError);
+    }
+
+    // FindTargets производит поиск целевых сборов
+    FindTargets(showClosed, year, month, onSuccess, onError) {
+        let query = {
+            show_closed: showClosed,
+            year: year,
+            month: month,
+        };
+        this.apiExecute(this.targetsPath, "GET", query, undefined, onSuccess, onError);
+    }
+
 }
 
 let manager = new(apiManager);

@@ -1,4 +1,22 @@
 
+function buildTargetElement(target) {
+    return {
+        primary: [
+            {tag: "img", class: "circle", src: "/www/png/badge_catalog.png"},
+            {tag: "span", class: ["title", "black-text"], content: target.type},
+            {tag: "p", class: ["grey-text"], content: target.comment},
+        ],
+        secondary: (target.period.month < 10 ? "0" : "") + target.period.month + "." + target.period.year
+    };
+}
+
+function targetHeader(target) {
+    if (target.period) {
+        return (target.period.month < 10 ? "0" : "") + target.period.month + "." + target.period.year + ": " + target.type
+    }
+    return "Новый взнос"
+}
+
 function buildAccountElement(account) {
     return {
         primary: [
