@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/iv-menshenin/accountant/model/domain"
-	storage2 "github.com/iv-menshenin/accountant/model/storage"
 	"github.com/iv-menshenin/accountant/storage"
 	"github.com/iv-menshenin/accountant/utils/uuid"
 )
@@ -75,7 +74,7 @@ func (o *ObjectsCollection) Delete(ctx context.Context, accountID uuid.UUID, obj
 	return storage.ErrNotFound
 }
 
-func (o *ObjectsCollection) Find(ctx context.Context, option storage2.FindObjectOption) ([]domain.Object, error) {
+func (o *ObjectsCollection) Find(ctx context.Context, option storage.FindObjectOption) ([]domain.Object, error) {
 	var err error
 	var accounts = make([]domain.Account, 0, 10)
 	if option.AccountID == nil {
@@ -101,14 +100,14 @@ func (o *ObjectsCollection) Find(ctx context.Context, option storage2.FindObject
 	return objects, nil
 }
 
-func findAccountByObject(filter storage2.FindObjectOption) storage2.FindAccountOption {
-	return storage2.FindAccountOption{
+func findAccountByObject(filter storage.FindObjectOption) storage.FindAccountOption {
+	return storage.FindAccountOption{
 		Address: filter.Address,
 		Number:  filter.Number,
 	}
 }
 
-func checkObjectFilter(object domain.Object, filter storage2.FindObjectOption) bool {
+func checkObjectFilter(object domain.Object, filter storage.FindObjectOption) bool {
 	if filter.Address != nil {
 		if !checkObjectAddress(object, *filter.Address) {
 			return false

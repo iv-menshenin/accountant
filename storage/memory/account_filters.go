@@ -4,7 +4,7 @@ import (
 	"strings"
 
 	"github.com/iv-menshenin/accountant/model/domain"
-	"github.com/iv-menshenin/accountant/model/storage"
+	"github.com/iv-menshenin/accountant/storage"
 )
 
 func checkAccountFilter(account domain.Account, filter storage.FindAccountOption) bool {

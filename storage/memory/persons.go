@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/iv-menshenin/accountant/model/domain"
-	storage2 "github.com/iv-menshenin/accountant/model/storage"
 	"github.com/iv-menshenin/accountant/storage"
 	"github.com/iv-menshenin/accountant/utils/uuid"
 )
@@ -73,11 +72,11 @@ func (p *PersonCollection) Delete(ctx context.Context, accountID uuid.UUID, pers
 	return storage.ErrNotFound
 }
 
-func (p *PersonCollection) Find(ctx context.Context, option storage2.FindPersonOption) ([]domain.Person, error) {
+func (p *PersonCollection) Find(ctx context.Context, option storage.FindPersonOption) ([]domain.Person, error) {
 	var err error
 	var accounts = make([]domain.Account, 0, 10)
 	if option.AccountID == nil {
-		accounts, err = p.accounts.Find(ctx, storage2.FindAccountOption{})
+		accounts, err = p.accounts.Find(ctx, storage.FindAccountOption{})
 	} else {
 		var account *domain.Account
 		account, err = p.accounts.Lookup(ctx, *option.AccountID)

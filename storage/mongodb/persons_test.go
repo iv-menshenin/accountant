@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/iv-menshenin/accountant/model/domain"
-	storage2 "github.com/iv-menshenin/accountant/model/storage"
 	"github.com/iv-menshenin/accountant/storage"
 	"github.com/iv-menshenin/accountant/utils/uuid"
 )
@@ -79,7 +78,7 @@ func Test_Persons(t *testing.T) {
 			}
 
 			acc.Persons[rndPerNum] = rndPer
-			objs, err := persons.Find(ctx, storage2.FindPersonOption{AccountID: &acc.AccountID})
+			objs, err := persons.Find(ctx, storage.FindPersonOption{AccountID: &acc.AccountID})
 			if err != nil {
 				errCh <- fmt.Errorf("cant find person: %w", err)
 				return
@@ -95,7 +94,7 @@ func Test_Persons(t *testing.T) {
 				return
 			}
 			acc.Persons = append(acc.Persons[:rndPerNum], acc.Persons[rndPerNum+1:]...)
-			objs, err = persons.Find(ctx, storage2.FindPersonOption{AccountID: &acc.AccountID})
+			objs, err = persons.Find(ctx, storage.FindPersonOption{AccountID: &acc.AccountID})
 			if err != nil {
 				errCh <- fmt.Errorf("cant find person: %w", err)
 				return

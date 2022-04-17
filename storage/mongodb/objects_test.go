@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/iv-menshenin/accountant/model/domain"
-	storage2 "github.com/iv-menshenin/accountant/model/storage"
 	"github.com/iv-menshenin/accountant/storage"
 	"github.com/iv-menshenin/accountant/utils/uuid"
 )
@@ -58,7 +57,7 @@ func Test_Objects(t *testing.T) {
 			}
 
 			for _, obj := range acc.Objects {
-				found, err := objects.Find(ctx, storage2.FindObjectOption{
+				found, err := objects.Find(ctx, storage.FindObjectOption{
 					AccountID: nil,
 					Address:   &obj.Street,
 					Number:    &obj.Number,
@@ -99,7 +98,7 @@ func Test_Objects(t *testing.T) {
 			}
 
 			acc.Objects[rndObjNum] = rndObj
-			objs, err := objects.Find(ctx, storage2.FindObjectOption{AccountID: &acc.AccountID})
+			objs, err := objects.Find(ctx, storage.FindObjectOption{AccountID: &acc.AccountID})
 			if err != nil {
 				errCh <- fmt.Errorf("cant find object: %w", err)
 				return
@@ -115,7 +114,7 @@ func Test_Objects(t *testing.T) {
 				return
 			}
 			acc.Objects = append(acc.Objects[:rndObjNum], acc.Objects[rndObjNum+1:]...)
-			objs, err = objects.Find(ctx, storage2.FindObjectOption{AccountID: &acc.AccountID})
+			objs, err = objects.Find(ctx, storage.FindObjectOption{AccountID: &acc.AccountID})
 			if err != nil {
 				errCh <- fmt.Errorf("cant find object: %w", err)
 				return

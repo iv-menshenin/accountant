@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/iv-menshenin/accountant/model/domain"
-	"github.com/iv-menshenin/accountant/model/storage"
+	"github.com/iv-menshenin/accountant/storage"
 )
 
 func checkObjectFilter(object domain.Object, filter storage.FindObjectOption) bool {

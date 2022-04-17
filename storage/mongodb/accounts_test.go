@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/iv-menshenin/accountant/model/domain"
-	storage2 "github.com/iv-menshenin/accountant/model/storage"
 	"github.com/iv-menshenin/accountant/storage"
 )
 
@@ -67,7 +66,7 @@ func Test_Accounts(t *testing.T) {
 				return
 			}
 
-			accs, err := accounts.Find(ctx, storage2.FindAccountOption{Account: &acc.Account})
+			accs, err := accounts.Find(ctx, storage.FindAccountOption{Account: &acc.Account})
 			if err != nil {
 				errCh <- err
 				return
@@ -78,7 +77,7 @@ func Test_Accounts(t *testing.T) {
 			}
 
 			var foundPersons []domain.Person
-			foundPersons, err = persons.Find(ctx, storage2.FindPersonOption{
+			foundPersons, err = persons.Find(ctx, storage.FindPersonOption{
 				AccountID: &acc.AccountID,
 			})
 			if !reflect.DeepEqual(acc.Persons, foundPersons) {
@@ -87,7 +86,7 @@ func Test_Accounts(t *testing.T) {
 			}
 
 			var foundObjects []domain.Object
-			foundObjects, err = objects.Find(ctx, storage2.FindObjectOption{
+			foundObjects, err = objects.Find(ctx, storage.FindObjectOption{
 				AccountID: &acc.AccountID,
 			})
 			if !reflect.DeepEqual(acc.Objects, foundObjects) {
@@ -99,7 +98,7 @@ func Test_Accounts(t *testing.T) {
 				errCh <- err
 				return
 			}
-			accs, err = accounts.Find(ctx, storage2.FindAccountOption{Account: &found.Account})
+			accs, err = accounts.Find(ctx, storage.FindAccountOption{Account: &found.Account})
 			if err != nil {
 				errCh <- err
 				return

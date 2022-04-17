@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/iv-menshenin/accountant/model/domain"
-	"github.com/iv-menshenin/accountant/model/storage"
+	"github.com/iv-menshenin/accountant/storage"
 	"github.com/iv-menshenin/accountant/storage/internal/memory"
 	"github.com/iv-menshenin/accountant/utils/uuid"
 )

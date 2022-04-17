@@ -10,7 +10,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 
 	"github.com/iv-menshenin/accountant/model/domain"
-	storage2 "github.com/iv-menshenin/accountant/model/storage"
 	"github.com/iv-menshenin/accountant/storage"
 	"github.com/iv-menshenin/accountant/utils/uuid"
 )
@@ -103,7 +102,7 @@ func Test_Targets(t *testing.T) {
 		t.Fatalf("want: %v, got: %v", testTarget, *look)
 	}
 
-	found, err := targets.FindByPeriod(ctx, storage2.FindTargetOption{
+	found, err := targets.FindByPeriod(ctx, storage.FindTargetOption{
 		ShowClosed: true,
 		Month:      12,
 		Year:       2021,
@@ -121,7 +120,7 @@ func Test_Targets(t *testing.T) {
 	}
 	arrTarget = arrTarget[1:]
 
-	found, err = targets.FindByPeriod(ctx, storage2.FindTargetOption{
+	found, err = targets.FindByPeriod(ctx, storage.FindTargetOption{
 		Month: 12,
 		Year:  2021,
 	})

@@ -6,7 +6,6 @@ import (
 	"github.com/iv-menshenin/accountant/model/domain"
 	"github.com/iv-menshenin/accountant/model/generic"
 	"github.com/iv-menshenin/accountant/model/request"
-	storage2 "github.com/iv-menshenin/accountant/model/storage"
 	"github.com/iv-menshenin/accountant/storage"
 	"github.com/iv-menshenin/accountant/utils/uuid"
 )
@@ -68,7 +67,7 @@ func (a *Acc) AccountDelete(ctx context.Context, q request.DeleteAccountQuery) e
 }
 
 func (a *Acc) AccountsFind(ctx context.Context, q request.FindAccountsQuery) ([]domain.Account, error) {
-	var findOption storage2.FindAccountOption
+	var findOption storage.FindAccountOption
 	findOption.FillFromQuery(q)
 	accounts, err := a.accounts.Find(ctx, findOption)
 	if err != nil {

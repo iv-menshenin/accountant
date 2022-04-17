@@ -6,7 +6,6 @@ import (
 	"github.com/iv-menshenin/accountant/model/domain"
 	"github.com/iv-menshenin/accountant/model/generic"
 	"github.com/iv-menshenin/accountant/model/request"
-	storage2 "github.com/iv-menshenin/accountant/model/storage"
 	"github.com/iv-menshenin/accountant/storage"
 	"github.com/iv-menshenin/accountant/utils/uuid"
 )
@@ -53,7 +52,7 @@ func (a *Tar) TargetDelete(ctx context.Context, q request.DeleteTargetQuery) err
 }
 
 func (a *Tar) TargetsFind(ctx context.Context, q request.FindTargetQuery) ([]domain.Target, error) {
-	var findOption = storage2.FindTargetOption{
+	var findOption = storage.FindTargetOption{
 		ShowClosed: q.ShowClosed,
 	}
 	if q.Period != nil && q.Period.Year > 0 {
