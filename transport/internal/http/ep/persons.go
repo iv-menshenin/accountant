@@ -31,20 +31,20 @@ func NewPersonsEP(pp PersonProcessor) *Persons {
 }
 
 const (
-	personID = "person_id"
+	pathSegmentPersons    = "/persons"
+	parameterNamePersonID = "person_id"
+	parameterNamePerson   = "person"
 )
 
 func (p *Persons) SetupRouting(router *mux.Router) {
-	const accountsPath = "/accounts"
-	const personsPath = "/persons"
-	personsWithoutIDPath := fmt.Sprintf("%s/{%s:[0-9a-f\\-]+}%s", accountsPath, accountID, personsPath)
-	personsWithIDPath := fmt.Sprintf("%s/{%s:[0-9a-f\\-]+}%s/{%s:[0-9a-f\\-]+}", accountsPath, accountID, personsPath, personID)
+	personsWithoutIDPath := fmt.Sprintf("%s/{%s:[0-9a-f\\-]+}%s", pathSegmentAccounts, parameterNameAccountID, pathSegmentPersons)
+	personsWithIDPath := fmt.Sprintf("%s/{%s:[0-9a-f\\-]+}%s/{%s:[0-9a-f\\-]+}", pathSegmentAccounts, parameterNameAccountID, pathSegmentPersons, parameterNamePersonID)
 
 	router.Path(personsWithIDPath).Methods(http.MethodGet).Handler(p.LookupHandler())
 	router.Path(personsWithoutIDPath).Methods(http.MethodPost).Handler(p.PostHandler())
 	router.Path(personsWithIDPath).Methods(http.MethodPut).Handler(p.PutHandler())
 	router.Path(personsWithIDPath).Methods(http.MethodDelete).Handler(p.DeleteHandler())
-	router.Path(personsPath).Methods(http.MethodGet).Handler(p.FindHandler())
+	router.Path(pathSegmentPersons).Methods(http.MethodGet).Handler(p.FindHandler())
 
 }
 
@@ -65,17 +65,17 @@ func (p *Persons) LookupHandler() http.HandlerFunc {
 }
 
 func getPersonMapper(r *http.Request) (q request.GetPersonQuery, err error) {
-	id := mux.Vars(r)[accountID]
+	id := mux.Vars(r)[parameterNameAccountID]
 	if id == "" {
-		err = errors.New(accountID + " must not be empty")
+		err = errors.New(parameterNameAccountID + " must not be empty")
 		return
 	}
 	if err = q.AccountID.FromString(id); err != nil {
 		return
 	}
-	id = mux.Vars(r)[personID]
+	id = mux.Vars(r)[parameterNamePersonID]
 	if id == "" {
-		err = errors.New(personID + " must not be empty")
+		err = errors.New(parameterNamePersonID + " must not be empty")
 		return
 	}
 	err = q.PersonID.FromString(id)
@@ -99,9 +99,9 @@ func (p *Persons) PostHandler() http.HandlerFunc {
 }
 
 func postPersonMapper(r *http.Request) (q request.PostPersonQuery, err error) {
-	id := mux.Vars(r)[accountID]
+	id := mux.Vars(r)[parameterNameAccountID]
 	if id == "" {
-		err = errors.New(accountID + " must not be empty")
+		err = errors.New(parameterNameAccountID + " must not be empty")
 		return
 	}
 	if err = q.AccountID.FromString(id); err != nil {
@@ -131,17 +131,17 @@ func (p *Persons) PutHandler() http.HandlerFunc {
 }
 
 func putPersonMapper(r *http.Request) (q request.PutPersonQuery, err error) {
-	id := mux.Vars(r)[accountID]
+	id := mux.Vars(r)[parameterNameAccountID]
 	if id == "" {
-		err = errors.New(accountID + " must not be empty")
+		err = errors.New(parameterNameAccountID + " must not be empty")
 		return
 	}
 	if err = q.AccountID.FromString(id); err != nil {
 		return
 	}
-	id = mux.Vars(r)[personID]
+	id = mux.Vars(r)[parameterNamePersonID]
 	if id == "" {
-		err = errors.New(personID + " must not be empty")
+		err = errors.New(parameterNamePersonID + " must not be empty")
 		return
 	}
 	err = q.PersonID.FromString(id)
@@ -169,17 +169,17 @@ func (p *Persons) DeleteHandler() http.HandlerFunc {
 }
 
 func deletePersonMapper(r *http.Request) (q request.DeletePersonQuery, err error) {
-	id := mux.Vars(r)[accountID]
+	id := mux.Vars(r)[parameterNameAccountID]
 	if id == "" {
-		err = errors.New(accountID + " must not be empty")
+		err = errors.New(parameterNameAccountID + " must not be empty")
 		return
 	}
 	if err = q.AccountID.FromString(id); err != nil {
 		return
 	}
-	id = mux.Vars(r)[personID]
+	id = mux.Vars(r)[parameterNamePersonID]
 	if id == "" {
-		err = errors.New(personID + " must not be empty")
+		err = errors.New(parameterNamePersonID + " must not be empty")
 		return
 	}
 	err = q.PersonID.FromString(id)
@@ -202,19 +202,17 @@ func (p *Persons) FindHandler() http.HandlerFunc {
 	}
 }
 
-const personNameField = "person"
-
 func findPersonMapper(r *http.Request) (q request.FindPersonsQuery, err error) {
 	params := queryParams{r: r}
-	id, _ := params.vars(accountID)
+	id, _ := params.vars(parameterNameAccountID)
 	if id == "" {
-		err = errors.New(accountID + " must not be empty")
+		err = errors.New(parameterNameAccountID + " must not be empty")
 		return
 	}
 	if err = q.AccountID.FromString(id); err != nil {
 		return
 	}
-	if person, ok := params.vars(personNameField); ok {
+	if person, ok := params.vars(parameterNamePerson); ok {
 		q.PersonFullName = &person
 	}
 	return

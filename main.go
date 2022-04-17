@@ -49,6 +49,7 @@ func mainFunc(ctx context.Context, halt <-chan struct{}) (err error) {
 		personsCollection = mongoStorage.NewPersonsCollection(accountCollection, storage.MapMongodbErrors)
 		objectsCollection = mongoStorage.NewObjectsCollection(accountCollection, storage.MapMongodbErrors)
 		targetsCollection = mongoStorage.NewTargetsCollection(storage.MapMongodbErrors)
+		billsCollection   = mongoStorage.NewBillsCollection(storage.MapMongodbErrors)
 
 		appHnd = business.New(
 			appLogger,
@@ -56,6 +57,7 @@ func mainFunc(ctx context.Context, halt <-chan struct{}) (err error) {
 			personsCollection,
 			objectsCollection,
 			targetsCollection,
+			billsCollection,
 		)
 		queryTransport = transport.NewHTTPServer(config.New("http"), logWriter, appHnd, authCore)
 	)

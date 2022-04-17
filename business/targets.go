@@ -51,7 +51,7 @@ func (a *Tar) TargetDelete(ctx context.Context, q request.DeleteTargetQuery) err
 	return err
 }
 
-func (a *Tar) TargetsFind(ctx context.Context, q request.FindTargetQuery) ([]domain.Target, error) {
+func (a *Tar) TargetsFind(ctx context.Context, q request.FindTargetsQuery) ([]domain.Target, error) {
 	var findOption = storage.FindTargetOption{
 		ShowClosed: q.ShowClosed,
 	}

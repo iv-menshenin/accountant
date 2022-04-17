@@ -65,6 +65,22 @@ type (
 		TargetDelete(context.Context, DeleteTargetQuery) error
 	}
 	TargetFinder interface {
-		TargetsFind(context.Context, FindTargetQuery) ([]domain.Target, error)
+		TargetsFind(context.Context, FindTargetsQuery) ([]domain.Target, error)
+	}
+
+	BillCreator interface {
+		BillCreate(context.Context, PostBillQuery) (*domain.Bill, error)
+	}
+	BillSaver interface {
+		BillSave(context.Context, PutBillQuery) (*domain.Bill, error)
+	}
+	BillGetter interface {
+		BillGet(context.Context, GetBillQuery) (*domain.Bill, error)
+	}
+	BillDeleter interface {
+		BillDelete(context.Context, DeleteBillQuery) error
+	}
+	BillFinder interface {
+		BillsFind(context.Context, FindBillsQuery) ([]domain.Bill, error)
 	}
 )

@@ -31,18 +31,19 @@ func NewAccountsEP(ap AccountProcessor) *Accounts {
 }
 
 const (
-	accountID = "account_id"
+	pathSegmentAccounts    = "/accounts"
+	parameterNameAccountID = "account_id"
+	parameterNameAccount   = "account"
 )
 
 func (a *Accounts) SetupRouting(router *mux.Router) {
-	const accountsPath = "/accounts"
-	accountsWithIDPath := fmt.Sprintf("%s/{%s:[0-9a-f\\-]+}", accountsPath, accountID)
+	accountsWithIDPath := fmt.Sprintf("%s/{%s:[0-9a-f\\-]+}", pathSegmentAccounts, parameterNameAccountID)
 
 	router.Path(accountsWithIDPath).Methods(http.MethodGet).Handler(a.LookupHandler())
-	router.Path(accountsPath).Methods(http.MethodPost).Handler(a.PostHandler())
+	router.Path(pathSegmentAccounts).Methods(http.MethodPost).Handler(a.PostHandler())
 	router.Path(accountsWithIDPath).Methods(http.MethodPut).Handler(a.PutHandler())
 	router.Path(accountsWithIDPath).Methods(http.MethodDelete).Handler(a.DeleteHandler())
-	router.Path(accountsPath).Methods(http.MethodGet).Handler(a.FindHandler())
+	router.Path(pathSegmentAccounts).Methods(http.MethodGet).Handler(a.FindHandler())
 
 }
 
@@ -63,9 +64,9 @@ func (a *Accounts) LookupHandler() http.HandlerFunc {
 }
 
 func getAccountMapper(r *http.Request) (q request.GetAccountQuery, err error) {
-	id := mux.Vars(r)[accountID]
+	id := mux.Vars(r)[parameterNameAccountID]
 	if id == "" {
-		err = errors.New(accountID + " must not be empty")
+		err = errors.New(parameterNameAccountID + " must not be empty")
 		return
 	}
 	err = q.ID.FromString(id)
@@ -112,9 +113,9 @@ func (a *Accounts) PutHandler() http.HandlerFunc {
 }
 
 func putAccountMapper(r *http.Request) (q request.PutAccountQuery, err error) {
-	id := mux.Vars(r)[accountID]
+	id := mux.Vars(r)[parameterNameAccountID]
 	if id == "" {
-		err = errors.New(accountID + " must not be empty")
+		err = errors.New(parameterNameAccountID + " must not be empty")
 		return
 	}
 	if err = q.ID.FromString(id); err != nil {
@@ -143,9 +144,9 @@ func (a *Accounts) DeleteHandler() http.HandlerFunc {
 }
 
 func deleteAccountMapper(r *http.Request) (q request.DeleteAccountQuery, err error) {
-	id := mux.Vars(r)[accountID]
+	id := mux.Vars(r)[parameterNameAccountID]
 	if id == "" {
-		err = errors.New(accountID + " must not be empty")
+		err = errors.New(parameterNameAccountID + " must not be empty")
 		return
 	}
 	err = q.ID.FromString(id)
@@ -168,11 +169,9 @@ func (a *Accounts) FindHandler() http.HandlerFunc {
 	}
 }
 
-const accountField = "account"
-
 func findAccountMapper(r *http.Request) (q request.FindAccountsQuery, err error) {
 	params := queryParams{r: r}
-	if account, ok := params.vars(accountField); ok {
+	if account, ok := params.vars(parameterNameAccount); ok {
 		q.Account = &account
 	}
 	return

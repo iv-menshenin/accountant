@@ -66,7 +66,7 @@ func (a *AccountsCollection) Replace(ctx context.Context, id uuid.UUID, account 
 	default:
 		var filter = accountIdFilter(id)
 		var record = mapAccountToRecord(ctx, account)
-		var document = updateDocument(record)
+		var document = updateAccountDocument(record)
 		_, err := a.storage.UpdateOne(ctx, filter, document, options.Update())
 		return a.mapError(err)
 	}
@@ -84,7 +84,7 @@ func mapAccountToRecord(ctx context.Context, account domain.Account) accountReco
 	}
 }
 
-func updateDocument(record accountRecord) interface{} {
+func updateAccountDocument(record accountRecord) interface{} {
 	return bson.M{"$set": bson.D{
 		{"updated", record.Updated},
 		{"data", record.Data},

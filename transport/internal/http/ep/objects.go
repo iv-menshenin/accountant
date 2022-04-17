@@ -32,20 +32,21 @@ func NewObjectsEP(pp ObjectProcessor) *Objects {
 }
 
 const (
-	objectID = "object_id"
+	pathSegmentObjects    = "/objects"
+	parameterNameObjectID = "object_id"
+	parameterNameNumber   = "number"
+	parameterNameAddress  = "address"
 )
 
 func (o *Objects) SetupRouting(router *mux.Router) {
-	const accountsPath = "/accounts"
-	const objectsPath = "/objects"
-	objectsWithoutIDPath := fmt.Sprintf("%s/{%s:[0-9a-f\\-]+}%s", accountsPath, accountID, objectsPath)
-	objectsWithIDPath := fmt.Sprintf("%s/{%s:[0-9a-f\\-]+}%s/{%s:[0-9a-f\\-]+}", accountsPath, accountID, objectsPath, objectID)
+	objectsWithoutIDPath := fmt.Sprintf("%s/{%s:[0-9a-f\\-]+}%s", pathSegmentAccounts, parameterNameAccountID, pathSegmentObjects)
+	objectsWithIDPath := fmt.Sprintf("%s/{%s:[0-9a-f\\-]+}%s/{%s:[0-9a-f\\-]+}", pathSegmentAccounts, parameterNameAccountID, pathSegmentObjects, parameterNameObjectID)
 
 	router.Path(objectsWithIDPath).Methods(http.MethodGet).Handler(o.LookupHandler())
 	router.Path(objectsWithoutIDPath).Methods(http.MethodPost).Handler(o.PostHandler())
 	router.Path(objectsWithIDPath).Methods(http.MethodPut).Handler(o.PutHandler())
 	router.Path(objectsWithIDPath).Methods(http.MethodDelete).Handler(o.DeleteHandler())
-	router.Path(objectsPath).Methods(http.MethodGet).Handler(o.FindHandler())
+	router.Path(pathSegmentObjects).Methods(http.MethodGet).Handler(o.FindHandler())
 
 }
 
@@ -66,17 +67,17 @@ func (p *Objects) LookupHandler() http.HandlerFunc {
 }
 
 func getObjectMapper(r *http.Request) (q request.GetObjectQuery, err error) {
-	id := mux.Vars(r)[accountID]
+	id := mux.Vars(r)[parameterNameAccountID]
 	if id == "" {
-		err = errors.New(accountID + " must not be empty")
+		err = errors.New(parameterNameAccountID + " must not be empty")
 		return
 	}
 	if err = q.AccountID.FromString(id); err != nil {
 		return
 	}
-	id = mux.Vars(r)[objectID]
+	id = mux.Vars(r)[parameterNameObjectID]
 	if id == "" {
-		err = errors.New(objectID + " must not be empty")
+		err = errors.New(parameterNameObjectID + " must not be empty")
 		return
 	}
 	err = q.ObjectID.FromString(id)
@@ -100,9 +101,9 @@ func (p *Objects) PostHandler() http.HandlerFunc {
 }
 
 func postObjectMapper(r *http.Request) (q request.PostObjectQuery, err error) {
-	id := mux.Vars(r)[accountID]
+	id := mux.Vars(r)[parameterNameAccountID]
 	if id == "" {
-		err = errors.New(accountID + " must not be empty")
+		err = errors.New(parameterNameAccountID + " must not be empty")
 		return
 	}
 	if err = q.AccountID.FromString(id); err != nil {
@@ -132,17 +133,17 @@ func (p *Objects) PutHandler() http.HandlerFunc {
 }
 
 func putObjectMapper(r *http.Request) (q request.PutObjectQuery, err error) {
-	id := mux.Vars(r)[accountID]
+	id := mux.Vars(r)[parameterNameAccountID]
 	if id == "" {
-		err = errors.New(accountID + " must not be empty")
+		err = errors.New(parameterNameAccountID + " must not be empty")
 		return
 	}
 	if err = q.AccountID.FromString(id); err != nil {
 		return
 	}
-	id = mux.Vars(r)[objectID]
+	id = mux.Vars(r)[parameterNameObjectID]
 	if id == "" {
-		err = errors.New(objectID + " must not be empty")
+		err = errors.New(parameterNameObjectID + " must not be empty")
 		return
 	}
 	err = q.ObjectID.FromString(id)
@@ -170,17 +171,17 @@ func (p *Objects) DeleteHandler() http.HandlerFunc {
 }
 
 func deleteObjectMapper(r *http.Request) (q request.DeleteObjectQuery, err error) {
-	id := mux.Vars(r)[accountID]
+	id := mux.Vars(r)[parameterNameAccountID]
 	if id == "" {
-		err = errors.New(accountID + " must not be empty")
+		err = errors.New(parameterNameAccountID + " must not be empty")
 		return
 	}
 	if err = q.AccountID.FromString(id); err != nil {
 		return
 	}
-	id = mux.Vars(r)[objectID]
+	id = mux.Vars(r)[parameterNameObjectID]
 	if id == "" {
-		err = errors.New(objectID + " must not be empty")
+		err = errors.New(parameterNameObjectID + " must not be empty")
 		return
 	}
 	err = q.ObjectID.FromString(id)
@@ -203,25 +204,20 @@ func (p *Objects) FindHandler() http.HandlerFunc {
 	}
 }
 
-const (
-	objectNumField = "number"
-	addressField   = "address"
-)
-
 func findObjectMapper(r *http.Request) (q request.FindObjectsQuery, err error) {
 	params := queryParams{r: r}
-	id, _ := params.vars(accountID)
+	id, _ := params.vars(parameterNameAccountID)
 	if id == "" {
-		err = errors.New(accountID + " must not be empty")
+		err = errors.New(parameterNameAccountID + " must not be empty")
 		return
 	}
 	if err = q.AccountID.FromString(id); err != nil {
 		return
 	}
-	if address, ok := params.vars(addressField); ok {
+	if address, ok := params.vars(parameterNameAddress); ok {
 		q.Address = &address
 	}
-	if numStr, ok := params.vars(objectNumField); ok {
+	if numStr, ok := params.vars(parameterNameNumber); ok {
 		var num int
 		if num, err = strconv.Atoi(numStr); err != nil {
 			return

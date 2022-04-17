@@ -33,18 +33,21 @@ func NewTargetsEP(ap TargetProcessor) *Targets {
 }
 
 const (
-	targetID   = "target_id"
-	targetType = "type"
+	pathSegmentTargets      = "/targets"
+	parameterNameTargetID   = "target_id"
+	parameterNameType       = "type"
+	parameterNameShowClosed = "show_closed"
+	parameterNameYear       = "year"
+	parameterNameMonth      = "month"
 )
 
 func (t *Targets) SetupRouting(router *mux.Router) {
-	const targetsPath = "/targets"
-	targetsWithIDPath := fmt.Sprintf("%s/{%s:[0-9a-f\\-]+}", targetsPath, targetID)
+	targetsWithIDPath := fmt.Sprintf("%s/{%s:[0-9a-f\\-]+}", pathSegmentTargets, parameterNameTargetID)
 
 	router.Path(targetsWithIDPath).Methods(http.MethodGet).Handler(t.LookupHandler())
-	router.Path(targetsPath).Methods(http.MethodPost).Handler(t.PostHandler())
+	router.Path(pathSegmentTargets).Methods(http.MethodPost).Handler(t.PostHandler())
 	router.Path(targetsWithIDPath).Methods(http.MethodDelete).Handler(t.DeleteHandler())
-	router.Path(targetsPath).Methods(http.MethodGet).Handler(t.FindHandler())
+	router.Path(pathSegmentTargets).Methods(http.MethodGet).Handler(t.FindHandler())
 
 }
 
@@ -65,9 +68,9 @@ func (t *Targets) LookupHandler() http.HandlerFunc {
 }
 
 func getTargetMapper(r *http.Request) (q request.GetTargetQuery, err error) {
-	id := mux.Vars(r)[targetID]
+	id := mux.Vars(r)[parameterNameTargetID]
 	if id == "" {
-		err = errors.New(targetID + " must not be empty")
+		err = errors.New(parameterNameTargetID + " must not be empty")
 		return
 	}
 	err = q.TargetID.FromString(id)
@@ -91,11 +94,11 @@ func (t *Targets) PostHandler() http.HandlerFunc {
 }
 
 func postTargetMapper(r *http.Request) (q request.PostTargetQuery, err error) {
-	if rs, ok := r.URL.Query()[targetType]; ok {
+	if rs, ok := r.URL.Query()[parameterNameType]; ok {
 		q.Type = strings.Join(rs, ",")
 	}
 	if q.Type == "" {
-		return q, fmt.Errorf("%s parameter must not be empty", targetType)
+		return q, fmt.Errorf("%s parameter must not be empty", parameterNameType)
 	}
 	decoder := json.NewDecoder(r.Body)
 	decoder.DisallowUnknownFields()
@@ -120,9 +123,9 @@ func (t *Targets) DeleteHandler() http.HandlerFunc {
 }
 
 func deleteTargetMapper(r *http.Request) (q request.DeleteTargetQuery, err error) {
-	id := mux.Vars(r)[targetID]
+	id := mux.Vars(r)[parameterNameTargetID]
 	if id == "" {
-		err = errors.New(targetID + " must not be empty")
+		err = errors.New(parameterNameTargetID + " must not be empty")
 		return
 	}
 	err = q.TargetID.FromString(id)
@@ -145,29 +148,23 @@ func (t *Targets) FindHandler() http.HandlerFunc {
 	}
 }
 
-const (
-	showClosed  = "show_closed"
-	periodYear  = "year"
-	periodMonth = "month"
-)
-
-func findTargetMapper(r *http.Request) (q request.FindTargetQuery, err error) {
+func findTargetMapper(r *http.Request) (q request.FindTargetsQuery, err error) {
 	params := queryParams{r: r}
-	if sc, ok := params.vars(showClosed); ok && sc != "false" && sc != "0" {
+	if sc, ok := params.vars(parameterNameShowClosed); ok && sc != "false" && sc != "0" {
 		q.ShowClosed = true
 	}
 	var period domain.Period
-	if y, ok := params.vars(periodYear); ok {
+	if y, ok := params.vars(parameterNameYear); ok {
 		period.Year, err = strconv.Atoi(y)
 		if err != nil {
-			err = fmt.Errorf("%s must be integer: %w", periodYear, err)
+			err = fmt.Errorf("%s must be integer: %w", parameterNameYear, err)
 			return
 		}
 	}
-	if y, ok := params.vars(periodMonth); ok {
+	if y, ok := params.vars(parameterNameMonth); ok {
 		period.Month, err = strconv.Atoi(y)
 		if err != nil {
-			err = fmt.Errorf("%s must be integer: %w", periodMonth, err)
+			err = fmt.Errorf("%s must be integer: %w", parameterNameMonth, err)
 			return
 		}
 	}

@@ -9,19 +9,24 @@ import (
 )
 
 type (
-	Tar struct {
-		targets   TargetsCollection
-		getLogger func() Logger
-	}
 	Acc struct {
 		accounts  AccountsCollection
 		persons   PersonsCollection
 		objects   ObjectsCollection
 		getLogger func() Logger
 	}
+	Tar struct {
+		targets   TargetsCollection
+		getLogger func() Logger
+	}
+	Bil struct {
+		bills     BillsCollection
+		getLogger func() Logger
+	}
 	App struct {
 		Acc
 		Tar
+		Bil
 	}
 	Logger interface {
 		Warning(format string, args ...interface{})
@@ -70,8 +75,8 @@ type (
 	BillsCollection interface {
 		Create(context.Context, domain.Bill) error
 		Lookup(context.Context, uuid.UUID) (*domain.Bill, error)
-		FindByAccount(context.Context, uuid.UUID) ([]domain.Bill, error)
-		FindByPeriod(context.Context, domain.Period) ([]domain.Bill, error)
+		Replace(context.Context, domain.Bill) error
+		FindBy(context.Context, *uuid.UUID, *uuid.UUID, *domain.Period) ([]domain.Bill, error)
 		Delete(context.Context, uuid.UUID) error
 	}
 )
@@ -82,6 +87,7 @@ func New(
 	persons PersonsCollection,
 	objects ObjectsCollection,
 	targets TargetsCollection,
+	bills BillsCollection,
 ) *App {
 	return &App{
 		Acc: Acc{
@@ -94,6 +100,12 @@ func New(
 		},
 		Tar: Tar{
 			targets: targets,
+			getLogger: func() Logger {
+				return logger
+			},
+		},
+		Bil: Bil{
+			bills: bills,
 			getLogger: func() Logger {
 				return logger
 			},

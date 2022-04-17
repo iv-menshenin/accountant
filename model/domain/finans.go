@@ -41,13 +41,17 @@ type (
 	}
 	// Bill описывает начисления (счет на оплату)
 	Bill struct {
-		BillID    uuid.UUID   `bson:"bill_id" json:"bill_id"`
-		AccountID uuid.UUID   `bson:"account_id" json:"account_id"`
-		PersonID  *uuid.UUID  `bson:"person_id" json:"person_id"`
-		ObjectID  *uuid.UUID  `bson:"object_id" json:"object_id"`
-		Period    Period      `bson:"period" json:"period"`
-		Target    TargetHead  `bson:"target" json:"target"`
-		Bill      float64     `bson:"bill" json:"bill"`
-		Payments  []uuid.UUID `bson:"payment_linked" json:"payment_linked"`
+		BillID    uuid.UUID `bson:"bill_id" json:"bill_id"`
+		AccountID uuid.UUID `bson:"account_id" json:"account_id"`
+		BillData  `bson:",inline" json:",inline"`
+	}
+	// BillData описывает изменяемую часть начислений
+	BillData struct {
+		Formed   time.Time   `bson:"formed" json:"formed"`
+		ObjectID *uuid.UUID  `bson:"object_id" json:"object_id"`
+		Period   Period      `bson:"period" json:"period"`
+		Target   TargetHead  `bson:"target" json:"target"`
+		Bill     float64     `bson:"bill" json:"bill"`
+		Payments []uuid.UUID `bson:"payment_linked" json:"payment_linked"`
 	}
 )

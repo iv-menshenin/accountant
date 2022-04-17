@@ -67,6 +67,26 @@ func (b *BillsCollection) Lookup(ctx context.Context, billID uuid.UUID) (*domain
 	}
 }
 
+func (b *BillsCollection) Replace(ctx context.Context, bill domain.Bill) error {
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	default:
+		var filter = billIdFilter(bill.BillID)
+		var record = mapBillToRecord(ctx, bill)
+		var document = updateBillDocument(record)
+		_, err := b.storage.UpdateOne(ctx, filter, document, options.Update())
+		return b.mapError(err)
+	}
+}
+
+func updateBillDocument(record billRecord) interface{} {
+	return bson.M{"$set": bson.D{
+		{"updated", record.Updated},
+		{"data", record.Data},
+	}}
+}
+
 func billIdFilter(id uuid.UUID) interface{} {
 	return bson.M{"_id": bson.M{"$eq": mid.UUID(id)}}
 }
@@ -75,12 +95,12 @@ func mapRecordToBill(rec billRecord) *domain.Bill {
 	return &rec.Data
 }
 
-func (b *BillsCollection) FindByAccount(ctx context.Context, accountID uuid.UUID) (bills []domain.Bill, eut error) {
+func (b *BillsCollection) FindBy(ctx context.Context, accountID, targetID *uuid.UUID, period *domain.Period) (bills []domain.Bill, eut error) {
 	select {
 	case <-ctx.Done():
 		return nil, ctx.Err()
 	default:
-		var filter = billFilter(&accountID, nil)
+		var filter = billFilter(accountID, targetID, period)
 		cur, err := b.storage.Find(ctx, filter, options.Find().SetShowRecordID(true))
 		if err != nil {
 			return nil, b.mapError(err)
@@ -101,38 +121,15 @@ func (b *BillsCollection) FindByAccount(ctx context.Context, accountID uuid.UUID
 	}
 }
 
-func (b *BillsCollection) FindByPeriod(ctx context.Context, period domain.Period) (bills []domain.Bill, eut error) {
-	select {
-	case <-ctx.Done():
-		return nil, ctx.Err()
-	default:
-		var filter = billFilter(nil, &period)
-		cur, err := b.storage.Find(ctx, filter, options.Find().SetShowRecordID(true))
-		if err != nil {
-			return nil, b.mapError(err)
-		}
-		defer func() {
-			if e := cur.Close(ctx); e != nil && eut == nil {
-				eut = e
-			}
-		}()
-		for cur.Next(ctx) {
-			var record billRecord
-			if err = cur.Decode(&record); err != nil {
-				return nil, err
-			}
-			bills = append(bills, *mapRecordToBill(record))
-		}
-		return bills, b.mapError(cur.Err())
-	}
-}
-
-func billFilter(accountID *uuid.UUID, period *domain.Period) interface{} {
+func billFilter(accountID *uuid.UUID, targetID *uuid.UUID, period *domain.Period) interface{} {
 	var filter = bson.D{
 		bson.E{Key: "deleted", Value: nil},
 	}
 	if accountID != nil {
 		filter = append(filter, bson.E{Key: "data.account_id", Value: *accountID})
+	}
+	if targetID != nil {
+		filter = append(filter, bson.E{Key: "data.target.target_id", Value: *targetID})
 	}
 	if period != nil {
 		filter = append(filter, bson.E{Key: "data.period", Value: *period})

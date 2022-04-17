@@ -78,8 +78,28 @@ type (
 	DeleteTargetQuery struct {
 		TargetID uuid.UUID
 	}
-	FindTargetQuery struct {
+	FindTargetsQuery struct {
 		ShowClosed bool
 		Period     *domain.Period
+	}
+
+	PostBillQuery struct {
+		AccountID uuid.UUID
+		Data      domain.BillData
+	}
+	PutBillQuery struct {
+		BillID uuid.UUID
+		Data   domain.BillData
+	}
+	GetBillQuery struct {
+		BillID uuid.UUID
+	}
+	DeleteBillQuery struct {
+		BillID uuid.UUID
+	}
+	FindBillsQuery struct {
+		AccountID *uuid.UUID
+		TargetID  *uuid.UUID
+		Period    *domain.Period
 	}
 )
