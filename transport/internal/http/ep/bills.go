@@ -74,6 +74,9 @@ func postBillsMapper(r *http.Request) (q request.PostBillQuery, err error) {
 		err = errors.New(parameterNameAccountID + " must not be empty")
 		return
 	}
+	if err = q.AccountID.FromString(id); err != nil {
+		return
+	}
 	decoder := json.NewDecoder(r.Body)
 	decoder.DisallowUnknownFields()
 	err = decoder.Decode(&q.Data)

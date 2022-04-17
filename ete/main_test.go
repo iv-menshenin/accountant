@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/iv-menshenin/accountant/utils/uuid"
 	"io"
 	"log"
 	"math/rand"
@@ -28,6 +29,7 @@ const (
 	pathAPI      = "/api"
 	pathAccounts = "/accounts"
 	pathTargets  = "/targets"
+	pathBills    = "/bills"
 
 	mongoDbHost = "172.16.35.129"
 	mongoDbName = "test"
@@ -82,6 +84,10 @@ func Test_ete(t *testing.T) {
 		testTargets(t, logData, actor)
 	})
 
+	t.Run("bills", func(t *testing.T) {
+		testBills(t, logData, actor)
+	})
+
 	if err := actor.release(); err != nil {
 		t.Log(logData.String())
 		t.Fatal(err)
@@ -107,6 +113,7 @@ func upService(t *testing.T, logData io.Writer) httpActor {
 		)
 		accountsURL = fmt.Sprintf("%s://%s:%d%s%s", proto, host, port, pathAPI, pathAccounts)
 		targetsURL  = fmt.Sprintf("%s://%s:%d%s%s", proto, host, port, pathAPI, pathTargets)
+		billsURL    = fmt.Sprintf("%s://%s:%d%s%s", proto, host, port, pathAPI, pathBills)
 	)
 	mongoStorage, err := mongodb.NewStorage(dbConfig, logger)
 	if err != nil {
@@ -137,6 +144,7 @@ func upService(t *testing.T, logData io.Writer) httpActor {
 	return httpActor{
 		accountsURL: accountsURL,
 		targetsURL:  targetsURL,
+		billsURL:    billsURL,
 		release: func() error {
 			if err = queryTransport.Shutdown(context.Background()); err != nil {
 				return err
@@ -158,6 +166,7 @@ type (
 	httpActor struct {
 		accountsURL string
 		targetsURL  string
+		billsURL    string
 		release     func() error
 	}
 	ResponseMeta struct {
@@ -188,6 +197,14 @@ type (
 		Meta ResponseMeta    `json:"meta"`
 		Data []domain.Target `json:"data"`
 	}
+	BillDataResponse struct {
+		Meta ResponseMeta `json:"meta"`
+		Data *domain.Bill `json:"data"`
+	}
+	BillsDataResponse struct {
+		Meta ResponseMeta  `json:"meta"`
+		Data []domain.Bill `json:"data"`
+	}
 )
 
 func (a *httpActor) exec(req *http.Request, i interface{}) error {
@@ -214,4 +231,11 @@ func (a *httpActor) exec(req *http.Request, i interface{}) error {
 		return fmt.Errorf("unexpected http status: %d", resp.StatusCode)
 	}
 	return nil
+}
+
+func mustUUID(u string) (x uuid.UUID) {
+	if err := x.FromString(u); err != nil {
+		panic(err)
+	}
+	return
 }
