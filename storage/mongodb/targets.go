@@ -9,7 +9,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 	mid "go.mongodb.org/mongo-driver/x/mongo/driver/uuid"
 
-	"github.com/iv-menshenin/accountant/model"
+	"github.com/iv-menshenin/accountant/model/domain"
+	"github.com/iv-menshenin/accountant/model/storage"
 	"github.com/iv-menshenin/accountant/utils/uuid"
 )
 
@@ -19,16 +20,16 @@ type (
 		mapError func(error) error
 	}
 	targetRecord struct {
-		ID       mid.UUID     `bson:"_id"`
-		Data     model.Target `bson:"data"`
-		Created  time.Time    `bson:"created"`
-		Updated  time.Time    `bson:"updated"`
-		Deleted  *time.Time   `bson:"deleted"`
-		OwnerCtx mid.UUID     `bson:"ownerCtx"`
+		ID       mid.UUID      `bson:"_id"`
+		Data     domain.Target `bson:"data"`
+		Created  time.Time     `bson:"created"`
+		Updated  time.Time     `bson:"updated"`
+		Deleted  *time.Time    `bson:"deleted"`
+		OwnerCtx mid.UUID      `bson:"ownerCtx"`
 	}
 )
 
-func (t *TargetsCollection) Create(ctx context.Context, target model.Target) error {
+func (t *TargetsCollection) Create(ctx context.Context, target domain.Target) error {
 	select {
 	case <-ctx.Done():
 		return ctx.Err()
@@ -39,7 +40,7 @@ func (t *TargetsCollection) Create(ctx context.Context, target model.Target) err
 	}
 }
 
-func mapTargetToRecord(ctx context.Context, target model.Target) targetRecord {
+func mapTargetToRecord(ctx context.Context, target domain.Target) targetRecord {
 	return targetRecord{
 		ID:       mid.UUID(target.TargetID),
 		Data:     target,
@@ -49,7 +50,7 @@ func mapTargetToRecord(ctx context.Context, target model.Target) targetRecord {
 	}
 }
 
-func (t *TargetsCollection) Lookup(ctx context.Context, targetID uuid.UUID) (*model.Target, error) {
+func (t *TargetsCollection) Lookup(ctx context.Context, targetID uuid.UUID) (*domain.Target, error) {
 	select {
 	case <-ctx.Done():
 		return nil, ctx.Err()
@@ -71,7 +72,7 @@ func targetIdFilter(id uuid.UUID) interface{} {
 	return bson.M{"_id": bson.M{"$eq": mid.UUID(id)}}
 }
 
-func mapRecordToTarget(rec targetRecord) *model.Target {
+func mapRecordToTarget(rec targetRecord) *domain.Target {
 	return &rec.Data
 }
 
@@ -86,7 +87,7 @@ func (t *TargetsCollection) Delete(ctx context.Context, targetID uuid.UUID) erro
 	}
 }
 
-func (t *TargetsCollection) FindByPeriod(ctx context.Context, option model.FindTargetOption) (targets []model.Target, eut error) {
+func (t *TargetsCollection) FindByPeriod(ctx context.Context, option storage.FindTargetOption) (targets []domain.Target, eut error) {
 	select {
 	case <-ctx.Done():
 		return nil, ctx.Err()
@@ -112,7 +113,7 @@ func (t *TargetsCollection) FindByPeriod(ctx context.Context, option model.FindT
 	}
 }
 
-func targetPeriodFilter(option model.FindTargetOption) interface{} {
+func targetPeriodFilter(option storage.FindTargetOption) interface{} {
 	var filter = bson.D{
 		bson.E{Key: "deleted", Value: nil},
 	}

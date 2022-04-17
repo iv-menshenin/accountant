@@ -8,7 +8,7 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 
-	"github.com/iv-menshenin/accountant/model"
+	"github.com/iv-menshenin/accountant/model/generic"
 	"github.com/iv-menshenin/accountant/utils/uuid"
 )
 
@@ -50,7 +50,7 @@ func New(private string) (*JWTCore, error) {
 	return &j, err
 }
 
-func (c *JWTCore) SignJWT(user model.User) (string, error) {
+func (c *JWTCore) SignJWT(user generic.User) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"user_id":    user.UUID.String(),
 		"context":    user.Context,
@@ -60,7 +60,7 @@ func (c *JWTCore) SignJWT(user model.User) (string, error) {
 	return token.SignedString(c.private)
 }
 
-func (c *JWTCore) RefreshToken(user model.User) (string, error) {
+func (c *JWTCore) RefreshToken(user generic.User) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"user_id":    user.UUID.String(),
 		"context":    user.Context,

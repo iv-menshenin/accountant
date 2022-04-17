@@ -9,7 +9,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 	mid "go.mongodb.org/mongo-driver/x/mongo/driver/uuid"
 
-	"github.com/iv-menshenin/accountant/model"
+	"github.com/iv-menshenin/accountant/model/domain"
+	"github.com/iv-menshenin/accountant/model/storage"
 	"github.com/iv-menshenin/accountant/utils/uuid"
 )
 
@@ -19,17 +20,17 @@ type (
 		mapError func(error) error
 	}
 	accountRecord struct {
-		ID       mid.UUID          `bson:"_id"`
-		Data     model.AccountData `bson:"data"`
-		Persons  []model.Person    `bson:"persons"`
-		Objects  []model.Object    `bson:"objects"`
-		Created  time.Time         `bson:"created"`
-		Updated  time.Time         `bson:"updated"`
-		OwnerCtx mid.UUID          `bson:"ownerCtx"`
+		ID       mid.UUID           `bson:"_id"`
+		Data     domain.AccountData `bson:"data"`
+		Persons  []domain.Person    `bson:"persons"`
+		Objects  []domain.Object    `bson:"objects"`
+		Created  time.Time          `bson:"created"`
+		Updated  time.Time          `bson:"updated"`
+		OwnerCtx mid.UUID           `bson:"ownerCtx"`
 	}
 )
 
-func (a *AccountsCollection) Create(ctx context.Context, account model.Account) error {
+func (a *AccountsCollection) Create(ctx context.Context, account domain.Account) error {
 	select {
 	case <-ctx.Done():
 		return ctx.Err()
@@ -40,7 +41,7 @@ func (a *AccountsCollection) Create(ctx context.Context, account model.Account) 
 	}
 }
 
-func (a *AccountsCollection) Lookup(ctx context.Context, id uuid.UUID) (*model.Account, error) {
+func (a *AccountsCollection) Lookup(ctx context.Context, id uuid.UUID) (*domain.Account, error) {
 	select {
 	case <-ctx.Done():
 		return nil, ctx.Err()
@@ -58,7 +59,7 @@ func (a *AccountsCollection) Lookup(ctx context.Context, id uuid.UUID) (*model.A
 	}
 }
 
-func (a *AccountsCollection) Replace(ctx context.Context, id uuid.UUID, account model.Account) error {
+func (a *AccountsCollection) Replace(ctx context.Context, id uuid.UUID, account domain.Account) error {
 	select {
 	case <-ctx.Done():
 		return ctx.Err()
@@ -71,7 +72,7 @@ func (a *AccountsCollection) Replace(ctx context.Context, id uuid.UUID, account 
 	}
 }
 
-func mapAccountToRecord(ctx context.Context, account model.Account) accountRecord {
+func mapAccountToRecord(ctx context.Context, account domain.Account) accountRecord {
 	return accountRecord{
 		ID:       mid.UUID(account.AccountID),
 		Data:     account.AccountData,
@@ -103,7 +104,7 @@ func (a *AccountsCollection) Delete(ctx context.Context, id uuid.UUID) error {
 	}
 }
 
-func (a *AccountsCollection) Find(ctx context.Context, option model.FindAccountOption) (accounts []model.Account, eut error) {
+func (a *AccountsCollection) Find(ctx context.Context, option storage.FindAccountOption) (accounts []domain.Account, eut error) {
 	select {
 	case <-ctx.Done():
 		return nil, ctx.Err()
@@ -133,7 +134,7 @@ func accountIdFilter(id uuid.UUID) interface{} {
 	return bson.M{"_id": bson.M{"$eq": mid.UUID(id)}}
 }
 
-func accountFilter(options model.FindAccountOption) interface{} {
+func accountFilter(options storage.FindAccountOption) interface{} {
 	var filter = bson.D{}
 	if options.Account != nil {
 		filter = append(filter, bson.E{Key: "data.account", Value: *options.Account})
@@ -147,8 +148,8 @@ func accountFilter(options model.FindAccountOption) interface{} {
 	return filter
 }
 
-func mapRecordToAccount(record accountRecord) *model.Account {
-	return &model.Account{
+func mapRecordToAccount(record accountRecord) *domain.Account {
+	return &domain.Account{
 		AccountID:   uuid.UUID(record.ID),
 		Persons:     record.Persons,
 		Objects:     record.Objects,

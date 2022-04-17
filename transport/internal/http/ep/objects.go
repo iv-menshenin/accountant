@@ -1,7 +1,6 @@
 package ep
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -10,31 +9,16 @@ import (
 
 	"github.com/gorilla/mux"
 
-	"github.com/iv-menshenin/accountant/model"
+	"github.com/iv-menshenin/accountant/model/request"
 )
 
 type (
-	ObjectGetter interface {
-		ObjectGet(context.Context, model.GetObjectQuery) (*model.Object, error)
-	}
-	ObjectCreator interface {
-		ObjectCreate(context.Context, model.PostObjectQuery) (*model.Object, error)
-	}
-	ObjectSaver interface {
-		ObjectSave(context.Context, model.PutObjectQuery) (*model.Object, error)
-	}
-	ObjectDeleter interface {
-		ObjectDelete(context.Context, model.DeleteObjectQuery) error
-	}
-	ObjectFinder interface {
-		ObjectsFind(context.Context, model.FindObjectsQuery) ([]model.Object, error)
-	}
 	ObjectProcessor interface {
-		ObjectCreator
-		ObjectGetter
-		ObjectSaver
-		ObjectDeleter
-		ObjectFinder
+		request.ObjectCreator
+		request.ObjectGetter
+		request.ObjectSaver
+		request.ObjectDeleter
+		request.ObjectFinder
 	}
 	Objects struct {
 		processor ObjectProcessor
@@ -81,7 +65,7 @@ func (p *Objects) LookupHandler() http.HandlerFunc {
 	}
 }
 
-func getObjectMapper(r *http.Request) (q model.GetObjectQuery, err error) {
+func getObjectMapper(r *http.Request) (q request.GetObjectQuery, err error) {
 	id := mux.Vars(r)[accountID]
 	if id == "" {
 		err = errors.New(accountID + " must not be empty")
@@ -115,7 +99,7 @@ func (p *Objects) PostHandler() http.HandlerFunc {
 	}
 }
 
-func postObjectMapper(r *http.Request) (q model.PostObjectQuery, err error) {
+func postObjectMapper(r *http.Request) (q request.PostObjectQuery, err error) {
 	id := mux.Vars(r)[accountID]
 	if id == "" {
 		err = errors.New(accountID + " must not be empty")
@@ -147,7 +131,7 @@ func (p *Objects) PutHandler() http.HandlerFunc {
 	}
 }
 
-func putObjectMapper(r *http.Request) (q model.PutObjectQuery, err error) {
+func putObjectMapper(r *http.Request) (q request.PutObjectQuery, err error) {
 	id := mux.Vars(r)[accountID]
 	if id == "" {
 		err = errors.New(accountID + " must not be empty")
@@ -185,7 +169,7 @@ func (p *Objects) DeleteHandler() http.HandlerFunc {
 	}
 }
 
-func deleteObjectMapper(r *http.Request) (q model.DeleteObjectQuery, err error) {
+func deleteObjectMapper(r *http.Request) (q request.DeleteObjectQuery, err error) {
 	id := mux.Vars(r)[accountID]
 	if id == "" {
 		err = errors.New(accountID + " must not be empty")
@@ -224,7 +208,7 @@ const (
 	addressField   = "address"
 )
 
-func findObjectMapper(r *http.Request) (q model.FindObjectsQuery, err error) {
+func findObjectMapper(r *http.Request) (q request.FindObjectsQuery, err error) {
 	params := queryParams{r: r}
 	id, _ := params.vars(accountID)
 	if id == "" {

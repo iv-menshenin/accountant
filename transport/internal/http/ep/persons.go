@@ -1,7 +1,6 @@
 package ep
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -9,31 +8,16 @@ import (
 
 	"github.com/gorilla/mux"
 
-	"github.com/iv-menshenin/accountant/model"
+	"github.com/iv-menshenin/accountant/model/request"
 )
 
 type (
-	PersonGetter interface {
-		PersonGet(context.Context, model.GetPersonQuery) (*model.Person, error)
-	}
-	PersonCreator interface {
-		PersonCreate(context.Context, model.PostPersonQuery) (*model.Person, error)
-	}
-	PersonSaver interface {
-		PersonSave(context.Context, model.PutPersonQuery) (*model.Person, error)
-	}
-	PersonDeleter interface {
-		PersonDelete(context.Context, model.DeletePersonQuery) error
-	}
-	PersonFinder interface {
-		PersonsFind(context.Context, model.FindPersonsQuery) ([]model.Person, error)
-	}
 	PersonProcessor interface {
-		PersonCreator
-		PersonGetter
-		PersonSaver
-		PersonDeleter
-		PersonFinder
+		request.PersonCreator
+		request.PersonGetter
+		request.PersonSaver
+		request.PersonDeleter
+		request.PersonFinder
 	}
 	Persons struct {
 		processor PersonProcessor
@@ -80,7 +64,7 @@ func (p *Persons) LookupHandler() http.HandlerFunc {
 	}
 }
 
-func getPersonMapper(r *http.Request) (q model.GetPersonQuery, err error) {
+func getPersonMapper(r *http.Request) (q request.GetPersonQuery, err error) {
 	id := mux.Vars(r)[accountID]
 	if id == "" {
 		err = errors.New(accountID + " must not be empty")
@@ -114,7 +98,7 @@ func (p *Persons) PostHandler() http.HandlerFunc {
 	}
 }
 
-func postPersonMapper(r *http.Request) (q model.PostPersonQuery, err error) {
+func postPersonMapper(r *http.Request) (q request.PostPersonQuery, err error) {
 	id := mux.Vars(r)[accountID]
 	if id == "" {
 		err = errors.New(accountID + " must not be empty")
@@ -146,7 +130,7 @@ func (p *Persons) PutHandler() http.HandlerFunc {
 	}
 }
 
-func putPersonMapper(r *http.Request) (q model.PutPersonQuery, err error) {
+func putPersonMapper(r *http.Request) (q request.PutPersonQuery, err error) {
 	id := mux.Vars(r)[accountID]
 	if id == "" {
 		err = errors.New(accountID + " must not be empty")
@@ -184,7 +168,7 @@ func (p *Persons) DeleteHandler() http.HandlerFunc {
 	}
 }
 
-func deletePersonMapper(r *http.Request) (q model.DeletePersonQuery, err error) {
+func deletePersonMapper(r *http.Request) (q request.DeletePersonQuery, err error) {
 	id := mux.Vars(r)[accountID]
 	if id == "" {
 		err = errors.New(accountID + " must not be empty")
@@ -220,7 +204,7 @@ func (p *Persons) FindHandler() http.HandlerFunc {
 
 const personNameField = "person"
 
-func findPersonMapper(r *http.Request) (q model.FindPersonsQuery, err error) {
+func findPersonMapper(r *http.Request) (q request.FindPersonsQuery, err error) {
 	params := queryParams{r: r}
 	id, _ := params.vars(accountID)
 	if id == "" {

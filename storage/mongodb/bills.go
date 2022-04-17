@@ -9,7 +9,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 	mid "go.mongodb.org/mongo-driver/x/mongo/driver/uuid"
 
-	"github.com/iv-menshenin/accountant/model"
+	"github.com/iv-menshenin/accountant/model/domain"
 	"github.com/iv-menshenin/accountant/utils/uuid"
 )
 
@@ -19,16 +19,16 @@ type (
 		mapError func(error) error
 	}
 	billRecord struct {
-		ID       mid.UUID   `bson:"_id"`
-		Data     model.Bill `bson:"data"`
-		Created  time.Time  `bson:"created"`
-		Updated  time.Time  `bson:"updated"`
-		Deleted  *time.Time `bson:"deleted"`
-		OwnerCtx mid.UUID   `bson:"ownerCtx"`
+		ID       mid.UUID    `bson:"_id"`
+		Data     domain.Bill `bson:"data"`
+		Created  time.Time   `bson:"created"`
+		Updated  time.Time   `bson:"updated"`
+		Deleted  *time.Time  `bson:"deleted"`
+		OwnerCtx mid.UUID    `bson:"ownerCtx"`
 	}
 )
 
-func (b *BillsCollection) Create(ctx context.Context, bill model.Bill) error {
+func (b *BillsCollection) Create(ctx context.Context, bill domain.Bill) error {
 	select {
 	case <-ctx.Done():
 		return ctx.Err()
@@ -39,7 +39,7 @@ func (b *BillsCollection) Create(ctx context.Context, bill model.Bill) error {
 	}
 }
 
-func mapBillToRecord(ctx context.Context, bill model.Bill) billRecord {
+func mapBillToRecord(ctx context.Context, bill domain.Bill) billRecord {
 	return billRecord{
 		ID:       mid.UUID(bill.BillID),
 		Data:     bill,
@@ -49,7 +49,7 @@ func mapBillToRecord(ctx context.Context, bill model.Bill) billRecord {
 	}
 }
 
-func (b *BillsCollection) Lookup(ctx context.Context, billID uuid.UUID) (*model.Bill, error) {
+func (b *BillsCollection) Lookup(ctx context.Context, billID uuid.UUID) (*domain.Bill, error) {
 	select {
 	case <-ctx.Done():
 		return nil, ctx.Err()
@@ -71,11 +71,11 @@ func billIdFilter(id uuid.UUID) interface{} {
 	return bson.M{"_id": bson.M{"$eq": mid.UUID(id)}}
 }
 
-func mapRecordToBill(rec billRecord) *model.Bill {
+func mapRecordToBill(rec billRecord) *domain.Bill {
 	return &rec.Data
 }
 
-func (b *BillsCollection) FindByAccount(ctx context.Context, accountID uuid.UUID) (bills []model.Bill, eut error) {
+func (b *BillsCollection) FindByAccount(ctx context.Context, accountID uuid.UUID) (bills []domain.Bill, eut error) {
 	select {
 	case <-ctx.Done():
 		return nil, ctx.Err()
@@ -101,7 +101,7 @@ func (b *BillsCollection) FindByAccount(ctx context.Context, accountID uuid.UUID
 	}
 }
 
-func (b *BillsCollection) FindByPeriod(ctx context.Context, period model.Period) (bills []model.Bill, eut error) {
+func (b *BillsCollection) FindByPeriod(ctx context.Context, period domain.Period) (bills []domain.Bill, eut error) {
 	select {
 	case <-ctx.Done():
 		return nil, ctx.Err()
@@ -127,7 +127,7 @@ func (b *BillsCollection) FindByPeriod(ctx context.Context, period model.Period)
 	}
 }
 
-func billFilter(accountID *uuid.UUID, period *model.Period) interface{} {
+func billFilter(accountID *uuid.UUID, period *domain.Period) interface{} {
 	var filter = bson.D{
 		bson.E{Key: "deleted", Value: nil},
 	}

@@ -3,7 +3,8 @@ package business
 import (
 	"context"
 
-	"github.com/iv-menshenin/accountant/model"
+	"github.com/iv-menshenin/accountant/model/domain"
+	"github.com/iv-menshenin/accountant/model/storage"
 	"github.com/iv-menshenin/accountant/utils/uuid"
 )
 
@@ -29,48 +30,48 @@ type (
 	}
 
 	PersonsCollection interface {
-		Create(context.Context, uuid.UUID, model.Person) error
-		Lookup(context.Context, uuid.UUID, uuid.UUID) (*model.Person, error)
-		Replace(context.Context, uuid.UUID, uuid.UUID, model.Person) error
+		Create(context.Context, uuid.UUID, domain.Person) error
+		Lookup(context.Context, uuid.UUID, uuid.UUID) (*domain.Person, error)
+		Replace(context.Context, uuid.UUID, uuid.UUID, domain.Person) error
 		Delete(context.Context, uuid.UUID, uuid.UUID) error
-		Find(context.Context, model.FindPersonOption) ([]model.Person, error)
+		Find(context.Context, storage.FindPersonOption) ([]domain.Person, error)
 	}
 
 	ObjectsCollection interface {
-		Create(context.Context, uuid.UUID, model.Object) error
-		Lookup(context.Context, uuid.UUID, uuid.UUID) (*model.Object, error)
-		Replace(context.Context, uuid.UUID, uuid.UUID, model.Object) error
+		Create(context.Context, uuid.UUID, domain.Object) error
+		Lookup(context.Context, uuid.UUID, uuid.UUID) (*domain.Object, error)
+		Replace(context.Context, uuid.UUID, uuid.UUID, domain.Object) error
 		Delete(context.Context, uuid.UUID, uuid.UUID) error
-		Find(context.Context, model.FindObjectOption) ([]model.Object, error)
+		Find(context.Context, storage.FindObjectOption) ([]domain.Object, error)
 	}
 
 	AccountsCollection interface {
-		Create(context.Context, model.Account) error
-		Lookup(context.Context, uuid.UUID) (*model.Account, error)
-		Replace(context.Context, uuid.UUID, model.Account) error
+		Create(context.Context, domain.Account) error
+		Lookup(context.Context, uuid.UUID) (*domain.Account, error)
+		Replace(context.Context, uuid.UUID, domain.Account) error
 		Delete(context.Context, uuid.UUID) error
-		Find(context.Context, model.FindAccountOption) ([]model.Account, error)
+		Find(context.Context, storage.FindAccountOption) ([]domain.Account, error)
 	}
 
 	PaymentsCollection interface {
-		Create(context.Context, model.Payment) error
+		Create(context.Context, domain.Payment) error
 		Delete(context.Context, uuid.UUID) error
-		FindByAccount(context.Context, uuid.UUID) ([]model.Payment, error)
-		FindByIDs(context.Context, []uuid.UUID) ([]model.Payment, error)
+		FindByAccount(context.Context, uuid.UUID) ([]domain.Payment, error)
+		FindByIDs(context.Context, []uuid.UUID) ([]domain.Payment, error)
 	}
 
 	TargetsCollection interface {
-		Create(context.Context, model.Target) error
-		Lookup(context.Context, uuid.UUID) (*model.Target, error)
+		Create(context.Context, domain.Target) error
+		Lookup(context.Context, uuid.UUID) (*domain.Target, error)
 		Delete(context.Context, uuid.UUID) error
-		FindByPeriod(context.Context, model.FindTargetOption) ([]model.Target, error)
+		FindByPeriod(context.Context, storage.FindTargetOption) ([]domain.Target, error)
 	}
 
 	BillsCollection interface {
-		Create(context.Context, model.Bill) error
-		Lookup(context.Context, uuid.UUID) (*model.Bill, error)
-		FindByAccount(context.Context, uuid.UUID) ([]model.Bill, error)
-		FindByPeriod(context.Context, model.Period) ([]model.Bill, error)
+		Create(context.Context, domain.Bill) error
+		Lookup(context.Context, uuid.UUID) (*domain.Bill, error)
+		FindByAccount(context.Context, uuid.UUID) ([]domain.Bill, error)
+		FindByPeriod(context.Context, domain.Period) ([]domain.Bill, error)
 		Delete(context.Context, uuid.UUID) error
 	}
 )

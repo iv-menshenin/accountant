@@ -5,7 +5,7 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/iv-menshenin/accountant/model"
+	"github.com/iv-menshenin/accountant/model/domain"
 	"github.com/iv-menshenin/accountant/test/randomizer"
 )
 
@@ -32,10 +32,10 @@ func main() {
 
 var counter = 0
 
-func randomAccount() model.AccountData {
+func randomAccount() domain.AccountData {
 	counter++
 	agrDate := time.Now().Add(time.Duration(rand.Intn(1500)) * time.Hour * -24)
-	return model.AccountData{
+	return domain.AccountData{
 		Account:       fmt.Sprintf("A-0000%d", counter),
 		CadNumber:     fmt.Sprintf("%d:%d:000%d:%d", 10+rand.Intn(90), 10+rand.Intn(90), 100+rand.Intn(900), 100+rand.Intn(900)),
 		AgreementNum:  fmt.Sprintf("%d", 100+rand.Intn(1900)),
@@ -46,9 +46,9 @@ func randomAccount() model.AccountData {
 	}
 }
 
-func randomPerson() model.PersonData {
+func randomPerson() domain.PersonData {
 	agrDate := time.Now().Add(time.Duration(rand.Intn(600)) * time.Hour * -24 * 30)
-	return model.PersonData{
+	return domain.PersonData{
 		Name:     rnd.RandomName(),
 		Surname:  rnd.RandomSurname(),
 		PatName:  "",
@@ -59,8 +59,8 @@ func randomPerson() model.PersonData {
 	}
 }
 
-func randomObject() model.ObjectData {
-	return model.ObjectData{
+func randomObject() domain.ObjectData {
+	return domain.ObjectData{
 		PostalCode: "",
 		City:       "",
 		Village:    "",

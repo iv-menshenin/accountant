@@ -9,7 +9,7 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson"
 
-	"github.com/iv-menshenin/accountant/model"
+	"github.com/iv-menshenin/accountant/model/domain"
 	"github.com/iv-menshenin/accountant/storage"
 	"github.com/iv-menshenin/accountant/utils/uuid"
 )
@@ -30,17 +30,17 @@ func Test_Payments(t *testing.T) {
 	personID2 := uuid.NewUUID()
 	accountID := uuid.NewUUID()
 
-	testPayments := []model.Payment{
+	testPayments := []domain.Payment{
 		{
 			PaymentID: uuid.NewUUID(),
 			AccountID: accountID,
 			PersonID:  &personID1,
 			ObjectID:  nil,
-			Period: model.Period{
+			Period: domain.Period{
 				Month: 06,
 				Year:  2012,
 			},
-			Target: model.TargetHead{
+			Target: domain.TargetHead{
 				TargetID: uuid.NewUUID(),
 				Type:     "Ordinary",
 			},
@@ -53,11 +53,11 @@ func Test_Payments(t *testing.T) {
 			AccountID: accountID,
 			PersonID:  &personID2,
 			ObjectID:  nil,
-			Period: model.Period{
+			Period: domain.Period{
 				Month: 05,
 				Year:  2012,
 			},
-			Target: model.TargetHead{
+			Target: domain.TargetHead{
 				TargetID: uuid.NewUUID(),
 				Type:     "Ordinary",
 			},

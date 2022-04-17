@@ -11,14 +11,14 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/iv-menshenin/accountant/model"
+	"github.com/iv-menshenin/accountant/model/domain"
 	"github.com/iv-menshenin/accountant/utils/uuid"
 )
 
 func testTargets(t *testing.T, logData fmt.Stringer, actor httpActor) {
-	var uuid uuid.UUID
-	want := model.TargetData{
-		Period: model.Period{
+	var targetID uuid.UUID
+	want := domain.TargetData{
+		Period: domain.Period{
 			Month: 12,
 			Year:  2009,
 		},
@@ -35,7 +35,7 @@ func testTargets(t *testing.T, logData fmt.Stringer, actor httpActor) {
 			t.Log(logData.String())
 			t.Fatalf("matching error. want: %v, got: %v", want, got.TargetData)
 		}
-		uuid = got.TargetID
+		targetID = got.TargetID
 		found, err := actor.findTarget(true, 12, 2009)
 		if err != nil {
 			t.Log(logData.String())
@@ -50,7 +50,7 @@ func testTargets(t *testing.T, logData fmt.Stringer, actor httpActor) {
 		}
 	})
 	t.Run("lookup", func(t *testing.T) {
-		got, err := actor.getTarget(uuid)
+		got, err := actor.getTarget(targetID)
 		if err != nil {
 			t.Log(logData.String())
 			t.Fatalf("can not lookup target: %s", err)
@@ -61,7 +61,7 @@ func testTargets(t *testing.T, logData fmt.Stringer, actor httpActor) {
 		}
 	})
 	t.Run("delete", func(t *testing.T) {
-		err := actor.deleteTarget(uuid)
+		err := actor.deleteTarget(targetID)
 		if err != nil {
 			t.Log(logData.String())
 			t.Fatalf("can not lookup target: %s", err)
@@ -77,7 +77,7 @@ func testTargets(t *testing.T, logData fmt.Stringer, actor httpActor) {
 	})
 }
 
-func (a *httpActor) createTarget(targetType string, data model.TargetData) (result *model.Target, err error) {
+func (a *httpActor) createTarget(targetType string, data domain.TargetData) (result *domain.Target, err error) {
 	var buf = bytes.NewBufferString("")
 	enc := json.NewEncoder(buf)
 	if err = enc.Encode(data); err != nil {
@@ -97,7 +97,7 @@ func (a *httpActor) createTarget(targetType string, data model.TargetData) (resu
 	return
 }
 
-func (a *httpActor) getTarget(uuid uuid.UUID) (result *model.Target, err error) {
+func (a *httpActor) getTarget(uuid uuid.UUID) (result *domain.Target, err error) {
 	var req *http.Request
 	req, err = http.NewRequest(http.MethodGet, a.targetsURL+"/"+uuid.String(), nil)
 	if err != nil {
@@ -111,7 +111,7 @@ func (a *httpActor) getTarget(uuid uuid.UUID) (result *model.Target, err error) 
 	return
 }
 
-func (a *httpActor) findTarget(showClosed bool, periodMonth, periodYear int) (result []model.Target, err error) {
+func (a *httpActor) findTarget(showClosed bool, periodMonth, periodYear int) (result []domain.Target, err error) {
 	var req *http.Request
 	req, err = http.NewRequest(http.MethodGet, a.targetsURL, nil)
 	if err != nil {

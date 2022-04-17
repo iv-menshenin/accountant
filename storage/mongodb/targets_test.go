@@ -9,7 +9,8 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson"
 
-	"github.com/iv-menshenin/accountant/model"
+	"github.com/iv-menshenin/accountant/model/domain"
+	storage2 "github.com/iv-menshenin/accountant/model/storage"
 	"github.com/iv-menshenin/accountant/storage"
 	"github.com/iv-menshenin/accountant/utils/uuid"
 )
@@ -27,13 +28,13 @@ func Test_Targets(t *testing.T) {
 
 	var closed = time.Now().Round(time.Second).UTC()
 	targets := testStorage.NewTargetsCollection(storage.MapMongodbErrors)
-	testTarget := model.Target{
-		TargetHead: model.TargetHead{
+	testTarget := domain.Target{
+		TargetHead: domain.TargetHead{
 			TargetID: uuid.NewUUID(),
 			Type:     "TEST-T",
 		},
-		TargetData: model.TargetData{
-			Period: model.Period{
+		TargetData: domain.TargetData{
+			Period: domain.Period{
 				Month: 12,
 				Year:  2021,
 			},
@@ -42,20 +43,20 @@ func Test_Targets(t *testing.T) {
 			Comment: "test",
 		},
 	}
-	arrTarget := []model.Target{testTarget}
+	arrTarget := []domain.Target{testTarget}
 
 	if err := targets.Create(ctx, testTarget); err != nil {
 		t.Fatalf("cannot create target: %s", err)
 	}
 
 	for n := 1; n < 12; n++ {
-		if err := targets.Create(ctx, model.Target{
-			TargetHead: model.TargetHead{
+		if err := targets.Create(ctx, domain.Target{
+			TargetHead: domain.TargetHead{
 				TargetID: uuid.NewUUID(),
 				Type:     fmt.Sprintf("Noice-%d", n),
 			},
-			TargetData: model.TargetData{
-				Period: model.Period{
+			TargetData: domain.TargetData{
+				Period: domain.Period{
 					Month: n,
 					Year:  2021,
 				},
@@ -69,13 +70,13 @@ func Test_Targets(t *testing.T) {
 
 	for n := 0; n < 6; n++ {
 		y := 2016 + n
-		target := model.Target{
-			TargetHead: model.TargetHead{
+		target := domain.Target{
+			TargetHead: domain.TargetHead{
 				TargetID: uuid.NewUUID(),
 				Type:     fmt.Sprintf("Dec-%d", n),
 			},
-			TargetData: model.TargetData{
-				Period: model.Period{
+			TargetData: domain.TargetData{
+				Period: domain.Period{
 					Month: 12,
 					Year:  y,
 				},
@@ -102,7 +103,7 @@ func Test_Targets(t *testing.T) {
 		t.Fatalf("want: %v, got: %v", testTarget, *look)
 	}
 
-	found, err := targets.FindByPeriod(ctx, model.FindTargetOption{
+	found, err := targets.FindByPeriod(ctx, storage2.FindTargetOption{
 		ShowClosed: true,
 		Month:      12,
 		Year:       2021,
@@ -120,7 +121,7 @@ func Test_Targets(t *testing.T) {
 	}
 	arrTarget = arrTarget[1:]
 
-	found, err = targets.FindByPeriod(ctx, model.FindTargetOption{
+	found, err = targets.FindByPeriod(ctx, storage2.FindTargetOption{
 		Month: 12,
 		Year:  2021,
 	})

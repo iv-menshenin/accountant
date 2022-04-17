@@ -3,7 +3,8 @@ package memory
 import (
 	"context"
 
-	"github.com/iv-menshenin/accountant/model"
+	"github.com/iv-menshenin/accountant/model/domain"
+	storage2 "github.com/iv-menshenin/accountant/model/storage"
 	"github.com/iv-menshenin/accountant/storage"
 	"github.com/iv-menshenin/accountant/utils/uuid"
 )
@@ -15,7 +16,7 @@ type (
 	}
 )
 
-func (o *ObjectCollection) Create(ctx context.Context, accountID uuid.UUID, object model.Object) error {
+func (o *ObjectCollection) Create(ctx context.Context, accountID uuid.UUID, object domain.Object) error {
 	account, err := o.accounts.Lookup(ctx, accountID)
 	if err != nil {
 		return o.mapError(err)
@@ -24,7 +25,7 @@ func (o *ObjectCollection) Create(ctx context.Context, accountID uuid.UUID, obje
 	return o.mapError(o.accounts.Replace(ctx, accountID, *account))
 }
 
-func (o *ObjectCollection) Lookup(ctx context.Context, accountID uuid.UUID, objectID uuid.UUID) (*model.Object, error) {
+func (o *ObjectCollection) Lookup(ctx context.Context, accountID uuid.UUID, objectID uuid.UUID) (*domain.Object, error) {
 	account, err := o.accounts.Lookup(ctx, accountID)
 	if err != nil {
 		return nil, o.mapError(err)
@@ -38,7 +39,7 @@ func (o *ObjectCollection) Lookup(ctx context.Context, accountID uuid.UUID, obje
 	return nil, storage.ErrNotFound
 }
 
-func (o *ObjectCollection) Replace(ctx context.Context, accountID uuid.UUID, objectID uuid.UUID, object model.Object) error {
+func (o *ObjectCollection) Replace(ctx context.Context, accountID uuid.UUID, objectID uuid.UUID, object domain.Object) error {
 	account, err := o.accounts.Lookup(ctx, accountID)
 	if err != nil {
 		return o.mapError(err)
@@ -61,7 +62,7 @@ func (o *ObjectCollection) Delete(ctx context.Context, accountID uuid.UUID, obje
 	for i := range account.Objects {
 		current := account.Objects[i]
 		if current.ObjectID.Equal(objectID) {
-			var tail []model.Object
+			var tail []domain.Object
 			if i+1 < len(account.Objects) {
 				tail = account.Objects[i+1:]
 			}
@@ -72,13 +73,13 @@ func (o *ObjectCollection) Delete(ctx context.Context, accountID uuid.UUID, obje
 	return storage.ErrNotFound
 }
 
-func (o *ObjectCollection) Find(ctx context.Context, option model.FindObjectOption) ([]model.Object, error) {
+func (o *ObjectCollection) Find(ctx context.Context, option storage2.FindObjectOption) ([]domain.Object, error) {
 	var err error
-	var accounts = make([]model.Account, 0, 10)
+	var accounts = make([]domain.Account, 0, 10)
 	if option.AccountID == nil {
-		accounts, err = o.accounts.Find(ctx, model.FindAccountOption{}) // find all ?
+		accounts, err = o.accounts.Find(ctx, storage2.FindAccountOption{}) // find all ?
 	} else {
-		var account *model.Account
+		var account *domain.Account
 		account, err = o.accounts.Lookup(ctx, *option.AccountID)
 		if account != nil {
 			accounts = append(accounts, *account)
@@ -87,7 +88,7 @@ func (o *ObjectCollection) Find(ctx context.Context, option model.FindObjectOpti
 	if err != nil {
 		return nil, o.mapError(err)
 	}
-	var objects = make([]model.Object, 0, len(accounts))
+	var objects = make([]domain.Object, 0, len(accounts))
 	for _, account := range accounts {
 		for _, object := range account.Objects {
 			if checkObjectFilter(object, option) {

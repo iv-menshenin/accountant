@@ -9,7 +9,7 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson"
 
-	"github.com/iv-menshenin/accountant/model"
+	"github.com/iv-menshenin/accountant/model/domain"
 	"github.com/iv-menshenin/accountant/storage"
 	"github.com/iv-menshenin/accountant/utils/uuid"
 )
@@ -27,17 +27,17 @@ func Test_Bills(t *testing.T) {
 
 	var accountID = uuid.NewUUID()
 	bills := testStorage.NewBillsCollection(storage.MapMongodbErrors)
-	testPeriod := []model.Bill{
+	testPeriod := []domain.Bill{
 		{
 			BillID:    uuid.NewUUID(),
 			AccountID: accountID,
 			PersonID:  nil,
 			ObjectID:  nil,
-			Period: model.Period{
+			Period: domain.Period{
 				Month: 5,
 				Year:  2021,
 			},
-			Target: model.TargetHead{
+			Target: domain.TargetHead{
 				TargetID: uuid.NewUUID(),
 				Type:     "test",
 			},
@@ -49,11 +49,11 @@ func Test_Bills(t *testing.T) {
 		{
 			BillID:    uuid.NewUUID(),
 			AccountID: accountID,
-			Period: model.Period{
+			Period: domain.Period{
 				Month: 5,
 				Year:  2021,
 			},
-			Target: model.TargetHead{
+			Target: domain.TargetHead{
 				TargetID: uuid.NewUUID(),
 				Type:     "test",
 			},
@@ -63,15 +63,15 @@ func Test_Bills(t *testing.T) {
 			},
 		},
 	}
-	testBills := append([]model.Bill{
+	testBills := append([]domain.Bill{
 		{
 			BillID:    uuid.NewUUID(),
 			AccountID: accountID,
-			Period: model.Period{
+			Period: domain.Period{
 				Month: 6,
 				Year:  2021,
 			},
-			Target: model.TargetHead{
+			Target: domain.TargetHead{
 				TargetID: uuid.NewUUID(),
 				Type:     "test2",
 			},
@@ -84,14 +84,14 @@ func Test_Bills(t *testing.T) {
 	})
 
 	var noiceID = uuid.NewUUID()
-	if err = bills.Create(ctx, model.Bill{
+	if err = bills.Create(ctx, domain.Bill{
 		BillID:    noiceID,
 		AccountID: uuid.NewUUID(),
-		Period: model.Period{
+		Period: domain.Period{
 			Month: 2,
 			Year:  2022,
 		},
-		Target: model.TargetHead{
+		Target: domain.TargetHead{
 			TargetID: uuid.NewUUID(),
 			Type:     "noice",
 		},
@@ -128,7 +128,7 @@ func Test_Bills(t *testing.T) {
 	if err != nil {
 		t.Errorf("cannot delete bill: %s", err)
 	}
-	look, err := bills.FindByPeriod(ctx, model.Period{
+	look, err := bills.FindByPeriod(ctx, domain.Period{
 		Month: 2,
 		Year:  2022,
 	})
@@ -139,7 +139,7 @@ func Test_Bills(t *testing.T) {
 		t.Errorf("expected nil, got: %v", look)
 	}
 
-	found, err = bills.FindByPeriod(ctx, model.Period{
+	found, err = bills.FindByPeriod(ctx, domain.Period{
 		Month: 5,
 		Year:  2021,
 	})

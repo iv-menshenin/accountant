@@ -1,7 +1,6 @@
 package ep
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -9,31 +8,16 @@ import (
 
 	"github.com/gorilla/mux"
 
-	"github.com/iv-menshenin/accountant/model"
+	"github.com/iv-menshenin/accountant/model/request"
 )
 
 type (
-	AccountGetter interface {
-		AccountGet(context.Context, model.GetAccountQuery) (*model.Account, error)
-	}
-	AccountSaver interface {
-		AccountSave(context.Context, model.PutAccountQuery) (*model.Account, error)
-	}
-	AccountCreator interface {
-		AccountCreate(context.Context, model.PostAccountQuery) (*model.Account, error)
-	}
-	AccountDeleter interface {
-		AccountDelete(context.Context, model.DeleteAccountQuery) error
-	}
-	AccountFinder interface {
-		AccountsFind(context.Context, model.FindAccountsQuery) ([]model.Account, error)
-	}
 	AccountProcessor interface {
-		AccountCreator
-		AccountGetter
-		AccountSaver
-		AccountDeleter
-		AccountFinder
+		request.AccountCreator
+		request.AccountGetter
+		request.AccountSaver
+		request.AccountDeleter
+		request.AccountFinder
 	}
 	Accounts struct {
 		processor AccountProcessor
@@ -78,7 +62,7 @@ func (a *Accounts) LookupHandler() http.HandlerFunc {
 	}
 }
 
-func getAccountMapper(r *http.Request) (q model.GetAccountQuery, err error) {
+func getAccountMapper(r *http.Request) (q request.GetAccountQuery, err error) {
 	id := mux.Vars(r)[accountID]
 	if id == "" {
 		err = errors.New(accountID + " must not be empty")
@@ -104,7 +88,7 @@ func (a *Accounts) PostHandler() http.HandlerFunc {
 	}
 }
 
-func postAccountMapper(r *http.Request) (q model.PostAccountQuery, err error) {
+func postAccountMapper(r *http.Request) (q request.PostAccountQuery, err error) {
 	decoder := json.NewDecoder(r.Body)
 	decoder.DisallowUnknownFields()
 	err = decoder.Decode(&q.AccountData)
@@ -127,7 +111,7 @@ func (a *Accounts) PutHandler() http.HandlerFunc {
 	}
 }
 
-func putAccountMapper(r *http.Request) (q model.PutAccountQuery, err error) {
+func putAccountMapper(r *http.Request) (q request.PutAccountQuery, err error) {
 	id := mux.Vars(r)[accountID]
 	if id == "" {
 		err = errors.New(accountID + " must not be empty")
@@ -158,7 +142,7 @@ func (a *Accounts) DeleteHandler() http.HandlerFunc {
 	}
 }
 
-func deleteAccountMapper(r *http.Request) (q model.DeleteAccountQuery, err error) {
+func deleteAccountMapper(r *http.Request) (q request.DeleteAccountQuery, err error) {
 	id := mux.Vars(r)[accountID]
 	if id == "" {
 		err = errors.New(accountID + " must not be empty")
@@ -186,7 +170,7 @@ func (a *Accounts) FindHandler() http.HandlerFunc {
 
 const accountField = "account"
 
-func findAccountMapper(r *http.Request) (q model.FindAccountsQuery, err error) {
+func findAccountMapper(r *http.Request) (q request.FindAccountsQuery, err error) {
 	params := queryParams{r: r}
 	if account, ok := params.vars(accountField); ok {
 		q.Account = &account

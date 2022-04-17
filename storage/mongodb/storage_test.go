@@ -13,7 +13,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 
 	"github.com/iv-menshenin/accountant/config"
-	"github.com/iv-menshenin/accountant/model"
+	"github.com/iv-menshenin/accountant/model/domain"
 	"github.com/iv-menshenin/accountant/utils/uuid"
 )
 
@@ -22,7 +22,11 @@ var once sync.Once
 
 func TestMain(m *testing.M) {
 	once.Do(initTestEnv)
-	defer testStorage.Close()
+	defer func() {
+		if e := testStorage.Close(); e != nil {
+			panic(e)
+		}
+	}()
 	os.Exit(m.Run())
 }
 
@@ -41,7 +45,7 @@ func initTestEnv() {
 }
 
 type mock struct {
-	accountMock []model.Account
+	accountMock []domain.Account
 }
 
 const (
@@ -49,7 +53,7 @@ const (
 )
 
 func newMock(mockSize int) *mock {
-	var accountMock []model.Account
+	var accountMock []domain.Account
 	for nn := 0; nn < mockSize; nn++ {
 		var account = makeAccount(nn)
 		for i := 0; i < rand.Intn(3)+1; i++ {
@@ -71,8 +75,8 @@ type accManipulator struct {
 	*ObjectsCollection
 }
 
-func (m *accManipulator) uploadAccount(ctx context.Context, acc model.Account) error {
-	err := m.AccountsCollection.Create(ctx, model.Account{
+func (m *accManipulator) uploadAccount(ctx context.Context, acc domain.Account) error {
+	err := m.AccountsCollection.Create(ctx, domain.Account{
 		AccountID:   acc.AccountID,
 		Persons:     nil,
 		Objects:     nil,
@@ -96,7 +100,7 @@ func (m *accManipulator) uploadAccount(ctx context.Context, acc model.Account) e
 	return nil
 }
 
-func makeAccount(nn int) model.Account {
+func makeAccount(nn int) domain.Account {
 	var purchased = map[int]string{
 		0: "договор",
 		1: "дарение",
@@ -105,9 +109,9 @@ func makeAccount(nn int) model.Account {
 	}
 	agrDate := time.Date(rand.Intn(30)+1980, time.Month(rand.Intn(12)+1), rand.Intn(30)+1, 0, 0, 0, 0, time.UTC)
 	purchDate := time.Date(rand.Intn(30)+1980, time.Month(rand.Intn(12)+1), rand.Intn(30)+1, 0, 0, 0, 0, time.UTC)
-	return model.Account{
+	return domain.Account{
 		AccountID: uuid.NewUUID(),
-		AccountData: model.AccountData{
+		AccountData: domain.AccountData{
 			Account:       fmt.Sprintf("#%d", rand.Int()),
 			CadNumber:     fmt.Sprintf("%d:%d:%d:%d", rand.Intn(5)+81, rand.Intn(89)+10, rand.Intn(1999999)+1000000, nn),
 			AgreementNum:  fmt.Sprintf("№ %d:%d", rand.Intn(5)+81, nn),
@@ -119,7 +123,7 @@ func makeAccount(nn int) model.Account {
 	}
 }
 
-func makePerson(nn int) model.Person {
+func makePerson(nn int) domain.Person {
 	var surnames = map[int]string{
 		0: "Карасёв",
 		1: "Дунаев",
@@ -144,9 +148,9 @@ func makePerson(nn int) model.Person {
 		4: "Игоревич",
 		5: "Борисович",
 	}
-	return model.Person{
+	return domain.Person{
 		PersonID: uuid.NewUUID(),
-		PersonData: model.PersonData{
+		PersonData: domain.PersonData{
 			Name:     names[rand.Intn(len(names))],
 			Surname:  surnames[rand.Intn(len(surnames))],
 			PatName:  patnames[rand.Intn(len(patnames))],
@@ -158,7 +162,7 @@ func makePerson(nn int) model.Person {
 	}
 }
 
-func makeObject(nn int) model.Object {
+func makeObject(nn int) domain.Object {
 	var streets = map[int]string{
 		0: "Фруктовая",
 		1: "Вишневая",
@@ -171,9 +175,9 @@ func makeObject(nn int) model.Object {
 		8: "Коричневая",
 		9: "Сталинская",
 	}
-	return model.Object{
+	return domain.Object{
 		ObjectID: uuid.NewUUID(),
-		ObjectData: model.ObjectData{
+		ObjectData: domain.ObjectData{
 			PostalCode: "889-009",
 			City:       "Krasnodar",
 			Village:    "Victoria",

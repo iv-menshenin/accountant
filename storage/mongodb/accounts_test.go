@@ -8,7 +8,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/iv-menshenin/accountant/model"
+	"github.com/iv-menshenin/accountant/model/domain"
+	storage2 "github.com/iv-menshenin/accountant/model/storage"
 	"github.com/iv-menshenin/accountant/storage"
 )
 
@@ -34,7 +35,7 @@ func Test_Accounts(t *testing.T) {
 
 	wg.Add(len(accountMock))
 	for i := range accountMock {
-		go func(acc *model.Account) {
+		go func(acc *domain.Account) {
 			defer wg.Done()
 			if err := manipulator.uploadAccount(ctx, *acc); err != nil {
 				errCh <- err
@@ -53,7 +54,7 @@ func Test_Accounts(t *testing.T) {
 
 	wg.Add(len(accountMock))
 	for i := range accountMock {
-		go func(acc *model.Account) {
+		go func(acc *domain.Account) {
 			defer wg.Done()
 
 			found, err := accounts.Lookup(ctx, acc.AccountID)
@@ -66,7 +67,7 @@ func Test_Accounts(t *testing.T) {
 				return
 			}
 
-			accs, err := accounts.Find(ctx, model.FindAccountOption{Account: &acc.Account})
+			accs, err := accounts.Find(ctx, storage2.FindAccountOption{Account: &acc.Account})
 			if err != nil {
 				errCh <- err
 				return
@@ -76,8 +77,8 @@ func Test_Accounts(t *testing.T) {
 				return
 			}
 
-			var foundPersons []model.Person
-			foundPersons, err = persons.Find(ctx, model.FindPersonOption{
+			var foundPersons []domain.Person
+			foundPersons, err = persons.Find(ctx, storage2.FindPersonOption{
 				AccountID: &acc.AccountID,
 			})
 			if !reflect.DeepEqual(acc.Persons, foundPersons) {
@@ -85,8 +86,8 @@ func Test_Accounts(t *testing.T) {
 				return
 			}
 
-			var foundObjects []model.Object
-			foundObjects, err = objects.Find(ctx, model.FindObjectOption{
+			var foundObjects []domain.Object
+			foundObjects, err = objects.Find(ctx, storage2.FindObjectOption{
 				AccountID: &acc.AccountID,
 			})
 			if !reflect.DeepEqual(acc.Objects, foundObjects) {
@@ -98,7 +99,7 @@ func Test_Accounts(t *testing.T) {
 				errCh <- err
 				return
 			}
-			accs, err = accounts.Find(ctx, model.FindAccountOption{Account: &found.Account})
+			accs, err = accounts.Find(ctx, storage2.FindAccountOption{Account: &found.Account})
 			if err != nil {
 				errCh <- err
 				return

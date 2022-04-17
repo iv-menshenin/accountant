@@ -5,7 +5,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/iv-menshenin/accountant/model"
+	"github.com/iv-menshenin/accountant/model/domain"
+	storage2 "github.com/iv-menshenin/accountant/model/storage"
 	"github.com/iv-menshenin/accountant/storage"
 	"github.com/iv-menshenin/accountant/utils/uuid"
 )
@@ -17,7 +18,7 @@ type (
 	}
 )
 
-func (o *ObjectsCollection) Create(ctx context.Context, accountID uuid.UUID, object model.Object) error {
+func (o *ObjectsCollection) Create(ctx context.Context, accountID uuid.UUID, object domain.Object) error {
 	account, err := o.accounts.Lookup(ctx, accountID)
 	if err != nil {
 		return o.mapError(err)
@@ -26,7 +27,7 @@ func (o *ObjectsCollection) Create(ctx context.Context, accountID uuid.UUID, obj
 	return o.mapError(o.accounts.Replace(ctx, accountID, *account))
 }
 
-func (o *ObjectsCollection) Lookup(ctx context.Context, accountID uuid.UUID, objectID uuid.UUID) (*model.Object, error) {
+func (o *ObjectsCollection) Lookup(ctx context.Context, accountID uuid.UUID, objectID uuid.UUID) (*domain.Object, error) {
 	account, err := o.accounts.Lookup(ctx, accountID)
 	if err != nil {
 		return nil, o.mapError(err)
@@ -40,7 +41,7 @@ func (o *ObjectsCollection) Lookup(ctx context.Context, accountID uuid.UUID, obj
 	return nil, storage.ErrNotFound
 }
 
-func (o *ObjectsCollection) Replace(ctx context.Context, accountID uuid.UUID, objectID uuid.UUID, object model.Object) error {
+func (o *ObjectsCollection) Replace(ctx context.Context, accountID uuid.UUID, objectID uuid.UUID, object domain.Object) error {
 	account, err := o.accounts.Lookup(ctx, accountID)
 	if err != nil {
 		return o.mapError(err)
@@ -63,7 +64,7 @@ func (o *ObjectsCollection) Delete(ctx context.Context, accountID uuid.UUID, obj
 	for i := range account.Objects {
 		current := account.Objects[i]
 		if current.ObjectID.Equal(objectID) {
-			var tail []model.Object
+			var tail []domain.Object
 			if i+1 < len(account.Objects) {
 				tail = account.Objects[i+1:]
 			}
@@ -74,13 +75,13 @@ func (o *ObjectsCollection) Delete(ctx context.Context, accountID uuid.UUID, obj
 	return storage.ErrNotFound
 }
 
-func (o *ObjectsCollection) Find(ctx context.Context, option model.FindObjectOption) ([]model.Object, error) {
+func (o *ObjectsCollection) Find(ctx context.Context, option storage2.FindObjectOption) ([]domain.Object, error) {
 	var err error
-	var accounts = make([]model.Account, 0, 10)
+	var accounts = make([]domain.Account, 0, 10)
 	if option.AccountID == nil {
 		accounts, err = o.accounts.Find(ctx, findAccountByObject(option))
 	} else {
-		var account *model.Account
+		var account *domain.Account
 		account, err = o.accounts.Lookup(ctx, *option.AccountID)
 		if account != nil {
 			accounts = append(accounts, *account)
@@ -89,7 +90,7 @@ func (o *ObjectsCollection) Find(ctx context.Context, option model.FindObjectOpt
 	if err != nil {
 		return nil, o.mapError(err)
 	}
-	var objects = make([]model.Object, 0, len(accounts))
+	var objects = make([]domain.Object, 0, len(accounts))
 	for _, account := range accounts {
 		for _, object := range account.Objects {
 			if checkObjectFilter(object, option) {
@@ -100,14 +101,14 @@ func (o *ObjectsCollection) Find(ctx context.Context, option model.FindObjectOpt
 	return objects, nil
 }
 
-func findAccountByObject(filter model.FindObjectOption) model.FindAccountOption {
-	return model.FindAccountOption{
+func findAccountByObject(filter storage2.FindObjectOption) storage2.FindAccountOption {
+	return storage2.FindAccountOption{
 		Address: filter.Address,
 		Number:  filter.Number,
 	}
 }
 
-func checkObjectFilter(object model.Object, filter model.FindObjectOption) bool {
+func checkObjectFilter(object domain.Object, filter storage2.FindObjectOption) bool {
 	if filter.Address != nil {
 		if !checkObjectAddress(object, *filter.Address) {
 			return false
@@ -121,13 +122,13 @@ func checkObjectFilter(object model.Object, filter model.FindObjectOption) bool 
 	return true
 }
 
-func checkObjectAddress(object model.Object, address string) bool {
+func checkObjectAddress(object domain.Object, address string) bool {
 	var addressA = strings.ToUpper(address)
 	var addressB = strings.ToUpper(fmt.Sprintf("%s %s %s", object.City, object.Village, object.Street))
 	return strings.Contains(addressB, addressA)
 }
 
-func checkObjectNumber(object model.Object, number int) bool {
+func checkObjectNumber(object domain.Object, number int) bool {
 	return object.Number == number
 }
 

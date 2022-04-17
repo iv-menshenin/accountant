@@ -1,4 +1,4 @@
-package model
+package generic
 
 import (
 	"github.com/iv-menshenin/accountant/utils/uuid"

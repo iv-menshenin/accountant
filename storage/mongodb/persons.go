@@ -3,7 +3,8 @@ package mongodb
 import (
 	"context"
 
-	"github.com/iv-menshenin/accountant/model"
+	"github.com/iv-menshenin/accountant/model/domain"
+	storage2 "github.com/iv-menshenin/accountant/model/storage"
 	"github.com/iv-menshenin/accountant/storage"
 	"github.com/iv-menshenin/accountant/utils/uuid"
 )
@@ -15,7 +16,7 @@ type (
 	}
 )
 
-func (p *PersonsCollection) Create(ctx context.Context, accountID uuid.UUID, person model.Person) error {
+func (p *PersonsCollection) Create(ctx context.Context, accountID uuid.UUID, person domain.Person) error {
 	account, err := p.accounts.Lookup(ctx, accountID)
 	if err != nil {
 		return p.mapError(err)
@@ -24,7 +25,7 @@ func (p *PersonsCollection) Create(ctx context.Context, accountID uuid.UUID, per
 	return p.mapError(p.accounts.Replace(ctx, accountID, *account))
 }
 
-func (p *PersonsCollection) Lookup(ctx context.Context, accountID uuid.UUID, personID uuid.UUID) (*model.Person, error) {
+func (p *PersonsCollection) Lookup(ctx context.Context, accountID uuid.UUID, personID uuid.UUID) (*domain.Person, error) {
 	account, err := p.accounts.Lookup(ctx, accountID)
 	if err != nil {
 		return nil, p.mapError(err)
@@ -38,7 +39,7 @@ func (p *PersonsCollection) Lookup(ctx context.Context, accountID uuid.UUID, per
 	return nil, storage.ErrNotFound
 }
 
-func (p *PersonsCollection) Replace(ctx context.Context, accountID uuid.UUID, personID uuid.UUID, person model.Person) error {
+func (p *PersonsCollection) Replace(ctx context.Context, accountID uuid.UUID, personID uuid.UUID, person domain.Person) error {
 	account, err := p.accounts.Lookup(ctx, accountID)
 	if err != nil {
 		return p.mapError(err)
@@ -61,7 +62,7 @@ func (p *PersonsCollection) Delete(ctx context.Context, accountID uuid.UUID, per
 	for i := range account.Persons {
 		current := account.Persons[i]
 		if current.PersonID.Equal(personID) {
-			var tail []model.Person
+			var tail []domain.Person
 			if i+1 < len(account.Persons) {
 				tail = account.Persons[i+1:]
 			}
@@ -72,11 +73,11 @@ func (p *PersonsCollection) Delete(ctx context.Context, accountID uuid.UUID, per
 	return storage.ErrNotFound
 }
 
-func (p *PersonsCollection) Find(ctx context.Context, option model.FindPersonOption) ([]model.Person, error) {
+func (p *PersonsCollection) Find(ctx context.Context, option storage2.FindPersonOption) ([]domain.Person, error) {
 	var err error
-	var accounts = make([]model.Account, 0, 10)
+	var accounts = make([]domain.Account, 0, 10)
 	if option.AccountID != nil {
-		var account *model.Account
+		var account *domain.Account
 		account, err = p.accounts.Lookup(ctx, *option.AccountID)
 		if account != nil {
 			accounts = append(accounts, *account)
@@ -85,7 +86,7 @@ func (p *PersonsCollection) Find(ctx context.Context, option model.FindPersonOpt
 	if err != nil {
 		return nil, p.mapError(err)
 	}
-	var persons = make([]model.Person, 0, len(accounts))
+	var persons = make([]domain.Person, 0, len(accounts))
 	for _, account := range accounts {
 		persons = append(persons, account.Persons...)
 	}

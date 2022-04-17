@@ -1,8 +1,11 @@
-package model
+package storage
 
 import (
+	"github.com/iv-menshenin/accountant/model/request"
 	"github.com/iv-menshenin/accountant/utils/uuid"
 )
+
+// todo move to storage
 
 type (
 	FindAccountOption struct {
@@ -26,13 +29,13 @@ type (
 	}
 )
 
-func (q *FindAccountOption) FillFromQuery(query FindAccountsQuery) {
+func (q *FindAccountOption) FillFromQuery(query request.FindAccountsQuery) {
 	if query.Account != nil {
 		q.Account = query.Account
 	}
 }
 
-func (q *FindObjectOption) FillFromQuery(query FindObjectsQuery) {
+func (q *FindObjectOption) FillFromQuery(query request.FindObjectsQuery) {
 	if query.Address != nil {
 		q.Address = query.Address
 	}
@@ -44,7 +47,7 @@ func (q *FindObjectOption) FillFromQuery(query FindObjectsQuery) {
 	}
 }
 
-func (q *FindPersonOption) FillFromQuery(query FindPersonsQuery) {
+func (q *FindPersonOption) FillFromQuery(query request.FindPersonsQuery) {
 	if query.AccountID != nil {
 		q.AccountID = query.AccountID
 	}

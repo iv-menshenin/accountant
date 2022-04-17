@@ -7,10 +7,10 @@ import (
 	"math/rand"
 	"net/http"
 
-	"github.com/iv-menshenin/accountant/model"
+	"github.com/iv-menshenin/accountant/model/domain"
 )
 
-func createNewAccount(server, token string, _ int) model.Account {
+func createNewAccount(server, token string, _ int) domain.Account {
 	var acc = randomAccount()
 	var r = bytes.NewBufferString("")
 	encoder := json.NewEncoder(r)
@@ -30,8 +30,8 @@ func createNewAccount(server, token string, _ int) model.Account {
 		panic(fmt.Sprintf("unexpected http code: %d", resp.StatusCode))
 	}
 	var account struct {
-		Meta ResponseMeta  `json:"meta"`
-		Data model.Account `json:"data,omitempty"`
+		Meta ResponseMeta   `json:"meta"`
+		Data domain.Account `json:"data,omitempty"`
 	}
 	decoder := json.NewDecoder(resp.Body)
 	decoder.DisallowUnknownFields()
@@ -44,7 +44,7 @@ func createNewAccount(server, token string, _ int) model.Account {
 	return account.Data
 }
 
-func createNewPersons(server, token string, account model.Account) {
+func createNewPersons(server, token string, account domain.Account) {
 	var personData = randomPerson()
 	var r = bytes.NewBufferString("")
 	encoder := json.NewEncoder(r)
@@ -64,8 +64,8 @@ func createNewPersons(server, token string, account model.Account) {
 		panic(fmt.Sprintf("unexpected http code: %d", resp.StatusCode))
 	}
 	var person struct {
-		Meta ResponseMeta `json:"meta"`
-		Data model.Person `json:"data,omitempty"`
+		Meta ResponseMeta  `json:"meta"`
+		Data domain.Person `json:"data,omitempty"`
 	}
 	decoder := json.NewDecoder(resp.Body)
 	decoder.DisallowUnknownFields()
@@ -80,7 +80,7 @@ func createNewPersons(server, token string, account model.Account) {
 	}
 }
 
-func createNewObjects(server, token string, account model.Account) {
+func createNewObjects(server, token string, account domain.Account) {
 	var objectData = randomObject()
 	var r = bytes.NewBufferString("")
 	encoder := json.NewEncoder(r)
@@ -100,8 +100,8 @@ func createNewObjects(server, token string, account model.Account) {
 		panic(fmt.Sprintf("unexpected http code: %d", resp.StatusCode))
 	}
 	var person struct {
-		Meta ResponseMeta `json:"meta"`
-		Data model.Object `json:"data,omitempty"`
+		Meta ResponseMeta  `json:"meta"`
+		Data domain.Object `json:"data,omitempty"`
 	}
 	decoder := json.NewDecoder(resp.Body)
 	decoder.DisallowUnknownFields()

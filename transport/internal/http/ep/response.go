@@ -2,9 +2,10 @@ package ep
 
 import (
 	"encoding/json"
-	"github.com/iv-menshenin/accountant/model"
 	"log"
 	"net/http"
+
+	"github.com/iv-menshenin/accountant/model/generic"
 )
 
 type (
@@ -37,11 +38,11 @@ func writeQueryError(w http.ResponseWriter, e error) {
 
 func writeError(w http.ResponseWriter, e error) {
 	switch e.(type) {
-	case model.Unauthorized:
+	case generic.Unauthorized:
 		writeUnauthorizedError(w, e)
-	case model.Forbidden:
+	case generic.Forbidden:
 		writeDataAccessError(w, e)
-	case model.NotFound:
+	case generic.NotFound:
 		writeNotFoundError(w, e)
 	default:
 		writeInternalError(w, e)

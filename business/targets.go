@@ -3,16 +3,19 @@ package business
 import (
 	"context"
 
-	"github.com/iv-menshenin/accountant/model"
+	"github.com/iv-menshenin/accountant/model/domain"
+	"github.com/iv-menshenin/accountant/model/generic"
+	"github.com/iv-menshenin/accountant/model/request"
+	storage2 "github.com/iv-menshenin/accountant/model/storage"
 	"github.com/iv-menshenin/accountant/storage"
 	"github.com/iv-menshenin/accountant/utils/uuid"
 )
 
-func (a *Tar) TargetGet(ctx context.Context, q model.GetTargetQuery) (*model.Target, error) {
+func (a *Tar) TargetGet(ctx context.Context, q request.GetTargetQuery) (*domain.Target, error) {
 	target, err := a.targets.Lookup(ctx, q.TargetID)
 	if err == storage.ErrNotFound {
 		a.getLogger().Warning("target not found %s", q.TargetID)
-		return nil, model.NotFound{}
+		return nil, generic.NotFound{}
 	}
 	if err != nil {
 		a.getLogger().Error("unable to lookup target %s: %s", q.TargetID, err)
@@ -21,9 +24,9 @@ func (a *Tar) TargetGet(ctx context.Context, q model.GetTargetQuery) (*model.Tar
 	return target, nil
 }
 
-func (a *Tar) TargetCreate(ctx context.Context, data model.PostTargetQuery) (*model.Target, error) {
-	var target = model.Target{
-		TargetHead: model.TargetHead{
+func (a *Tar) TargetCreate(ctx context.Context, data request.PostTargetQuery) (*domain.Target, error) {
+	var target = domain.Target{
+		TargetHead: domain.TargetHead{
 			TargetID: uuid.NewUUID(),
 			Type:     data.Type,
 		},
@@ -37,11 +40,11 @@ func (a *Tar) TargetCreate(ctx context.Context, data model.PostTargetQuery) (*mo
 	return a.targets.Lookup(ctx, target.TargetID)
 }
 
-func (a *Tar) TargetDelete(ctx context.Context, q model.DeleteTargetQuery) error {
+func (a *Tar) TargetDelete(ctx context.Context, q request.DeleteTargetQuery) error {
 	err := a.targets.Delete(ctx, q.TargetID)
 	if err == storage.ErrNotFound {
 		a.getLogger().Error("unable to delete target %s: not found", q.TargetID)
-		return model.NotFound{}
+		return generic.NotFound{}
 	}
 	if err != nil {
 		a.getLogger().Error("unable to delete target %s: %s", q.TargetID, err)
@@ -49,8 +52,8 @@ func (a *Tar) TargetDelete(ctx context.Context, q model.DeleteTargetQuery) error
 	return err
 }
 
-func (a *Tar) TargetsFind(ctx context.Context, q model.FindTargetQuery) ([]model.Target, error) {
-	var findOption = model.FindTargetOption{
+func (a *Tar) TargetsFind(ctx context.Context, q request.FindTargetQuery) ([]domain.Target, error) {
+	var findOption = storage2.FindTargetOption{
 		ShowClosed: q.ShowClosed,
 	}
 	if q.Period != nil && q.Period.Year > 0 {
@@ -66,7 +69,7 @@ func (a *Tar) TargetsFind(ctx context.Context, q model.FindTargetQuery) ([]model
 		return nil, err
 	}
 	if len(targets) == 0 {
-		return nil, model.NotFound{}
+		return nil, generic.NotFound{}
 	}
 	return targets, nil
 }

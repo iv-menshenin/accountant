@@ -9,7 +9,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 	mid "go.mongodb.org/mongo-driver/x/mongo/driver/uuid"
 
-	"github.com/iv-menshenin/accountant/model"
+	"github.com/iv-menshenin/accountant/model/domain"
 	"github.com/iv-menshenin/accountant/utils/uuid"
 )
 
@@ -19,16 +19,16 @@ type (
 		mapError func(error) error
 	}
 	paymentRecord struct {
-		ID       mid.UUID      `bson:"_id"`
-		Data     model.Payment `bson:"data"`
-		Created  time.Time     `bson:"created"`
-		Updated  time.Time     `bson:"updated"`
-		Deleted  *time.Time    `bson:"deleted"`
-		OwnerCtx mid.UUID      `bson:"ownerCtx"`
+		ID       mid.UUID       `bson:"_id"`
+		Data     domain.Payment `bson:"data"`
+		Created  time.Time      `bson:"created"`
+		Updated  time.Time      `bson:"updated"`
+		Deleted  *time.Time     `bson:"deleted"`
+		OwnerCtx mid.UUID       `bson:"ownerCtx"`
 	}
 )
 
-func (p *PaymentCollection) Create(ctx context.Context, payment model.Payment) error {
+func (p *PaymentCollection) Create(ctx context.Context, payment domain.Payment) error {
 	select {
 	case <-ctx.Done():
 		return ctx.Err()
@@ -39,7 +39,7 @@ func (p *PaymentCollection) Create(ctx context.Context, payment model.Payment) e
 	}
 }
 
-func mapPaymentToRecord(ctx context.Context, payment model.Payment) paymentRecord {
+func mapPaymentToRecord(ctx context.Context, payment domain.Payment) paymentRecord {
 	return paymentRecord{
 		ID:       mid.UUID(payment.PaymentID),
 		Data:     payment,
@@ -64,7 +64,7 @@ func paymentIdFilter(id uuid.UUID) interface{} {
 	return bson.M{"_id": bson.M{"$eq": mid.UUID(id)}}
 }
 
-func (p *PaymentCollection) FindByAccount(ctx context.Context, accountID uuid.UUID) (payments []model.Payment, eut error) {
+func (p *PaymentCollection) FindByAccount(ctx context.Context, accountID uuid.UUID) (payments []domain.Payment, eut error) {
 	select {
 	case <-ctx.Done():
 		return nil, ctx.Err()
@@ -90,7 +90,7 @@ func (p *PaymentCollection) FindByAccount(ctx context.Context, accountID uuid.UU
 	}
 }
 
-func (p *PaymentCollection) FindByIDs(ctx context.Context, uuids []uuid.UUID) (payments []model.Payment, eut error) {
+func (p *PaymentCollection) FindByIDs(ctx context.Context, uuids []uuid.UUID) (payments []domain.Payment, eut error) {
 	select {
 	case <-ctx.Done():
 		return nil, ctx.Err()
@@ -116,7 +116,7 @@ func (p *PaymentCollection) FindByIDs(ctx context.Context, uuids []uuid.UUID) (p
 	}
 }
 
-func mapRecordToPayment(rec paymentRecord) *model.Payment {
+func mapRecordToPayment(rec paymentRecord) *domain.Payment {
 	return &rec.Data
 }
 

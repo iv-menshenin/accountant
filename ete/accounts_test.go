@@ -11,15 +11,15 @@ import (
 	"testing"
 	"time"
 
-	"github.com/iv-menshenin/accountant/model"
+	"github.com/iv-menshenin/accountant/model/domain"
 	"github.com/iv-menshenin/accountant/utils/uuid"
 )
 
-func testAccount(t *testing.T, logData fmt.Stringer, actor httpActor, account *model.Account) *model.Account {
+func testAccount(t *testing.T, logData fmt.Stringer, actor httpActor, account *domain.Account) *domain.Account {
 	t.Run("create account", func(t *testing.T) {
 		var err error
 		var someDate = time.Date(2016, 12, 12, 0, 0, 0, 0, time.UTC)
-		var accountData = model.AccountData{
+		var accountData = domain.AccountData{
 			Account:       fmt.Sprintf("%d", rand.Intn(8999999)+1000000),
 			CadNumber:     "4535-34543-345343-34534",
 			AgreementNum:  "NNN-0000001",
@@ -49,7 +49,7 @@ func testAccount(t *testing.T, logData fmt.Stringer, actor httpActor, account *m
 	t.Run("update account", func(t *testing.T) {
 		var err error
 		var someDate = time.Date(2016, 12, 12, 0, 0, 0, 0, time.UTC)
-		var accountData = model.AccountData{
+		var accountData = domain.AccountData{
 			Account:       fmt.Sprintf("%d", rand.Intn(8999999)+1000000),
 			CadNumber:     "4535-34543-345343-34534",
 			AgreementNum:  fmt.Sprintf("№ %d", rand.Intn(89999)+10000),
@@ -79,7 +79,7 @@ func testAccount(t *testing.T, logData fmt.Stringer, actor httpActor, account *m
 	return account
 }
 
-func wipeAccount(t *testing.T, logData fmt.Stringer, actor httpActor, account *model.Account) {
+func wipeAccount(t *testing.T, logData fmt.Stringer, actor httpActor, account *domain.Account) {
 	t.Run("delete account", func(t *testing.T) {
 		err := actor.deleteAccount(account.AccountID)
 		if err != nil {
@@ -102,10 +102,10 @@ func wipeAccount(t *testing.T, logData fmt.Stringer, actor httpActor, account *m
 	})
 }
 
-func testPerson(t *testing.T, logData fmt.Stringer, actor httpActor, account *model.Account) *model.Account {
+func testPerson(t *testing.T, logData fmt.Stringer, actor httpActor, account *domain.Account) *domain.Account {
 	t.Run("create_person", func(t *testing.T) {
 
-		var person = model.PersonData{
+		var person = domain.PersonData{
 			Name:     "Test1",
 			Surname:  "Testing",
 			PatName:  "Ivanovich",
@@ -125,7 +125,7 @@ func testPerson(t *testing.T, logData fmt.Stringer, actor httpActor, account *mo
 		account.Persons = append(account.Persons, *gotPerson)
 	})
 	t.Run("add_new_person", func(t *testing.T) {
-		var person = model.PersonData{
+		var person = domain.PersonData{
 			Name:     "Test2",
 			Surname:  "Testing",
 			PatName:  "Michailovna",
@@ -192,10 +192,10 @@ func testPerson(t *testing.T, logData fmt.Stringer, actor httpActor, account *mo
 	return account
 }
 
-func testObject(t *testing.T, logData fmt.Stringer, actor httpActor, account *model.Account) *model.Account {
+func testObject(t *testing.T, logData fmt.Stringer, actor httpActor, account *domain.Account) *domain.Account {
 	t.Run("create_object", func(t *testing.T) {
 
-		var object = model.ObjectData{
+		var object = domain.ObjectData{
 			PostalCode: "663451",
 			City:       "г. Краснокрыльск",
 			Village:    "пос. Прозорливый",
@@ -215,7 +215,7 @@ func testObject(t *testing.T, logData fmt.Stringer, actor httpActor, account *mo
 		account.Objects = append(account.Objects, *gotObject)
 	})
 	t.Run("add_new_object", func(t *testing.T) {
-		var object = model.ObjectData{
+		var object = domain.ObjectData{
 			PostalCode: "",
 			City:       "г. Краснокрыльск",
 			Village:    "пос. Прозорливый",
@@ -287,7 +287,7 @@ func testObject(t *testing.T, logData fmt.Stringer, actor httpActor, account *mo
 	return account
 }
 
-func (a *httpActor) createAccount(data model.AccountData) (result *model.Account, err error) {
+func (a *httpActor) createAccount(data domain.AccountData) (result *domain.Account, err error) {
 	var buf = bytes.NewBufferString("")
 	enc := json.NewEncoder(buf)
 	if err = enc.Encode(data); err != nil {
@@ -306,7 +306,7 @@ func (a *httpActor) createAccount(data model.AccountData) (result *model.Account
 	return
 }
 
-func (a *httpActor) updateAccount(accID uuid.UUID, data model.AccountData) (result *model.Account, err error) {
+func (a *httpActor) updateAccount(accID uuid.UUID, data domain.AccountData) (result *domain.Account, err error) {
 	var buf = bytes.NewBufferString("")
 	enc := json.NewEncoder(buf)
 	if err = enc.Encode(data); err != nil {
@@ -325,7 +325,7 @@ func (a *httpActor) updateAccount(accID uuid.UUID, data model.AccountData) (resu
 	return
 }
 
-func (a *httpActor) getAccounts(query string) (result []model.Account, err error) {
+func (a *httpActor) getAccounts(query string) (result []domain.Account, err error) {
 	var req *http.Request
 	req, err = http.NewRequest(http.MethodGet, a.accountsURL+"?"+query, nil)
 	if err != nil {
@@ -339,7 +339,7 @@ func (a *httpActor) getAccounts(query string) (result []model.Account, err error
 	return
 }
 
-func (a *httpActor) getAccount(accID uuid.UUID) (result *model.Account, err error) {
+func (a *httpActor) getAccount(accID uuid.UUID) (result *domain.Account, err error) {
 	var req *http.Request
 	req, err = http.NewRequest(http.MethodGet, a.accountsURL+"/"+accID.String(), nil)
 	if err != nil {
@@ -369,7 +369,7 @@ func (a *httpActor) deleteAccount(accID uuid.UUID) error {
 	return fmt.Errorf("unexpected status: %s %s", respData.Meta.Status, respData.Meta.Message)
 }
 
-func (a *httpActor) createPerson(accID uuid.UUID, data model.PersonData) (result *model.Person, err error) {
+func (a *httpActor) createPerson(accID uuid.UUID, data domain.PersonData) (result *domain.Person, err error) {
 	var buf = bytes.NewBufferString("")
 	enc := json.NewEncoder(buf)
 	if err = enc.Encode(data); err != nil {
@@ -388,7 +388,7 @@ func (a *httpActor) createPerson(accID uuid.UUID, data model.PersonData) (result
 	return
 }
 
-func (a *httpActor) updatePerson(accID, personID uuid.UUID, data model.PersonData) (result *model.Person, err error) {
+func (a *httpActor) updatePerson(accID, personID uuid.UUID, data domain.PersonData) (result *domain.Person, err error) {
 	var buf = bytes.NewBufferString("")
 	enc := json.NewEncoder(buf)
 	if err = enc.Encode(data); err != nil {
@@ -423,7 +423,7 @@ func (a *httpActor) deletePerson(accID, personID uuid.UUID) error {
 	return fmt.Errorf("unexpected status: %s %s", respData.Meta.Status, respData.Meta.Message)
 }
 
-func (a *httpActor) createObject(accID uuid.UUID, data model.ObjectData) (result *model.Object, err error) {
+func (a *httpActor) createObject(accID uuid.UUID, data domain.ObjectData) (result *domain.Object, err error) {
 	var buf = bytes.NewBufferString("")
 	enc := json.NewEncoder(buf)
 	if err = enc.Encode(data); err != nil {
@@ -442,7 +442,7 @@ func (a *httpActor) createObject(accID uuid.UUID, data model.ObjectData) (result
 	return
 }
 
-func (a *httpActor) updateObject(accID, objID uuid.UUID, data model.ObjectData) (result *model.Object, err error) {
+func (a *httpActor) updateObject(accID, objID uuid.UUID, data domain.ObjectData) (result *domain.Object, err error) {
 	var buf = bytes.NewBufferString("")
 	enc := json.NewEncoder(buf)
 	if err = enc.Encode(data); err != nil {

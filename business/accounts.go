@@ -3,13 +3,16 @@ package business
 import (
 	"context"
 
-	"github.com/iv-menshenin/accountant/model"
+	"github.com/iv-menshenin/accountant/model/domain"
+	"github.com/iv-menshenin/accountant/model/generic"
+	"github.com/iv-menshenin/accountant/model/request"
+	storage2 "github.com/iv-menshenin/accountant/model/storage"
 	"github.com/iv-menshenin/accountant/storage"
 	"github.com/iv-menshenin/accountant/utils/uuid"
 )
 
-func (a *Acc) AccountCreate(ctx context.Context, q model.PostAccountQuery) (*model.Account, error) {
-	var account = model.Account{
+func (a *Acc) AccountCreate(ctx context.Context, q request.PostAccountQuery) (*domain.Account, error) {
+	var account = domain.Account{
 		AccountID:   uuid.NewUUID(),
 		AccountData: q.AccountData,
 	}
@@ -21,11 +24,11 @@ func (a *Acc) AccountCreate(ctx context.Context, q model.PostAccountQuery) (*mod
 	return a.accounts.Lookup(ctx, account.AccountID)
 }
 
-func (a *Acc) AccountGet(ctx context.Context, q model.GetAccountQuery) (*model.Account, error) {
+func (a *Acc) AccountGet(ctx context.Context, q request.GetAccountQuery) (*domain.Account, error) {
 	account, err := a.accounts.Lookup(ctx, q.ID)
 	if err == storage.ErrNotFound {
 		a.getLogger().Warning("account not found %s", q.ID)
-		return nil, model.NotFound{}
+		return nil, generic.NotFound{}
 	}
 	if err != nil {
 		a.getLogger().Error("unable to lookup account %s: %s", q.ID, err)
@@ -34,11 +37,11 @@ func (a *Acc) AccountGet(ctx context.Context, q model.GetAccountQuery) (*model.A
 	return account, nil
 }
 
-func (a *Acc) AccountSave(ctx context.Context, q model.PutAccountQuery) (*model.Account, error) {
+func (a *Acc) AccountSave(ctx context.Context, q request.PutAccountQuery) (*domain.Account, error) {
 	account, err := a.accounts.Lookup(ctx, q.ID)
 	if err == storage.ErrNotFound {
 		a.getLogger().Warning("account not found: %s", q.ID)
-		return nil, model.NotFound{}
+		return nil, generic.NotFound{}
 	}
 	if err != nil {
 		a.getLogger().Error("unable to get account data %s: %s", q.ID, err)
@@ -52,11 +55,11 @@ func (a *Acc) AccountSave(ctx context.Context, q model.PutAccountQuery) (*model.
 	return account, nil
 }
 
-func (a *Acc) AccountDelete(ctx context.Context, q model.DeleteAccountQuery) error {
+func (a *Acc) AccountDelete(ctx context.Context, q request.DeleteAccountQuery) error {
 	err := a.accounts.Delete(ctx, q.ID)
 	if err == storage.ErrNotFound {
 		a.getLogger().Error("unable to delete account %s: not found", q.ID)
-		return model.NotFound{}
+		return generic.NotFound{}
 	}
 	if err != nil {
 		a.getLogger().Error("unable to delete account %s: %s", q.ID, err)
@@ -64,8 +67,8 @@ func (a *Acc) AccountDelete(ctx context.Context, q model.DeleteAccountQuery) err
 	return err
 }
 
-func (a *Acc) AccountsFind(ctx context.Context, q model.FindAccountsQuery) ([]model.Account, error) {
-	var findOption model.FindAccountOption
+func (a *Acc) AccountsFind(ctx context.Context, q request.FindAccountsQuery) ([]domain.Account, error) {
+	var findOption storage2.FindAccountOption
 	findOption.FillFromQuery(q)
 	accounts, err := a.accounts.Find(ctx, findOption)
 	if err != nil {
@@ -73,7 +76,7 @@ func (a *Acc) AccountsFind(ctx context.Context, q model.FindAccountsQuery) ([]mo
 		return nil, err
 	}
 	if len(accounts) == 0 {
-		return nil, model.NotFound{}
+		return nil, generic.NotFound{}
 	}
 	return accounts, nil
 }

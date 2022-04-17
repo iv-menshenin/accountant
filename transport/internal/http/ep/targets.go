@@ -1,7 +1,6 @@
 package ep
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -11,27 +10,16 @@ import (
 
 	"github.com/gorilla/mux"
 
-	"github.com/iv-menshenin/accountant/model"
+	"github.com/iv-menshenin/accountant/model/domain"
+	"github.com/iv-menshenin/accountant/model/request"
 )
 
 type (
-	TargetGetter interface {
-		TargetGet(context.Context, model.GetTargetQuery) (*model.Target, error)
-	}
-	TargetCreator interface {
-		TargetCreate(context.Context, model.PostTargetQuery) (*model.Target, error)
-	}
-	TargetDeleter interface {
-		TargetDelete(context.Context, model.DeleteTargetQuery) error
-	}
-	TargetFinder interface {
-		TargetsFind(context.Context, model.FindTargetQuery) ([]model.Target, error)
-	}
 	TargetProcessor interface {
-		TargetCreator
-		TargetGetter
-		TargetDeleter
-		TargetFinder
+		request.TargetCreator
+		request.TargetGetter
+		request.TargetDeleter
+		request.TargetFinder
 	}
 	Targets struct {
 		processor TargetProcessor
@@ -76,7 +64,7 @@ func (t *Targets) LookupHandler() http.HandlerFunc {
 	}
 }
 
-func getTargetMapper(r *http.Request) (q model.GetTargetQuery, err error) {
+func getTargetMapper(r *http.Request) (q request.GetTargetQuery, err error) {
 	id := mux.Vars(r)[targetID]
 	if id == "" {
 		err = errors.New(targetID + " must not be empty")
@@ -102,7 +90,7 @@ func (t *Targets) PostHandler() http.HandlerFunc {
 	}
 }
 
-func postTargetMapper(r *http.Request) (q model.PostTargetQuery, err error) {
+func postTargetMapper(r *http.Request) (q request.PostTargetQuery, err error) {
 	if rs, ok := r.URL.Query()[targetType]; ok {
 		q.Type = strings.Join(rs, ",")
 	}
@@ -131,7 +119,7 @@ func (t *Targets) DeleteHandler() http.HandlerFunc {
 	}
 }
 
-func deleteTargetMapper(r *http.Request) (q model.DeleteTargetQuery, err error) {
+func deleteTargetMapper(r *http.Request) (q request.DeleteTargetQuery, err error) {
 	id := mux.Vars(r)[targetID]
 	if id == "" {
 		err = errors.New(targetID + " must not be empty")
@@ -163,12 +151,12 @@ const (
 	periodMonth = "month"
 )
 
-func findTargetMapper(r *http.Request) (q model.FindTargetQuery, err error) {
+func findTargetMapper(r *http.Request) (q request.FindTargetQuery, err error) {
 	params := queryParams{r: r}
 	if sc, ok := params.vars(showClosed); ok && sc != "false" && sc != "0" {
 		q.ShowClosed = true
 	}
-	var period model.Period
+	var period domain.Period
 	if y, ok := params.vars(periodYear); ok {
 		period.Year, err = strconv.Atoi(y)
 		if err != nil {

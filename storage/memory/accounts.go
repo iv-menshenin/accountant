@@ -3,7 +3,8 @@ package memory
 import (
 	"context"
 
-	"github.com/iv-menshenin/accountant/model"
+	"github.com/iv-menshenin/accountant/model/domain"
+	"github.com/iv-menshenin/accountant/model/storage"
 	"github.com/iv-menshenin/accountant/storage/internal/memory"
 	"github.com/iv-menshenin/accountant/utils/uuid"
 )
@@ -15,7 +16,7 @@ type (
 	}
 )
 
-func (a *AccountCollection) Create(ctx context.Context, account model.Account) error {
+func (a *AccountCollection) Create(ctx context.Context, account domain.Account) error {
 	select {
 	case <-ctx.Done():
 		return ctx.Err()
@@ -24,7 +25,7 @@ func (a *AccountCollection) Create(ctx context.Context, account model.Account) e
 	}
 }
 
-func (a *AccountCollection) Lookup(ctx context.Context, id uuid.UUID) (*model.Account, error) {
+func (a *AccountCollection) Lookup(ctx context.Context, id uuid.UUID) (*domain.Account, error) {
 	select {
 	case <-ctx.Done():
 		return nil, ctx.Err()
@@ -33,11 +34,11 @@ func (a *AccountCollection) Lookup(ctx context.Context, id uuid.UUID) (*model.Ac
 		if err != nil {
 			return nil, a.mapError(err)
 		}
-		return acc.(*model.Account), nil
+		return acc.(*domain.Account), nil
 	}
 }
 
-func (a *AccountCollection) Replace(ctx context.Context, id uuid.UUID, account model.Account) error {
+func (a *AccountCollection) Replace(ctx context.Context, id uuid.UUID, account domain.Account) error {
 	select {
 	case <-ctx.Done():
 		return ctx.Err()
@@ -55,18 +56,18 @@ func (a *AccountCollection) Delete(ctx context.Context, id uuid.UUID) error {
 	}
 }
 
-func (a *AccountCollection) Find(ctx context.Context, option model.FindAccountOption) ([]model.Account, error) {
+func (a *AccountCollection) Find(ctx context.Context, option storage.FindAccountOption) ([]domain.Account, error) {
 	collection := a.mem.Find(func(i interface{}) bool {
-		account := i.(*model.Account)
+		account := i.(*domain.Account)
 		return checkAccountFilter(*account, option)
 	})
 	select {
 	case <-ctx.Done():
 		return nil, ctx.Err()
 	default:
-		var results = make([]model.Account, 0, len(collection))
+		var results = make([]domain.Account, 0, len(collection))
 		for _, i := range collection {
-			results = append(results, *i.(*model.Account))
+			results = append(results, *i.(*domain.Account))
 		}
 		return results, nil
 	}

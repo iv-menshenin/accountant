@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/iv-menshenin/accountant/model"
+	"github.com/iv-menshenin/accountant/model/generic"
 	"github.com/iv-menshenin/accountant/utils/uuid"
 )
 
@@ -13,7 +13,7 @@ func TestJWTCore_InputKey(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	var user = model.User{
+	var user = generic.User{
 		UUID:     uuid.NewUUID(),
 		UserName: "devalio",
 		Context:  []string{"admin", "read", "write"},
@@ -37,7 +37,7 @@ func TestJWTCore_RandomKey(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	var user = model.User{
+	var user = generic.User{
 		UUID:     uuid.NewUUID(),
 		UserName: "devalio",
 		Context:  []string{"green plum", "read", "write"},

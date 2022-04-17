@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/iv-menshenin/accountant/model"
+	"github.com/iv-menshenin/accountant/model/generic"
 	"github.com/iv-menshenin/accountant/utils/uuid"
 )
 
@@ -37,8 +37,8 @@ func (c *JWTCore) Middleware() func(h http.Handler) http.Handler {
 	}
 }
 
-func (c *JWTCore) Auth(context.Context, model.AuthQuery) (model.AuthData, error) {
-	var user = model.User{
+func (c *JWTCore) Auth(context.Context, generic.AuthQuery) (generic.AuthData, error) {
+	var user = generic.User{
 		UUID:     uuid.NilUUID(),
 		UserName: "test",
 		Context:  []string{"test", "admin"},
@@ -48,13 +48,13 @@ func (c *JWTCore) Auth(context.Context, model.AuthQuery) (model.AuthData, error)
 
 	token, err := c.SignJWT(user)
 	if err != nil {
-		return model.AuthData{}, err
+		return generic.AuthData{}, err
 	}
 	refresh, err := c.RefreshToken(user)
 	if err != nil {
-		return model.AuthData{}, err
+		return generic.AuthData{}, err
 	}
-	return model.AuthData{
+	return generic.AuthData{
 		JWT:     token,
 		UserID:  user.UUID,
 		Context: user.Context,
@@ -62,8 +62,8 @@ func (c *JWTCore) Auth(context.Context, model.AuthQuery) (model.AuthData, error)
 	}, nil
 }
 
-func (c *JWTCore) Refresh(ctx context.Context, r model.RefreshTokenQuery) (model.AuthData, error) {
-	var user = model.User{
+func (c *JWTCore) Refresh(ctx context.Context, r generic.RefreshTokenQuery) (generic.AuthData, error) {
+	var user = generic.User{
 		UUID:     uuid.NilUUID(),
 		UserName: "test",
 		Context:  []string{"test", "admin"},
@@ -73,17 +73,17 @@ func (c *JWTCore) Refresh(ctx context.Context, r model.RefreshTokenQuery) (model
 
 	_, err := c.ParseRefreshToken(r.Token)
 	if err != nil {
-		return model.AuthData{}, err
+		return generic.AuthData{}, err
 	}
 	token, err := c.SignJWT(user)
 	if err != nil {
-		return model.AuthData{}, err
+		return generic.AuthData{}, err
 	}
 	refresh, err := c.RefreshToken(user)
 	if err != nil {
-		return model.AuthData{}, err
+		return generic.AuthData{}, err
 	}
-	return model.AuthData{
+	return generic.AuthData{
 		JWT:     token,
 		UserID:  user.UUID,
 		Context: user.Context,

@@ -7,13 +7,13 @@ import (
 
 	"github.com/gorilla/mux"
 
-	"github.com/iv-menshenin/accountant/model"
+	"github.com/iv-menshenin/accountant/model/generic"
 )
 
 type (
 	AuthProcessor interface {
-		Auth(context.Context, model.AuthQuery) (model.AuthData, error)
-		Refresh(context.Context, model.RefreshTokenQuery) (model.AuthData, error)
+		Auth(context.Context, generic.AuthQuery) (generic.AuthData, error)
+		Refresh(context.Context, generic.RefreshTokenQuery) (generic.AuthData, error)
 	}
 	Auth struct {
 		processor AuthProcessor
@@ -36,7 +36,7 @@ func (a *Auth) SetupRouting(router *mux.Router) {
 }
 func (a *Auth) LoginHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var q model.AuthQuery
+		var q generic.AuthQuery
 		j := json.NewDecoder(r.Body)
 		j.DisallowUnknownFields()
 		if err := j.Decode(&q); err != nil {
@@ -54,7 +54,7 @@ func (a *Auth) LoginHandler() http.HandlerFunc {
 
 func (a *Auth) RefreshHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var q model.RefreshTokenQuery
+		var q generic.RefreshTokenQuery
 		j := json.NewDecoder(r.Body)
 		j.DisallowUnknownFields()
 		if err := j.Decode(&q); err != nil {

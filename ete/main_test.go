@@ -15,7 +15,7 @@ import (
 
 	"github.com/iv-menshenin/accountant/business"
 	"github.com/iv-menshenin/accountant/config"
-	"github.com/iv-menshenin/accountant/model"
+	"github.com/iv-menshenin/accountant/model/domain"
 	"github.com/iv-menshenin/accountant/storage"
 	"github.com/iv-menshenin/accountant/storage/mongodb"
 	"github.com/iv-menshenin/accountant/transport"
@@ -42,8 +42,8 @@ func Test_ete(t *testing.T) {
 	var actor = upService(t, logData)
 
 	var (
-		account1 *model.Account
-		account2 *model.Account
+		account1 *domain.Account
+		account2 *domain.Account
 	)
 
 	t.Run("AccountTesting", func(t *testing.T) {
@@ -163,28 +163,28 @@ type (
 		Message string `json:"message,omitempty"`
 	}
 	AccountsDataResponse struct {
-		Meta ResponseMeta    `json:"meta"`
-		Data []model.Account `json:"data,omitempty"`
+		Meta ResponseMeta     `json:"meta"`
+		Data []domain.Account `json:"data,omitempty"`
 	}
 	AccountDataResponse struct {
-		Meta ResponseMeta   `json:"meta"`
-		Data *model.Account `json:"data,omitempty"`
+		Meta ResponseMeta    `json:"meta"`
+		Data *domain.Account `json:"data,omitempty"`
 	}
 	PersonDataResponse struct {
-		Meta ResponseMeta  `json:"meta"`
-		Data *model.Person `json:"data,omitempty"`
+		Meta ResponseMeta   `json:"meta"`
+		Data *domain.Person `json:"data,omitempty"`
 	}
 	ObjectDataResponse struct {
-		Meta ResponseMeta  `json:"meta"`
-		Data *model.Object `json:"data,omitempty"`
+		Meta ResponseMeta   `json:"meta"`
+		Data *domain.Object `json:"data,omitempty"`
 	}
 	TargetDataResponse struct {
-		Meta ResponseMeta  `json:"meta"`
-		Data *model.Target `json:"data"`
+		Meta ResponseMeta   `json:"meta"`
+		Data *domain.Target `json:"data"`
 	}
 	TargetsDataResponse struct {
-		Meta ResponseMeta   `json:"meta"`
-		Data []model.Target `json:"data"`
+		Meta ResponseMeta    `json:"meta"`
+		Data []domain.Target `json:"data"`
 	}
 )
 

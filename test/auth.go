@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/iv-menshenin/accountant/model"
+	"github.com/iv-menshenin/accountant/model/generic"
 )
 
 type (
@@ -15,13 +15,13 @@ type (
 		Message string `json:"message,omitempty"`
 	}
 	AuthResponse struct {
-		Meta ResponseMeta   `json:"meta"`
-		Data model.AuthData `json:"data,omitempty"`
+		Meta ResponseMeta     `json:"meta"`
+		Data generic.AuthData `json:"data,omitempty"`
 	}
 )
 
 func getAuthData(server string) string {
-	var login = model.AuthQuery{
+	var login = generic.AuthQuery{
 		Login:    "test",
 		Password: "test",
 	}
