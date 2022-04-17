@@ -10,7 +10,7 @@ import (
 	mid "go.mongodb.org/mongo-driver/x/mongo/driver/uuid"
 
 	"github.com/iv-menshenin/accountant/model"
-	"github.com/iv-menshenin/accountant/model/uuid"
+	"github.com/iv-menshenin/accountant/utils/uuid"
 )
 
 type (

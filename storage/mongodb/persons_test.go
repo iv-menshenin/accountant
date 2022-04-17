@@ -10,8 +10,8 @@ import (
 	"time"
 
 	"github.com/iv-menshenin/accountant/model"
-	"github.com/iv-menshenin/accountant/model/uuid"
 	"github.com/iv-menshenin/accountant/storage"
+	"github.com/iv-menshenin/accountant/utils/uuid"
 )
 
 func Test_Persons(t *testing.T) {

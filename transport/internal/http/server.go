@@ -9,8 +9,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/iv-menshenin/accountant/model"
 	"github.com/iv-menshenin/accountant/transport/internal/http/ep"
+	"github.com/iv-menshenin/accountant/utils"
 )
 
 type (
@@ -40,7 +40,7 @@ func (t *Server) Shutdown(ctx context.Context) error {
 	return t.err
 }
 
-func makeServer(config model.Config, handler http.Handler, logger *log.Logger) http.Server {
+func makeServer(config utils.Config, handler http.Handler, logger *log.Logger) http.Server {
 	var (
 		httpPort = config.IntegerConfig("http-port", "port", "PORT", 8080, "http-server port")
 		httpHost = config.StringConfig("http-host", "host", "HOST", "", "http-server host")
@@ -74,7 +74,7 @@ func (t *Server) ConnState(_ net.Conn, state http.ConnState) {
 	}
 }
 
-func New(config model.Config, logger *log.Logger, rp RequestProcessor, auth AuthCore) *Server {
+func New(config utils.Config, logger *log.Logger, rp RequestProcessor, auth AuthCore) *Server {
 	var httpServer = makeServer(config, makeRouter(rp, auth), logger)
 	var server = Server{
 		server: &httpServer,

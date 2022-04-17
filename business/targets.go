@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/iv-menshenin/accountant/model"
-	"github.com/iv-menshenin/accountant/model/uuid"
 	"github.com/iv-menshenin/accountant/storage"
+	"github.com/iv-menshenin/accountant/utils/uuid"
 )
 
 func (a *Tar) TargetGet(ctx context.Context, q model.GetTargetQuery) (*model.Target, error) {

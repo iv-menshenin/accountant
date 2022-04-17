@@ -2,9 +2,10 @@ package auth
 
 import (
 	"fmt"
-	"github.com/iv-menshenin/accountant/model"
-	"github.com/iv-menshenin/accountant/model/uuid"
 	"testing"
+
+	"github.com/iv-menshenin/accountant/model"
+	"github.com/iv-menshenin/accountant/utils/uuid"
 )
 
 func TestJWTCore_InputKey(t *testing.T) {

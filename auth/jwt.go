@@ -9,7 +9,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 
 	"github.com/iv-menshenin/accountant/model"
-	"github.com/iv-menshenin/accountant/model/uuid"
+	"github.com/iv-menshenin/accountant/utils/uuid"
 )
 
 type (

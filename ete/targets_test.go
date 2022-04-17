@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/iv-menshenin/accountant/model/uuid"
 	"io"
 	"net/http"
 	"net/url"
@@ -13,6 +12,7 @@ import (
 	"testing"
 
 	"github.com/iv-menshenin/accountant/model"
+	"github.com/iv-menshenin/accountant/utils/uuid"
 )
 
 func testTargets(t *testing.T, logData fmt.Stringer, actor httpActor) {

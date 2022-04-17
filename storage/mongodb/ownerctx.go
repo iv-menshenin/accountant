@@ -3,7 +3,7 @@ package mongodb
 import (
 	"context"
 
-	"github.com/iv-menshenin/accountant/model/uuid"
+	"github.com/iv-menshenin/accountant/utils/uuid"
 )
 
 type ownerCtx struct{}

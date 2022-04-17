@@ -10,9 +10,7 @@ import (
 
 const uuidLen = 16
 
-type (
-	UUID [uuidLen]byte
-)
+type UUID [uuidLen]byte
 
 func NilUUID() UUID {
 	return UUID{}

@@ -1,7 +1,7 @@
 package model
 
 import (
-	"github.com/iv-menshenin/accountant/model/uuid"
+	"github.com/iv-menshenin/accountant/utils/uuid"
 )
 
 type (

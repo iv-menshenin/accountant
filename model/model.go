@@ -3,7 +3,7 @@ package model
 import (
 	"time"
 
-	"github.com/iv-menshenin/accountant/model/uuid"
+	"github.com/iv-menshenin/accountant/utils/uuid"
 )
 
 type (

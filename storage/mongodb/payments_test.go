@@ -10,8 +10,8 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 
 	"github.com/iv-menshenin/accountant/model"
-	"github.com/iv-menshenin/accountant/model/uuid"
 	"github.com/iv-menshenin/accountant/storage"
+	"github.com/iv-menshenin/accountant/utils/uuid"
 )
 
 func Test_Payments(t *testing.T) {

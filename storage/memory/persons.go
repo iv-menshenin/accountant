@@ -2,10 +2,10 @@ package memory
 
 import (
 	"context"
-	"github.com/iv-menshenin/accountant/storage"
 
 	"github.com/iv-menshenin/accountant/model"
-	"github.com/iv-menshenin/accountant/model/uuid"
+	"github.com/iv-menshenin/accountant/storage"
+	"github.com/iv-menshenin/accountant/utils/uuid"
 )
 
 type (
@@ -76,9 +76,7 @@ func (p *PersonCollection) Find(ctx context.Context, option model.FindPersonOpti
 	var err error
 	var accounts = make([]model.Account, 0, 10)
 	if option.AccountID == nil {
-		accounts, err = p.accounts.Find(ctx, model.FindAccountOption{
-			PersonFullName: option.PersonFullName,
-		})
+		accounts, err = p.accounts.Find(ctx, model.FindAccountOption{})
 	} else {
 		var account *model.Account
 		account, err = p.accounts.Lookup(ctx, *option.AccountID)
@@ -91,11 +89,7 @@ func (p *PersonCollection) Find(ctx context.Context, option model.FindPersonOpti
 	}
 	var persons = make([]model.Person, 0, len(accounts))
 	for _, account := range accounts {
-		for _, person := range account.Persons {
-			if option.PersonFullName == nil || checkPersonFullName(person, *option.PersonFullName) {
-				persons = append(persons, person)
-			}
-		}
+		persons = append(persons, account.Persons...)
 	}
 	return persons, nil
 }

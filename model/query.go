@@ -1,6 +1,8 @@
 package model
 
-import "github.com/iv-menshenin/accountant/model/uuid"
+import (
+	"github.com/iv-menshenin/accountant/utils/uuid"
+)
 
 type (
 	AuthData struct {

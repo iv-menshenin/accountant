@@ -14,7 +14,7 @@ import (
 
 	"github.com/iv-menshenin/accountant/config"
 	"github.com/iv-menshenin/accountant/model"
-	"github.com/iv-menshenin/accountant/model/uuid"
+	"github.com/iv-menshenin/accountant/utils/uuid"
 )
 
 var testStorage *Storage

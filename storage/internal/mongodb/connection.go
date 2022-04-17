@@ -10,7 +10,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
-	"github.com/iv-menshenin/accountant/model"
+	"github.com/iv-menshenin/accountant/utils"
 )
 
 type (
@@ -21,7 +21,7 @@ type (
 	}
 )
 
-func New(config model.Config, logger *log.Logger) (*Database, error) {
+func New(config utils.Config, logger *log.Logger) (*Database, error) {
 	var db = Database{logger: logger}
 	optClient, err := db.newOptions(config)
 	if err != nil {
@@ -44,7 +44,7 @@ func (d *Database) Close() error {
 	return d.client.Disconnect(context.Background())
 }
 
-func (d *Database) newOptions(config model.Config) (*options.ClientOptions, error) {
+func (d *Database) newOptions(config utils.Config) (*options.ClientOptions, error) {
 	var (
 		port   = config.IntegerConfig("mongo-port", "mongo-port", "MONGO_PORT", 27017, "mongodb server port")
 		host   = config.StringConfig("mongo-host", "mongo-host", "MONGO_HOST", "localhost", "mongodb server DNS name (or IP)")

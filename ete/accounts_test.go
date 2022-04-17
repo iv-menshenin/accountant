@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/iv-menshenin/accountant/model"
-	"github.com/iv-menshenin/accountant/model/uuid"
+	"github.com/iv-menshenin/accountant/utils/uuid"
 )
 
 func testAccount(t *testing.T, logData fmt.Stringer, actor httpActor, account *model.Account) *model.Account {
