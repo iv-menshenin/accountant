@@ -50,6 +50,23 @@ func mapTargetToRecord(ctx context.Context, target domain.Target) targetRecord {
 	}
 }
 
+func (t *TargetsCollection) Update(ctx context.Context, targetID uuid.UUID, target domain.TargetData) error {
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	default:
+		update := bson.M{"$set": bson.D{
+			{"data.period", target.Period},
+			{"data.closed", target.Closed},
+			{"data.cost", target.Cost},
+			{"data.comment", target.Comment},
+			{"updated", time.Now()},
+		}}
+		_, err := t.storage.UpdateOne(ctx, bson.D{{Key: "_id", Value: mid.UUID(targetID)}}, update, options.Update())
+		return t.mapError(err)
+	}
+}
+
 func (t *TargetsCollection) Lookup(ctx context.Context, targetID uuid.UUID) (*domain.Target, error) {
 	select {
 	case <-ctx.Done():

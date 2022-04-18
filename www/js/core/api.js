@@ -306,6 +306,11 @@ class apiManager {
         this.apiExecute(this.targetsPath, "POST", {type: target.type}, body, onSuccess, onError);
     }
 
+    // GetTarget получить информацию о виде целевого взноса
+    GetTarget(targetID, onSuccess, onError) {
+        this.apiExecute(this.targetsPath + "/" + targetID, "GET", undefined, undefined, onSuccess, onError);
+    }
+
     // FindTargets производит поиск целевых сборов
     FindTargets(showClosed, year, month, onSuccess, onError) {
         let query = {
@@ -314,6 +319,49 @@ class apiManager {
             month: month,
         };
         this.apiExecute(this.targetsPath, "GET", query, undefined, onSuccess, onError);
+    }
+
+    // UpdateTarget обновляет целевйо сбор
+    UpdateTarget(targetID, target, onSuccess, onError) {
+        let body = {
+            period: {
+                year: target.year,
+                month: target.month,
+            },
+            closed: target.closed,
+            cost: target.cost,
+            comment: target.comment,
+        };
+        this.apiExecute(this.targetsPath + "/" + targetID, "PUT", undefined, body, onSuccess, onError);
+    }
+
+    billsPath = "/bills"
+
+    // CreateBill создает новый счет
+    CreateBill(account_id, bill, onSuccess, onError) {
+        let body = {
+            formed: bill.formed,
+            object_id: bill.object_id,
+            period: {
+                year: bill.year,
+                month: bill.month
+            },
+            target: {
+                target_id: bill.target_id,
+                type: bill.type
+            },
+            bill: bill.bill
+        };
+        this.apiExecute(this.accountsPath + "/" + account_id + this.billsPath, "POST", undefined, body, onSuccess, onError);
+    }
+
+    // FindBills производит поиск начислений
+    FindBills(accountID, targetID, onSuccess, onError) {
+        let query = {
+            account_id: accountID,
+            target_id: targetID,
+        };
+        this.apiExecute(this.billsPath, "GET", query, undefined, onSuccess, onError);
     }
 
 }

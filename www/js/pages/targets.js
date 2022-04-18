@@ -30,6 +30,11 @@ class targetsManager {
         )
     }
 
+    addTarget(target) {
+        this.collection.push(target);
+        this.messageAll("add", target)
+    }
+
     getTarget(target_id) {
         let filtered = this.collection.filter((target) => {return target.target_id === target_id});
         if (filtered.length === 1) {
@@ -58,7 +63,7 @@ class targetsManager {
     }
 
     message(action, target, consumer) {
-        consumer(action, target, target.target_id, "#target:uuid="+target.target_id);
+        consumer(action, target, target.target_id, "#bills:target="+target.target_id);
     }
 
     empty() {
@@ -149,25 +154,14 @@ function makeTargetEditor(target) {
         type: {label: "Тип сбора", type: "text", value: target.type, short: true},
         cost: {label: "Сумма сбора", type: "number", value: target.cost, short: true},
         comment: {label: "Описание", type: "text", value: target.comment, short: false},
-    }, (updated)=>{
-        if (target.target_id) {
-            // updated.target_id = target.target_id;
-            // manager.UpdateAccount(updated, (updatedAccount)=>{
-            //     accounts.addOrReplaceAccount(updatedAccount);
-            //     toast("Владелец обновлен");
-            // }, (message)=>{
-            //     console.log(message);
-            //     toast("Что-то пошло не так");
-            // })
-        } else {
-            manager.CreateTarget(updated, (updatedTarget)=>{
-                targets.addOrReplaceTarget(updatedTarget);
-                toast("Новый сбор добавлен");
-                document.location.replace("#target:uuid="+updatedTarget.target_id);
-            }, (message)=>{
-                console.log(message);
-                toast("Что-то пошло не так");
-            })
-        }
+    }, (newTarget)=>{
+        manager.CreateTarget(newTarget, (created)=>{
+            targets.addTarget(created);
+            toast("Новый сбор добавлен");
+            document.location.replace("#bills:target="+created.target_id);
+        }, (message)=>{
+            console.log(message);
+            toast("Что-то пошло не так");
+        })
     })
 }

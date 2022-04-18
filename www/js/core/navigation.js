@@ -13,7 +13,8 @@ class navigationManager {
         {title: "Лицевой счет", anchor: "#account", handler: (prop)=>{return AccountPage(prop)}},
         {title: "Проживающий", anchor: "#person", handler: (prop)=>{return PersonEditPage(prop)}},
         {title: "Участок", anchor: "#object", handler: (prop)=>{return ObjectEditPage(prop)}},
-        {title: "Взносы", anchor: "#target", handler: (prop)=>{return TargetViewPage(prop)}},
+        {title: "Виды взносов", anchor: "#target", handler: (prop)=>{return TargetViewPage(prop)}},
+        {title: "Начисления", anchor: "#bills", handler: (prop)=>{return BillsViewPage(prop)}},
         // компоненты меню
         {title: "Лицевые счета", nav: true, anchor: "#accounts", handler: (prop)=>{return AccountsListPage(prop)}},
         {title: "Владельцы", nav: true, anchor: "#persons", handler: (prop)=>{return PersonsListPage(prop)}},

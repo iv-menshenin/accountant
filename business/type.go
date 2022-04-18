@@ -67,6 +67,7 @@ type (
 
 	TargetsCollection interface {
 		Create(context.Context, domain.Target) error
+		Update(context.Context, uuid.UUID, domain.TargetData) error
 		Lookup(context.Context, uuid.UUID) (*domain.Target, error)
 		Delete(context.Context, uuid.UUID) error
 		FindByPeriod(context.Context, storage.FindTargetOption) ([]domain.Target, error)

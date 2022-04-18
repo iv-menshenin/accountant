@@ -75,6 +75,10 @@ type (
 		Type   string
 		Target domain.TargetData
 	}
+	PutTargetQuery struct {
+		TargetID uuid.UUID
+		Target   domain.TargetData
+	}
 	DeleteTargetQuery struct {
 		TargetID uuid.UUID
 	}

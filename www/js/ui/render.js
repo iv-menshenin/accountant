@@ -35,6 +35,14 @@ class Render {
         }
     }
 
+    prepend(...args) {
+        let render = this.renderArgs(args, true);
+        this.selector.prepend(...render.content);
+        if (render.triggers) {
+            render.triggers.forEach((fn)=>fn())
+        }
+    }
+
     content(...args) {
         let render = this.renderArgs(args, true);
         this.selector.html(...render.content);

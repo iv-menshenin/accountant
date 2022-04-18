@@ -17,6 +17,7 @@ import (
 type (
 	TargetProcessor interface {
 		request.TargetCreator
+		request.TargetSaver
 		request.TargetGetter
 		request.TargetDeleter
 		request.TargetFinder
@@ -45,6 +46,7 @@ func (t *Targets) SetupRouting(router *mux.Router) {
 	targetsWithIDPath := fmt.Sprintf("%s/{%s:[0-9a-f\\-]+}", pathSegmentTargets, parameterNameTargetID)
 
 	router.Path(targetsWithIDPath).Methods(http.MethodGet).Handler(t.LookupHandler())
+	router.Path(targetsWithIDPath).Methods(http.MethodPut).Handler(t.PutHandler())
 	router.Path(pathSegmentTargets).Methods(http.MethodPost).Handler(t.PostHandler())
 	router.Path(targetsWithIDPath).Methods(http.MethodDelete).Handler(t.DeleteHandler())
 	router.Path(pathSegmentTargets).Methods(http.MethodGet).Handler(t.FindHandler())
@@ -74,6 +76,37 @@ func getTargetMapper(r *http.Request) (q request.GetTargetQuery, err error) {
 		return
 	}
 	err = q.TargetID.FromString(id)
+	return
+}
+
+func (t *Targets) PutHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		q, err := putTargetMapper(r)
+		if err != nil {
+			writeQueryError(w, err)
+			return
+		}
+		account, err := t.processor.TargetSave(r.Context(), q)
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+		writeData(w, account)
+	}
+}
+
+func putTargetMapper(r *http.Request) (q request.PutTargetQuery, err error) {
+	id := mux.Vars(r)[parameterNameTargetID]
+	if id == "" {
+		err = errors.New(parameterNameTargetID + " must not be empty")
+		return
+	}
+	if err = q.TargetID.FromString(id); err != nil {
+		return
+	}
+	decoder := json.NewDecoder(r.Body)
+	decoder.DisallowUnknownFields()
+	err = decoder.Decode(&q.Target)
 	return
 }
 

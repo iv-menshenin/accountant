@@ -61,6 +61,9 @@ type (
 	TargetCreator interface {
 		TargetCreate(context.Context, PostTargetQuery) (*domain.Target, error)
 	}
+	TargetSaver interface {
+		TargetSave(context.Context, PutTargetQuery) (*domain.Target, error)
+	}
 	TargetDeleter interface {
 		TargetDelete(context.Context, DeleteTargetQuery) error
 	}

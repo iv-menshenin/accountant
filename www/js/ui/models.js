@@ -21,10 +21,10 @@ function buildAccountElement(account) {
     return {
         primary: [
             {tag: "img", class: "circle", src: "/www/png/badge_account.png"},
-            {tag: "span", class: ["title", "black-text"], content: getAllPersonNames(account)}, // ФИО
+            {tag: "span", class: ["title", "black-text", "truncate"], content: "<b>" + account.account + "</b><br />" + getAllPersonNames(account)}, // ФИО
             {tag: "p", class: ["grey-text"], content: getShortAddress(account)},     // информация об участках
         ],
-        secondary: account.account
+        secondary: ""
     };
 }
 
@@ -32,7 +32,7 @@ function buildPersonElement(person) {
     return {
         primary: [
             {tag: "img", class: "circle", src: "/www/png/butterfly.png"},
-            {tag: "span", class: ["title", "black-text"], content: getPersonFullName(person)}, // ФИО
+            {tag: "span", class: ["title", "black-text", "truncate"], content: getPersonFullName(person)}, // ФИО
             {tag: "p", class: ["grey-text"], content: (person.phone ? person.phone : "")},     // телефон
         ],
         secondary: (person.is_member ? "член" : "не член")
@@ -43,10 +43,10 @@ function buildObjectElement(object) {
     return {
         primary: [
             {tag: "img", class: "circle", src: "/www/png/badge_object.png"},
-            {tag: "span", class: ["title", "black-text"], content: getObjectShortAddress(object)},
-            {tag: "p", class: ["grey-text"], content: (object.city ? object.city : "")},
+            {tag: "span", class: ["title", "black-text", "truncate"], content: getObjectShortAddress(object)},
+            {tag: "p", class: ["grey-text"], content: (object.village ? object.village : "") + " " + (object.area ? "[" + object.area + " m2]" : "?")},
         ],
-        secondary: (object.area ? object.area : "?")
+        secondary: ""
     };
 }
 
@@ -147,9 +147,9 @@ function getObjectShortAddress(object) {
         return ""
     }
     let result = [];
-    if (object.village) {
-        result.push(object.village);
-    }
+    // if (object.village) {
+    //     result.push(object.village);
+    // }
     if (object.street) {
         result.push(object.street);
     }

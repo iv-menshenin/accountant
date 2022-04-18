@@ -39,6 +39,15 @@ func (a *Tar) TargetCreate(ctx context.Context, data request.PostTargetQuery) (*
 	return a.targets.Lookup(ctx, target.TargetID)
 }
 
+func (a *Tar) TargetSave(ctx context.Context, data request.PutTargetQuery) (*domain.Target, error) {
+	err := a.targets.Update(ctx, data.TargetID, data.Target)
+	if err != nil {
+		a.getLogger().Error("unable to update target: %s", err)
+		return nil, err
+	}
+	return a.targets.Lookup(ctx, data.TargetID)
+}
+
 func (a *Tar) TargetDelete(ctx context.Context, q request.DeleteTargetQuery) error {
 	err := a.targets.Delete(ctx, q.TargetID)
 	if err == storage.ErrNotFound {
