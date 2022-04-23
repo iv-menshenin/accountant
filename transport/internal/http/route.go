@@ -16,6 +16,7 @@ type (
 		ep.ObjectProcessor
 		ep.TargetProcessor
 		ep.BillProcessor
+		ep.PaymentProcessor
 	}
 )
 
@@ -51,6 +52,9 @@ func makeRouter(rp RequestProcessor, auth AuthCore) http.Handler {
 
 	bills := ep.NewBillsEP(rp)
 	bills.SetupRouting(apiSubRouter)
+
+	payments := ep.NewPaymentsEP(rp)
+	payments.SetupRouting(apiSubRouter)
 
 	authSubRouter := router.PathPrefix(PathAuth).Subrouter()
 

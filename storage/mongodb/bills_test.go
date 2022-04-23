@@ -31,35 +31,38 @@ func Test_Bills(t *testing.T) {
 		{
 			BillID:    uuid.NewUUID(),
 			AccountID: accountID,
-			PersonID:  nil,
-			ObjectID:  nil,
-			Period: domain.Period{
-				Month: 5,
-				Year:  2021,
-			},
-			Target: domain.TargetHead{
-				TargetID: uuid.NewUUID(),
-				Type:     "test",
-			},
-			Bill: 1244,
-			Payments: []uuid.UUID{
-				uuid.NewUUID(), uuid.NewUUID(), uuid.NewUUID(), uuid.NewUUID(),
+			BillData: domain.BillData{
+				ObjectID: nil,
+				Period: domain.Period{
+					Month: 5,
+					Year:  2021,
+				},
+				Target: domain.TargetHead{
+					TargetID: uuid.NewUUID(),
+					Type:     "test",
+				},
+				Bill: 1244,
+				Payments: []uuid.UUID{
+					uuid.NewUUID(), uuid.NewUUID(), uuid.NewUUID(), uuid.NewUUID(),
+				},
 			},
 		},
 		{
 			BillID:    uuid.NewUUID(),
 			AccountID: accountID,
-			Period: domain.Period{
-				Month: 5,
-				Year:  2021,
-			},
-			Target: domain.TargetHead{
-				TargetID: uuid.NewUUID(),
-				Type:     "test",
-			},
-			Bill: 3700,
-			Payments: []uuid.UUID{
-				uuid.NewUUID(),
+			BillData: domain.BillData{
+				Period: domain.Period{
+					Month: 5,
+					Year:  2021,
+				},
+				Target: domain.TargetHead{
+					TargetID: uuid.NewUUID(),
+					Type:     "test",
+				},
+				Bill: 3700,
+				Payments: []uuid.UUID{
+					uuid.NewUUID(),
+				},
 			},
 		},
 	}
@@ -67,15 +70,17 @@ func Test_Bills(t *testing.T) {
 		{
 			BillID:    uuid.NewUUID(),
 			AccountID: accountID,
-			Period: domain.Period{
-				Month: 6,
-				Year:  2021,
+			BillData: domain.BillData{
+				Period: domain.Period{
+					Month: 6,
+					Year:  2021,
+				},
+				Target: domain.TargetHead{
+					TargetID: uuid.NewUUID(),
+					Type:     "test2",
+				},
+				Bill: 2300,
 			},
-			Target: domain.TargetHead{
-				TargetID: uuid.NewUUID(),
-				Type:     "test2",
-			},
-			Bill: 2300,
 		},
 	}, testPeriod...)
 
@@ -87,15 +92,17 @@ func Test_Bills(t *testing.T) {
 	if err = bills.Create(ctx, domain.Bill{
 		BillID:    noiceID,
 		AccountID: uuid.NewUUID(),
-		Period: domain.Period{
-			Month: 2,
-			Year:  2022,
+		BillData: domain.BillData{
+			Period: domain.Period{
+				Month: 2,
+				Year:  2022,
+			},
+			Target: domain.TargetHead{
+				TargetID: uuid.NewUUID(),
+				Type:     "noice",
+			},
+			Bill: 4333,
 		},
-		Target: domain.TargetHead{
-			TargetID: uuid.NewUUID(),
-			Type:     "noice",
-		},
-		Bill: 4333,
 	}); err != nil {
 		t.Errorf("cannot create new bill: %s", err)
 	}
@@ -106,7 +113,7 @@ func Test_Bills(t *testing.T) {
 		}
 	}
 
-	found, err := bills.FindByAccount(ctx, accountID)
+	found, err := bills.FindBy(ctx, &accountID, nil, nil)
 	if err != nil {
 		t.Errorf("cannot find bill: %s", err)
 	}
@@ -128,7 +135,7 @@ func Test_Bills(t *testing.T) {
 	if err != nil {
 		t.Errorf("cannot delete bill: %s", err)
 	}
-	look, err := bills.FindByPeriod(ctx, domain.Period{
+	look, err := bills.FindBy(ctx, nil, nil, &domain.Period{
 		Month: 2,
 		Year:  2022,
 	})
@@ -139,7 +146,7 @@ func Test_Bills(t *testing.T) {
 		t.Errorf("expected nil, got: %v", look)
 	}
 
-	found, err = bills.FindByPeriod(ctx, domain.Period{
+	found, err = bills.FindBy(ctx, nil, nil, &domain.Period{
 		Month: 5,
 		Year:  2021,
 	})

@@ -192,10 +192,6 @@ func findBillMapper(r *http.Request) (q request.FindBillsQuery, err error) {
 		q.TargetID = &targetID
 	}
 	if account, ok := params.vars(parameterNameAccountID); ok {
-		if q.TargetID != nil {
-			err = fmt.Errorf("allowed only one parameter %s or %s", parameterNameTargetID, parameterNameAccountID)
-			return
-		}
 		var accountID uuid.UUID
 		if err = accountID.FromString(account); err != nil {
 			return
@@ -203,10 +199,6 @@ func findBillMapper(r *http.Request) (q request.FindBillsQuery, err error) {
 		q.AccountID = &accountID
 	}
 	if period, ok := params.vars(parameterNamePeriod); ok {
-		if q.TargetID != nil || q.AccountID != nil {
-			err = fmt.Errorf("you can not specify %s or %s when %s is already specified", parameterNameTargetID, parameterNameAccountID, parameterNamePeriod)
-			return
-		}
 		split := strings.Split(period, ".")
 		if len(split) != 2 {
 			return q, fmt.Errorf("parameter %s unknown format, expected MM.YYYY", parameterNamePeriod)

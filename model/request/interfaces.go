@@ -86,4 +86,17 @@ type (
 	BillFinder interface {
 		BillsFind(context.Context, FindBillsQuery) ([]domain.Bill, error)
 	}
+
+	PaymentCreator interface {
+		PaymentCreate(context.Context, PostPaymentQuery) (*domain.Payment, error)
+	}
+	PaymentGetter interface {
+		PaymentGet(context.Context, GetPaymentQuery) (*domain.Payment, error)
+	}
+	PaymentDeleter interface {
+		PaymentDelete(context.Context, DeletePaymentQuery) error
+	}
+	PaymentFinder interface {
+		PaymentsFind(context.Context, FindPaymentsQuery) ([]domain.Payment, error)
+	}
 )

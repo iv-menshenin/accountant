@@ -45,11 +45,12 @@ func mainFunc(ctx context.Context, halt <-chan struct{}) (err error) {
 		listeningError = make(chan error)
 		appLogger      = logger.NewFromLogger(logWriter, logger.LogLevelDebug)
 
-		accountCollection = mongoStorage.NewAccountsCollection(storage.MapMongodbErrors)
-		personsCollection = mongoStorage.NewPersonsCollection(accountCollection, storage.MapMongodbErrors)
-		objectsCollection = mongoStorage.NewObjectsCollection(accountCollection, storage.MapMongodbErrors)
-		targetsCollection = mongoStorage.NewTargetsCollection(storage.MapMongodbErrors)
-		billsCollection   = mongoStorage.NewBillsCollection(storage.MapMongodbErrors)
+		accountCollection  = mongoStorage.NewAccountsCollection(storage.MapMongodbErrors)
+		personsCollection  = mongoStorage.NewPersonsCollection(accountCollection, storage.MapMongodbErrors)
+		objectsCollection  = mongoStorage.NewObjectsCollection(accountCollection, storage.MapMongodbErrors)
+		targetsCollection  = mongoStorage.NewTargetsCollection(storage.MapMongodbErrors)
+		billsCollection    = mongoStorage.NewBillsCollection(storage.MapMongodbErrors)
+		paymentsCollection = mongoStorage.NewPaymentsCollection(storage.MapMongodbErrors)
 
 		appHnd = business.New(
 			appLogger,
@@ -58,6 +59,7 @@ func mainFunc(ctx context.Context, halt <-chan struct{}) (err error) {
 			objectsCollection,
 			targetsCollection,
 			billsCollection,
+			paymentsCollection,
 		)
 		queryTransport = transport.NewHTTPServer(config.New("http"), logWriter, appHnd, authCore)
 	)

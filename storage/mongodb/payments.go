@@ -49,6 +49,25 @@ func mapPaymentToRecord(ctx context.Context, payment domain.Payment) paymentReco
 	}
 }
 
+func (p *PaymentCollection) Lookup(ctx context.Context, paymentID uuid.UUID) (*domain.Payment, error) {
+	select {
+	case <-ctx.Done():
+		return nil, ctx.Err()
+
+	default:
+		var filter = paymentIdFilter(paymentID)
+		found := p.storage.FindOne(ctx, filter, options.FindOne().SetShowRecordID(true))
+		if err := found.Err(); err != nil {
+			return nil, p.mapError(err)
+		}
+		var record paymentRecord
+		if err := found.Decode(&record); err != nil {
+			return nil, p.mapError(err)
+		}
+		return mapRecordToPayment(record), nil
+	}
+}
+
 func (p *PaymentCollection) Delete(ctx context.Context, paymentID uuid.UUID) error {
 	select {
 	case <-ctx.Done():
@@ -61,15 +80,18 @@ func (p *PaymentCollection) Delete(ctx context.Context, paymentID uuid.UUID) err
 }
 
 func paymentIdFilter(id uuid.UUID) interface{} {
-	return bson.M{"_id": bson.M{"$eq": mid.UUID(id)}}
+	return bson.D{
+		bson.E{Key: "deleted", Value: nil},
+		bson.E{Key: "_id", Value: mid.UUID(id)},
+	}
 }
 
-func (p *PaymentCollection) FindByAccount(ctx context.Context, accountID uuid.UUID) (payments []domain.Payment, eut error) {
+func (p *PaymentCollection) FindBy(ctx context.Context, accountID, personID, objectID, targetID *uuid.UUID) (payments []domain.Payment, eut error) {
 	select {
 	case <-ctx.Done():
 		return nil, ctx.Err()
 	default:
-		var filter = paymentFilter(&accountID, nil)
+		var filter = paymentFilter(accountID, personID, objectID, targetID)
 		cur, err := p.storage.Find(ctx, filter, options.Find().SetShowRecordID(true))
 		if err != nil {
 			return nil, p.mapError(err)
@@ -95,7 +117,7 @@ func (p *PaymentCollection) FindByIDs(ctx context.Context, uuids []uuid.UUID) (p
 	case <-ctx.Done():
 		return nil, ctx.Err()
 	default:
-		var filter = paymentFilter(nil, uuids)
+		var filter = paymentFilterByUUIDs(uuids...)
 		cur, err := p.storage.Find(ctx, filter, options.Find().SetShowRecordID(true))
 		if err != nil {
 			return nil, p.mapError(err)
@@ -120,12 +142,10 @@ func mapRecordToPayment(rec paymentRecord) *domain.Payment {
 	return &rec.Data
 }
 
-func paymentFilter(accountID *uuid.UUID, uuids []uuid.UUID) interface{} {
+func paymentFilterByUUIDs(uuids ...uuid.UUID) interface{} {
 	var filter = bson.D{
+		// todo: is this needed?
 		bson.E{Key: "deleted", Value: nil},
-	}
-	if accountID != nil {
-		filter = append(filter, bson.E{Key: "data.account_id", Value: *accountID})
 	}
 	if len(uuids) > 0 {
 		ids := make([]mid.UUID, len(uuids))
@@ -137,7 +157,26 @@ func paymentFilter(accountID *uuid.UUID, uuids []uuid.UUID) interface{} {
 	return filter
 }
 
-func (s *Storage) NewPaymentCollection(mapError func(error) error) *PaymentCollection {
+func paymentFilter(accountID, personID, objectID, targetID *uuid.UUID) interface{} {
+	var filter = bson.D{
+		bson.E{Key: "deleted", Value: nil},
+	}
+	if accountID != nil {
+		filter = append(filter, bson.E{Key: "data.account_id", Value: *accountID})
+	}
+	if personID != nil {
+		filter = append(filter, bson.E{Key: "data.person_id", Value: *personID})
+	}
+	if objectID != nil {
+		filter = append(filter, bson.E{Key: "data.object_id", Value: *objectID})
+	}
+	if targetID != nil {
+		filter = append(filter, bson.E{Key: "data.target.target_id", Value: *targetID})
+	}
+	return filter
+}
+
+func (s *Storage) NewPaymentsCollection(mapError func(error) error) *PaymentCollection {
 	return &PaymentCollection{
 		storage:  s.mongo.Payments(),
 		mapError: mapError,

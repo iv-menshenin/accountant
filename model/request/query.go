@@ -106,4 +106,21 @@ type (
 		TargetID  *uuid.UUID
 		Period    *domain.Period
 	}
+
+	PostPaymentQuery struct {
+		AccountID uuid.UUID
+		Data      domain.PaymentData
+	}
+	GetPaymentQuery struct {
+		PaymentID uuid.UUID
+	}
+	DeletePaymentQuery struct {
+		PaymentID uuid.UUID
+	}
+	FindPaymentsQuery struct {
+		AccountID *uuid.UUID
+		PersonID  *uuid.UUID
+		ObjectID  *uuid.UUID
+		TargetID  *uuid.UUID
+	}
 )

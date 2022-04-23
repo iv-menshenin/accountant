@@ -2,6 +2,7 @@ package mongodb
 
 import (
 	"context"
+	"errors"
 	"reflect"
 	"sort"
 	"testing"
@@ -25,7 +26,7 @@ func Test_Payments(t *testing.T) {
 		t.Fatalf("cannot delete payments: %s", err)
 	}
 
-	payments := testStorage.NewPaymentCollection(storage.MapMongodbErrors)
+	payments := testStorage.NewPaymentsCollection(storage.MapMongodbErrors)
 	personID1 := uuid.NewUUID()
 	personID2 := uuid.NewUUID()
 	accountID := uuid.NewUUID()
@@ -34,36 +35,40 @@ func Test_Payments(t *testing.T) {
 		{
 			PaymentID: uuid.NewUUID(),
 			AccountID: accountID,
-			PersonID:  &personID1,
-			ObjectID:  nil,
-			Period: domain.Period{
-				Month: 06,
-				Year:  2012,
+			PaymentData: domain.PaymentData{
+				PersonID: &personID1,
+				ObjectID: nil,
+				Period: domain.Period{
+					Month: 06,
+					Year:  2012,
+				},
+				Target: domain.TargetHead{
+					TargetID: uuid.NewUUID(),
+					Type:     "Ordinary",
+				},
+				Payment:     3400,
+				PaymentDate: nil,
+				Receipt:     "#444",
 			},
-			Target: domain.TargetHead{
-				TargetID: uuid.NewUUID(),
-				Type:     "Ordinary",
-			},
-			Payment:     3400,
-			PaymentDate: nil,
-			Receipt:     "#444",
 		},
 		{
 			PaymentID: uuid.NewUUID(),
 			AccountID: accountID,
-			PersonID:  &personID2,
-			ObjectID:  nil,
-			Period: domain.Period{
-				Month: 05,
-				Year:  2012,
+			PaymentData: domain.PaymentData{
+				PersonID: &personID2,
+				ObjectID: nil,
+				Period: domain.Period{
+					Month: 05,
+					Year:  2012,
+				},
+				Target: domain.TargetHead{
+					TargetID: uuid.NewUUID(),
+					Type:     "Ordinary",
+				},
+				Payment:     3400,
+				PaymentDate: nil,
+				Receipt:     "#444",
 			},
-			Target: domain.TargetHead{
-				TargetID: uuid.NewUUID(),
-				Type:     "Ordinary",
-			},
-			Payment:     3400,
-			PaymentDate: nil,
-			Receipt:     "#444",
 		},
 	}
 
@@ -79,7 +84,7 @@ func Test_Payments(t *testing.T) {
 		t.Fatalf("cannot create payment: %s", err)
 	}
 
-	found, err := payments.FindByAccount(ctx, accountID)
+	found, err := payments.FindBy(ctx, &accountID, nil, nil, nil)
 	if err != nil {
 		t.Fatalf("cannot find payments: %s", err)
 	}
@@ -96,9 +101,23 @@ func Test_Payments(t *testing.T) {
 		t.Fatalf("matching error\nwant: %v\n got: %v", testPayments, found)
 	}
 
+	var onceFound *domain.Payment
+	onceFound, err = payments.Lookup(ctx, testPayments[1].PaymentID)
+	if err != nil {
+		t.Fatalf("cannot find payments: %s", err)
+	}
+	if !reflect.DeepEqual(*onceFound, testPayments[1]) {
+		t.Fatalf("matching error\nwant: %+v\n got: %+v", *onceFound, testPayments[1])
+	}
+
 	err = payments.Delete(ctx, testPayments[1].PaymentID)
 	if err != nil {
 		t.Fatalf("cannot delete payment: %s", err)
+	}
+
+	onceFound, err = payments.Lookup(ctx, testPayments[1].PaymentID)
+	if !errors.Is(err, storage.ErrNotFound) {
+		t.Fatalf("expected ErrNotFound, got: %s", err)
 	}
 
 	found, err = payments.FindByIDs(ctx, findIDs)

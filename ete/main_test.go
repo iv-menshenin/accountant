@@ -56,7 +56,7 @@ func Test_ete(t *testing.T) {
 		account1 = testPerson(t, logData, actor, account1)
 		account2 = testPerson(t, logData, actor, account2)
 	})
-	t.Run("PersonObject", func(t *testing.T) {
+	t.Run("ObjectTesting", func(t *testing.T) {
 		account1 = testObject(t, logData, actor, account1)
 		account2 = testObject(t, logData, actor, account2)
 	})
@@ -80,11 +80,11 @@ func Test_ete(t *testing.T) {
 		wipeAccount(t, logData, actor, account2)
 	})
 
-	t.Run("targets", func(t *testing.T) {
+	t.Run("Targets", func(t *testing.T) {
 		testTargets(t, logData, actor)
 	})
 
-	t.Run("bills", func(t *testing.T) {
+	t.Run("Bills", func(t *testing.T) {
 		testBills(t, logData, actor)
 	})
 
@@ -121,11 +121,12 @@ func upService(t *testing.T, logData io.Writer) httpActor {
 	}
 
 	var (
-		accountCollection = mongoStorage.NewAccountsCollection(storage.MapMongodbErrors)
-		personsCollection = mongoStorage.NewPersonsCollection(accountCollection, storage.MapMongodbErrors)
-		objectsCollection = mongoStorage.NewObjectsCollection(accountCollection, storage.MapMongodbErrors)
-		targetsCollection = mongoStorage.NewTargetsCollection(storage.MapMongodbErrors)
-		billsCollection   = mongoStorage.NewBillsCollection(storage.MapMongodbErrors)
+		accountCollection  = mongoStorage.NewAccountsCollection(storage.MapMongodbErrors)
+		personsCollection  = mongoStorage.NewPersonsCollection(accountCollection, storage.MapMongodbErrors)
+		objectsCollection  = mongoStorage.NewObjectsCollection(accountCollection, storage.MapMongodbErrors)
+		targetsCollection  = mongoStorage.NewTargetsCollection(storage.MapMongodbErrors)
+		billsCollection    = mongoStorage.NewBillsCollection(storage.MapMongodbErrors)
+		paymentsCollection = mongoStorage.NewPaymentsCollection(storage.MapMongodbErrors)
 
 		appHnd = business.New(
 			&testLogger{l: logger},
@@ -134,6 +135,7 @@ func upService(t *testing.T, logData io.Writer) httpActor {
 			objectsCollection,
 			targetsCollection,
 			billsCollection,
+			paymentsCollection,
 		)
 		queryTransport = transport.NewHTTPServer(httpConfig, logger, appHnd, nil)
 	)
