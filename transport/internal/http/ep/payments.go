@@ -34,8 +34,8 @@ const (
 )
 
 func (p *Payments) SetupRouting(router *mux.Router) {
-	paymentsWithAccountPath := fmt.Sprintf("%s/{%s:[0-9a-f\\-]+}%s", pathSegmentAccounts, parameterNameAccountID, pathSegmentBills)
-	paymentsWithIDPath := fmt.Sprintf("%s/{%s:[0-9a-f\\-]+}", pathSegmentBills, parameterNameBillID)
+	paymentsWithAccountPath := fmt.Sprintf("%s/{%s:[0-9a-f\\-]+}%s", pathSegmentAccounts, parameterNameAccountID, pathSegmentPayments)
+	paymentsWithIDPath := fmt.Sprintf("%s/{%s:[0-9a-f\\-]+}", pathSegmentPayments, parameterNamePaymentID)
 
 	router.Path(paymentsWithAccountPath).Methods(http.MethodPost).Handler(p.PostHandler())
 	router.Path(paymentsWithIDPath).Methods(http.MethodGet).Handler(p.LookupHandler())

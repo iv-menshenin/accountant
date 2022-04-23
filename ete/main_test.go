@@ -30,6 +30,7 @@ const (
 	pathAccounts = "/accounts"
 	pathTargets  = "/targets"
 	pathBills    = "/bills"
+	pathPayments = "/payments"
 
 	mongoDbHost = "172.16.35.129"
 	mongoDbName = "test"
@@ -88,6 +89,10 @@ func Test_ete(t *testing.T) {
 		testBills(t, logData, actor)
 	})
 
+	t.Run("Payments", func(t *testing.T) {
+		testPayments(t, logData, actor)
+	})
+
 	if err := actor.release(); err != nil {
 		t.Log(logData.String())
 		t.Fatal(err)
@@ -114,6 +119,7 @@ func upService(t *testing.T, logData io.Writer) httpActor {
 		accountsURL = fmt.Sprintf("%s://%s:%d%s%s", proto, host, port, pathAPI, pathAccounts)
 		targetsURL  = fmt.Sprintf("%s://%s:%d%s%s", proto, host, port, pathAPI, pathTargets)
 		billsURL    = fmt.Sprintf("%s://%s:%d%s%s", proto, host, port, pathAPI, pathBills)
+		paymentsURL = fmt.Sprintf("%s://%s:%d%s%s", proto, host, port, pathAPI, pathPayments)
 	)
 	mongoStorage, err := mongodb.NewStorage(dbConfig, logger)
 	if err != nil {
@@ -147,6 +153,7 @@ func upService(t *testing.T, logData io.Writer) httpActor {
 		accountsURL: accountsURL,
 		targetsURL:  targetsURL,
 		billsURL:    billsURL,
+		paymentsURL: paymentsURL,
 		release: func() error {
 			if err = queryTransport.Shutdown(context.Background()); err != nil {
 				return err
@@ -169,6 +176,7 @@ type (
 		accountsURL string
 		targetsURL  string
 		billsURL    string
+		paymentsURL string
 		release     func() error
 	}
 	ResponseMeta struct {
@@ -193,19 +201,27 @@ type (
 	}
 	TargetDataResponse struct {
 		Meta ResponseMeta   `json:"meta"`
-		Data *domain.Target `json:"data"`
+		Data *domain.Target `json:"data,omitempty"`
 	}
 	TargetsDataResponse struct {
 		Meta ResponseMeta    `json:"meta"`
-		Data []domain.Target `json:"data"`
+		Data []domain.Target `json:"data,omitempty"`
 	}
 	BillDataResponse struct {
 		Meta ResponseMeta `json:"meta"`
-		Data *domain.Bill `json:"data"`
+		Data *domain.Bill `json:"data,omitempty"`
 	}
 	BillsDataResponse struct {
 		Meta ResponseMeta  `json:"meta"`
-		Data []domain.Bill `json:"data"`
+		Data []domain.Bill `json:"data,omitempty"`
+	}
+	PaymentDataResponse struct {
+		Meta ResponseMeta    `json:"meta"`
+		Data *domain.Payment `json:"data,omitempty"`
+	}
+	PaymentsDataResponse struct {
+		Meta ResponseMeta     `json:"meta"`
+		Data []domain.Payment `json:"data,omitempty"`
 	}
 )
 
