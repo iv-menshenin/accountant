@@ -364,6 +364,37 @@ class apiManager {
         this.apiExecute(this.billsPath, "GET", query, undefined, onSuccess, onError);
     }
 
+    paymentsPath = "/payments"
+
+    // CreatePayment создает новый оплату
+    CreatePayment(account_id, payment, onSuccess, onError) {
+        let body = {
+            person_id: payment.person_id,
+            object_id: payment.object_id,
+            period: {
+                year: payment.year,
+                month: payment.month
+            },
+            target: {
+                target_id: payment.target_id,
+                type: payment.type
+            },
+            payment: payment.payment,
+            payment_date: payment.payment_date,
+            receipt: payment.receipt
+        };
+        this.apiExecute(this.accountsPath + "/" + account_id + this.paymentsPath, "POST", undefined, body, onSuccess, onError);
+    }
+
+    // FindPayments производит поиск начислений
+    FindPayments(accountID, targetID, onSuccess, onError) {
+        let query = {
+            account_id: accountID,
+            target_id: targetID,
+        };
+        this.apiExecute(this.paymentsPath, "GET", query, undefined, onSuccess, onError);
+    }
+
 }
 
 let manager = new(apiManager);

@@ -234,6 +234,8 @@ function makeTripleAccountBlock(account, accountInfoBlock) {
     let objectsID = rndDivID();
     let billsID = rndDivID();
     let billsContainerID = rndDivID();
+    let paymentsID = rndDivID();
+    let paymentsContainerID = rndDivID();
     let accHeader = (account ? account.account + "&nbsp;&nbsp;:&nbsp;:&nbsp;&nbsp;" : "") +
         getFirstPersonName(account) + "&nbsp;&nbsp;:&nbsp;:&nbsp;&nbsp;" +
         getShortAddress(account);
@@ -273,12 +275,22 @@ function makeTripleAccountBlock(account, accountInfoBlock) {
         },
         {tag: "div", id: billsID, class: "collapsible-body", content: {id: billsContainerID, tag: "ul", class: ["collection"], content: []}},
     ];
+    let collapsiblePayments = [
+        {tag: "div", class: ["collapsible-header", "center-block"], content:
+                [
+                    {tag: "div", class: ["truncate"], content: "Взносы: <span id='payments-summary'></span>"},
+                    {tag: "span", class: ["right", "badge"], content: {tag: "a", href: "#payments:action=new/account="+account.account_id, class: ["material-icons", "small", "badge", "green-text"], content: "attach_money"}}
+                ]
+        },
+        {tag: "div", id: paymentsID, class: "collapsible-body", content: {id: paymentsContainerID, tag: "ul", class: ["collection"], content: []}},
+    ];
     return {
         tag: "ul", id: collapsibleID, class: "collapsible", content: [
             {tag: "li", content: collapsibleAccount}, // , class: "active"
             {tag: "li", content: collapsiblePersons},
             {tag: "li", content: collapsibleObjects},
             {tag: "li", content: collapsibleBills},
+            {tag: "li", content: collapsiblePayments},
         ],
         afterRender: ()=>{
             let elems = $("#" + collapsibleID);
@@ -306,11 +318,36 @@ function makeTripleAccountBlock(account, accountInfoBlock) {
                     summary = summary + bill.bill;
                 });
                 billsSummary.content(summary + " руб.");
-            }, (message)=>{
+            }, (message, code)=>{
+                if (code === 404) {
+                    billsSummary.content("отсутствует");
+                    return
+                }
                 console.log(message);
                 toast("Что-то пошло не так");
             })
 
+            let paymentsSummary = new Render("#payments-summary");
+            let paymentsContainer = new Render("#"+paymentsContainerID);
+            manager.FindPayments(account.account_id, undefined, (payments)=>{
+                let summary = 0;
+                payments.forEach((payment) => {
+                    let construct = buildPaymentElement(payment);
+                    paymentsContainer.append({tag: "li", class: ["collection-item", "avatar"], content: [
+                            construct.primary,
+                            {tag: "span", class: "secondary-content", content: construct.secondary},
+                        ]});
+                    summary = summary + payment.payment;
+                });
+                paymentsSummary.content(summary + " руб.");
+            }, (message, code)=>{
+                if (code === 404) {
+                    paymentsSummary.content("отсутствует");
+                    return
+                }
+                console.log(message, code);
+                toast("Что-то пошло не так");
+            })
             // todo release
         }
     };

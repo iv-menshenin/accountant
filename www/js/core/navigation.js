@@ -15,6 +15,7 @@ class navigationManager {
         {title: "Участок", anchor: "#object", handler: (prop)=>{return ObjectEditPage(prop)}},
         {title: "Виды взносов", anchor: "#target", handler: (prop)=>{return TargetViewPage(prop)}},
         {title: "Начисления", anchor: "#bills", handler: (prop)=>{return BillsViewPage(prop)}},
+        {title: "Взносы", anchor: "#payments", handler: (prop)=>{return PaymentsPage(prop)}},
         // компоненты меню
         {title: "Лицевые счета", nav: true, anchor: "#accounts", handler: (prop)=>{return AccountsListPage(prop)}},
         {title: "Владельцы", nav: true, anchor: "#persons", handler: (prop)=>{return PersonsListPage(prop)}},

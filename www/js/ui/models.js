@@ -61,6 +61,17 @@ function buildBillElement(bill) {
     };
 }
 
+function buildPaymentElement(payment) {
+    return {
+        primary: [
+            {tag: "img", class: "circle", src: "/www/png/money.png"},
+            {tag: "span", class: ["title", "black-text", "truncate"], content: payment.payment + " руб. (" + payment.target.type + ")"},
+            {tag: "p", class: ["grey-text", "truncate"], content: (new Date(payment.payment_date).toLocaleDateString() + " " + payment.receipt)},
+        ],
+        secondary: ""
+    };
+}
+
 const noOwner = "Нет владельца";
 const noObjects = "Без участка";
 
