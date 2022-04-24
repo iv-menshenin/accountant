@@ -232,6 +232,8 @@ function makeTripleAccountBlock(account, accountInfoBlock) {
     let collapsibleID = rndDivID();
     let personsID = rndDivID();
     let objectsID = rndDivID();
+    let billsID = rndDivID();
+    let billsContainerID = rndDivID();
     let accHeader = (account ? account.account + "&nbsp;&nbsp;:&nbsp;:&nbsp;&nbsp;" : "") +
         getFirstPersonName(account) + "&nbsp;&nbsp;:&nbsp;:&nbsp;&nbsp;" +
         getShortAddress(account);
@@ -262,11 +264,21 @@ function makeTripleAccountBlock(account, accountInfoBlock) {
         },
         {tag: "div", id: objectsID, class: "collapsible-body", content: []},
     ];
+    let collapsibleBills = [
+        {tag: "div", class: ["collapsible-header", "center-block"], content:
+                [
+                    {tag: "div", class: ["truncate"], content: "Счета: <span id='bill-summary'></span>"},
+                    {tag: "span", class: ["right", "badge"], content: {tag: "i", class: ["material-icons", "small", "badge"], content: "attach_money"}}
+                ]
+        },
+        {tag: "div", id: billsID, class: "collapsible-body", content: {id: billsContainerID, tag: "ul", class: ["collection"], content: []}},
+    ];
     return {
         tag: "ul", id: collapsibleID, class: "collapsible", content: [
             {tag: "li", content: collapsibleAccount}, // , class: "active"
             {tag: "li", content: collapsiblePersons},
             {tag: "li", content: collapsibleObjects},
+            {tag: "li", content: collapsibleBills},
         ],
         afterRender: ()=>{
             let elems = $("#" + collapsibleID);
@@ -280,6 +292,25 @@ function makeTripleAccountBlock(account, accountInfoBlock) {
             let or = new Render("#"+objectsID);
             let om = new objectsManager(account.account_id)
             MakeCollection("", om, buildObjectElement, or);
+
+            let billsSummary = new Render("#bill-summary");
+            let billsContainer = new Render("#"+billsContainerID);
+            manager.FindBills(account.account_id, undefined, (bills)=>{
+                let summary = 0;
+                bills.forEach((bill) => {
+                    let construct = buildBillElement(bill);
+                    billsContainer.append({tag: "li", class: ["collection-item", "avatar"], content: [
+                            construct.primary,
+                            {tag: "span", class: "secondary-content", content: construct.secondary},
+                        ]});
+                    summary = summary + bill.bill;
+                });
+                billsSummary.content(summary + " руб.");
+            }, (message)=>{
+                console.log(message);
+                toast("Что-то пошло не так");
+            })
+
             // todo release
         }
     };

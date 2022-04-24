@@ -50,6 +50,17 @@ function buildObjectElement(object) {
     };
 }
 
+function buildBillElement(bill) {
+    return {
+        primary: [
+            {tag: "img", class: "circle", src: "/www/png/bills.png"},
+            {tag: "span", class: ["title", "black-text", "truncate"], content: bill.bill + " руб."},
+            {tag: "p", class: ["grey-text"], content: bill.target.type + " " + (new Date(bill.formed).toLocaleDateString())},
+        ],
+        secondary: ""
+    };
+}
+
 const noOwner = "Нет владельца";
 const noObjects = "Без участка";
 
