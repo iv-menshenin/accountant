@@ -82,8 +82,8 @@ func (b *BillsCollection) Replace(ctx context.Context, bill domain.Bill) error {
 
 func updateBillDocument(record billRecord) interface{} {
 	return bson.M{"$set": bson.D{
-		{"updated", record.Updated},
-		{"data", record.Data},
+		{Key: "updated", Value: record.Updated},
+		{Key: "data", Value: record.Data},
 	}}
 }
 

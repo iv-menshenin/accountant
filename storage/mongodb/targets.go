@@ -56,11 +56,11 @@ func (t *TargetsCollection) Update(ctx context.Context, targetID uuid.UUID, targ
 		return ctx.Err()
 	default:
 		update := bson.M{"$set": bson.D{
-			{"data.period", target.Period},
-			{"data.closed", target.Closed},
-			{"data.cost", target.Cost},
-			{"data.comment", target.Comment},
-			{"updated", time.Now()},
+			{Key: "data.period", Value: target.Period},
+			{Key: "data.closed", Value: target.Closed},
+			{Key: "data.cost", Value: target.Cost},
+			{Key: "data.comment", Value: target.Comment},
+			{Key: "updated", Value: time.Now()},
 		}}
 		_, err := t.storage.UpdateOne(ctx, bson.D{{Key: "_id", Value: mid.UUID(targetID)}}, update, options.Update())
 		return t.mapError(err)

@@ -86,10 +86,10 @@ func mapAccountToRecord(ctx context.Context, account domain.Account) accountReco
 
 func updateAccountDocument(record accountRecord) interface{} {
 	return bson.M{"$set": bson.D{
-		{"updated", record.Updated},
-		{"data", record.Data},
-		{"persons", record.Persons},
-		{"objects", record.Objects},
+		{Key: "updated", Value: record.Updated},
+		{Key: "data", Value: record.Data},
+		{Key: "persons", Value: record.Persons},
+		{Key: "objects", Value: record.Objects},
 	}}
 }
 
