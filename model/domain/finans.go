@@ -15,13 +15,17 @@ type (
 	}
 	// PaymentData представляет изменяемую часть оплаты
 	PaymentData struct {
-		PersonID    *uuid.UUID `bson:"person_id" json:"person_id"`
-		ObjectID    *uuid.UUID `bson:"object_id" json:"object_id"`
-		Period      Period     `bson:"period" json:"period"`
-		Target      TargetHead `bson:"target" json:"target"`
-		Payment     float64    `bson:"payment" json:"payment"`
-		PaymentDate *time.Time `bson:"payment_date" json:"payment_date"`
-		Receipt     string     `bson:"receipt" json:"receipt"`
+		PaymentChangeableData `bson:",inline" json:",inline"`
+		Payment               float64    `bson:"payment" json:"payment"`
+		PaymentDate           *time.Time `bson:"payment_date" json:"payment_date"`
+	}
+	// PaymentChangeableData представляет изменяемую часть оплаты
+	PaymentChangeableData struct {
+		PersonID *uuid.UUID `bson:"person_id" json:"person_id"`
+		ObjectID *uuid.UUID `bson:"object_id" json:"object_id"`
+		Period   Period     `bson:"period" json:"period"`
+		Target   TargetHead `bson:"target" json:"target"`
+		Receipt  string     `bson:"receipt" json:"receipt"`
 	}
 	// Target содержит описание целевых взносов
 	Target struct {

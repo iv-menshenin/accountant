@@ -50,19 +50,19 @@ func (o *Objects) SetupRouting(router *mux.Router) {
 
 }
 
-func (p *Objects) LookupHandler() http.HandlerFunc {
+func (o *Objects) LookupHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		q, err := getObjectMapper(r)
 		if err != nil {
 			writeQueryError(w, err)
 			return
 		}
-		account, err := p.processor.ObjectGet(r.Context(), q)
+		object, err := o.processor.ObjectGet(r.Context(), q)
 		if err != nil {
 			writeError(w, err)
 			return
 		}
-		writeData(w, account)
+		writeData(w, object)
 	}
 }
 
@@ -84,19 +84,19 @@ func getObjectMapper(r *http.Request) (q request.GetObjectQuery, err error) {
 	return
 }
 
-func (p *Objects) PostHandler() http.HandlerFunc {
+func (o *Objects) PostHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		q, err := postObjectMapper(r)
 		if err != nil {
 			writeQueryError(w, err)
 			return
 		}
-		account, err := p.processor.ObjectCreate(r.Context(), q)
+		object, err := o.processor.ObjectCreate(r.Context(), q)
 		if err != nil {
 			writeError(w, err)
 			return
 		}
-		writeData(w, account)
+		writeData(w, object)
 	}
 }
 
@@ -116,19 +116,19 @@ func postObjectMapper(r *http.Request) (q request.PostObjectQuery, err error) {
 	return
 }
 
-func (p *Objects) PutHandler() http.HandlerFunc {
+func (o *Objects) PutHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		q, err := putObjectMapper(r)
 		if err != nil {
 			writeQueryError(w, err)
 			return
 		}
-		account, err := p.processor.ObjectSave(r.Context(), q)
+		object, err := o.processor.ObjectSave(r.Context(), q)
 		if err != nil {
 			writeError(w, err)
 			return
 		}
-		writeData(w, account)
+		writeData(w, object)
 	}
 }
 
@@ -154,14 +154,14 @@ func putObjectMapper(r *http.Request) (q request.PutObjectQuery, err error) {
 	return
 }
 
-func (p *Objects) DeleteHandler() http.HandlerFunc {
+func (o *Objects) DeleteHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		q, err := deleteObjectMapper(r)
 		if err != nil {
 			writeQueryError(w, err)
 			return
 		}
-		err = p.processor.ObjectDelete(r.Context(), q)
+		err = o.processor.ObjectDelete(r.Context(), q)
 		if err != nil {
 			writeError(w, err)
 			return
@@ -188,19 +188,19 @@ func deleteObjectMapper(r *http.Request) (q request.DeleteObjectQuery, err error
 	return
 }
 
-func (p *Objects) FindHandler() http.HandlerFunc {
+func (o *Objects) FindHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		q, err := findObjectMapper(r)
 		if err != nil {
 			writeQueryError(w, err)
 			return
 		}
-		accounts, err := p.processor.ObjectsFind(r.Context(), q)
+		objects, err := o.processor.ObjectsFind(r.Context(), q)
 		if err != nil {
 			writeError(w, err)
 			return
 		}
-		writeData(w, accounts)
+		writeData(w, objects)
 	}
 }
 

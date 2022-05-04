@@ -93,6 +93,9 @@ type (
 	PaymentGetter interface {
 		PaymentGet(context.Context, GetPaymentQuery) (*domain.Payment, error)
 	}
+	PaymentSaver interface {
+		PaymentSave(context.Context, PutPaymentQuery) (*domain.Payment, error)
+	}
 	PaymentDeleter interface {
 		PaymentDelete(context.Context, DeletePaymentQuery) error
 	}

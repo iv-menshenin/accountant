@@ -36,38 +36,42 @@ func Test_Payments(t *testing.T) {
 			PaymentID: uuid.NewUUID(),
 			AccountID: accountID,
 			PaymentData: domain.PaymentData{
-				PersonID: &personID1,
-				ObjectID: nil,
-				Period: domain.Period{
-					Month: 06,
-					Year:  2012,
-				},
-				Target: domain.TargetHead{
-					TargetID: uuid.NewUUID(),
-					Type:     "Ordinary",
-				},
 				Payment:     3400,
 				PaymentDate: nil,
-				Receipt:     "#444",
+				PaymentChangeableData: domain.PaymentChangeableData{
+					PersonID: &personID1,
+					ObjectID: nil,
+					Period: domain.Period{
+						Month: 06,
+						Year:  2012,
+					},
+					Target: domain.TargetHead{
+						TargetID: uuid.NewUUID(),
+						Type:     "Ordinary",
+					},
+					Receipt: "#444",
+				},
 			},
 		},
 		{
 			PaymentID: uuid.NewUUID(),
 			AccountID: accountID,
 			PaymentData: domain.PaymentData{
-				PersonID: &personID2,
-				ObjectID: nil,
-				Period: domain.Period{
-					Month: 05,
-					Year:  2012,
-				},
-				Target: domain.TargetHead{
-					TargetID: uuid.NewUUID(),
-					Type:     "Ordinary",
-				},
 				Payment:     3400,
 				PaymentDate: nil,
-				Receipt:     "#444",
+				PaymentChangeableData: domain.PaymentChangeableData{
+					PersonID: &personID2,
+					ObjectID: nil,
+					Period: domain.Period{
+						Month: 05,
+						Year:  2012,
+					},
+					Target: domain.TargetHead{
+						TargetID: uuid.NewUUID(),
+						Type:     "Ordinary",
+					},
+					Receipt: "#444",
+				},
 			},
 		},
 	}

@@ -55,12 +55,12 @@ func (p *Persons) LookupHandler() http.HandlerFunc {
 			writeQueryError(w, err)
 			return
 		}
-		account, err := p.processor.PersonGet(r.Context(), q)
+		person, err := p.processor.PersonGet(r.Context(), q)
 		if err != nil {
 			writeError(w, err)
 			return
 		}
-		writeData(w, account)
+		writeData(w, person)
 	}
 }
 
@@ -121,12 +121,12 @@ func (p *Persons) PutHandler() http.HandlerFunc {
 			writeQueryError(w, err)
 			return
 		}
-		account, err := p.processor.PersonSave(r.Context(), q)
+		person, err := p.processor.PersonSave(r.Context(), q)
 		if err != nil {
 			writeError(w, err)
 			return
 		}
-		writeData(w, account)
+		writeData(w, person)
 	}
 }
 
@@ -193,12 +193,12 @@ func (p *Persons) FindHandler() http.HandlerFunc {
 			writeQueryError(w, err)
 			return
 		}
-		accounts, err := p.processor.PersonsFind(r.Context(), q)
+		persons, err := p.processor.PersonsFind(r.Context(), q)
 		if err != nil {
 			writeError(w, err)
 			return
 		}
-		writeData(w, accounts)
+		writeData(w, persons)
 	}
 }
 

@@ -59,12 +59,12 @@ func (b *Bills) PostHandler() http.HandlerFunc {
 			writeQueryError(w, err)
 			return
 		}
-		account, err := b.processor.BillCreate(r.Context(), q)
+		bill, err := b.processor.BillCreate(r.Context(), q)
 		if err != nil {
 			writeError(w, err)
 			return
 		}
-		writeData(w, account)
+		writeData(w, bill)
 	}
 }
 
@@ -90,12 +90,12 @@ func (b *Bills) LookupHandler() http.HandlerFunc {
 			writeQueryError(w, err)
 			return
 		}
-		account, err := b.processor.BillGet(r.Context(), q)
+		bill, err := b.processor.BillGet(r.Context(), q)
 		if err != nil {
 			writeError(w, err)
 			return
 		}
-		writeData(w, account)
+		writeData(w, bill)
 	}
 }
 
@@ -116,12 +116,12 @@ func (b *Bills) PutHandler() http.HandlerFunc {
 			writeQueryError(w, err)
 			return
 		}
-		account, err := b.processor.BillSave(r.Context(), q)
+		bill, err := b.processor.BillSave(r.Context(), q)
 		if err != nil {
 			writeError(w, err)
 			return
 		}
-		writeData(w, account)
+		writeData(w, bill)
 	}
 }
 
@@ -173,12 +173,12 @@ func (b *Bills) FindHandler() http.HandlerFunc {
 			writeQueryError(w, err)
 			return
 		}
-		accounts, err := b.processor.BillsFind(r.Context(), q)
+		bills, err := b.processor.BillsFind(r.Context(), q)
 		if err != nil {
 			writeError(w, err)
 			return
 		}
-		writeData(w, accounts)
+		writeData(w, bills)
 	}
 }
 

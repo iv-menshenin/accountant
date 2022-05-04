@@ -117,6 +117,10 @@ type (
 	DeletePaymentQuery struct {
 		PaymentID uuid.UUID
 	}
+	PutPaymentQuery struct {
+		PaymentID uuid.UUID
+		Data      domain.PaymentChangeableData
+	}
 	FindPaymentsQuery struct {
 		AccountID *uuid.UUID
 		PersonID  *uuid.UUID

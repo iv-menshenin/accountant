@@ -86,12 +86,12 @@ func (t *Targets) PutHandler() http.HandlerFunc {
 			writeQueryError(w, err)
 			return
 		}
-		account, err := t.processor.TargetSave(r.Context(), q)
+		target, err := t.processor.TargetSave(r.Context(), q)
 		if err != nil {
 			writeError(w, err)
 			return
 		}
-		writeData(w, account)
+		writeData(w, target)
 	}
 }
 
@@ -117,12 +117,12 @@ func (t *Targets) PostHandler() http.HandlerFunc {
 			writeQueryError(w, err)
 			return
 		}
-		account, err := t.processor.TargetCreate(r.Context(), q)
+		target, err := t.processor.TargetCreate(r.Context(), q)
 		if err != nil {
 			writeError(w, err)
 			return
 		}
-		writeData(w, account)
+		writeData(w, target)
 	}
 }
 
@@ -172,12 +172,12 @@ func (t *Targets) FindHandler() http.HandlerFunc {
 			writeQueryError(w, err)
 			return
 		}
-		accounts, err := t.processor.TargetsFind(r.Context(), q)
+		targets, err := t.processor.TargetsFind(r.Context(), q)
 		if err != nil {
 			writeError(w, err)
 			return
 		}
-		writeData(w, accounts)
+		writeData(w, targets)
 	}
 }
 

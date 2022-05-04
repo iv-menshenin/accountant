@@ -14,6 +14,7 @@ type (
 	PaymentProcessor interface {
 		request.PaymentCreator
 		request.PaymentGetter
+		request.PaymentSaver
 		request.PaymentDeleter
 		request.PaymentFinder
 	}
@@ -39,6 +40,7 @@ func (p *Payments) SetupRouting(router *mux.Router) {
 
 	router.Path(paymentsWithAccountPath).Methods(http.MethodPost).Handler(p.PostHandler())
 	router.Path(paymentsWithIDPath).Methods(http.MethodGet).Handler(p.LookupHandler())
+	router.Path(paymentsWithIDPath).Methods(http.MethodPut).Handler(p.PutHandler())
 	router.Path(paymentsWithIDPath).Methods(http.MethodDelete).Handler(p.DeleteHandler())
 	router.Path(pathSegmentPayments).Methods(http.MethodGet).Handler(p.FindHandler())
 }
@@ -50,12 +52,12 @@ func (p *Payments) PostHandler() http.HandlerFunc {
 			writeQueryError(w, err)
 			return
 		}
-		account, err := p.processor.PaymentCreate(r.Context(), q)
+		payment, err := p.processor.PaymentCreate(r.Context(), q)
 		if err != nil {
 			writeError(w, err)
 			return
 		}
-		writeData(w, account)
+		writeData(w, payment)
 	}
 }
 
@@ -81,12 +83,12 @@ func (p *Payments) LookupHandler() http.HandlerFunc {
 			writeQueryError(w, err)
 			return
 		}
-		account, err := p.processor.PaymentGet(r.Context(), q)
+		payment, err := p.processor.PaymentGet(r.Context(), q)
 		if err != nil {
 			writeError(w, err)
 			return
 		}
-		writeData(w, account)
+		writeData(w, payment)
 	}
 }
 
@@ -97,6 +99,37 @@ func getPaymentMapper(r *http.Request) (q request.GetPaymentQuery, err error) {
 		return
 	}
 	err = q.PaymentID.FromString(id)
+	return
+}
+
+func (p *Payments) PutHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		q, err := putPaymentMapper(r)
+		if err != nil {
+			writeQueryError(w, err)
+			return
+		}
+		payment, err := p.processor.PaymentSave(r.Context(), q)
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+		writeData(w, payment)
+	}
+}
+
+func putPaymentMapper(r *http.Request) (q request.PutPaymentQuery, err error) {
+	id := mux.Vars(r)[parameterNamePaymentID]
+	if id == "" {
+		err = errors.New(parameterNamePaymentID + " must not be empty")
+		return
+	}
+	if err = q.PaymentID.FromString(id); err != nil {
+		return
+	}
+	decoder := json.NewDecoder(r.Body)
+	decoder.DisallowUnknownFields()
+	err = decoder.Decode(&q.Data)
 	return
 }
 
@@ -133,12 +166,12 @@ func (p *Payments) FindHandler() http.HandlerFunc {
 			writeQueryError(w, err)
 			return
 		}
-		accounts, err := p.processor.PaymentsFind(r.Context(), q)
+		payments, err := p.processor.PaymentsFind(r.Context(), q)
 		if err != nil {
 			writeError(w, err)
 			return
 		}
-		writeData(w, accounts)
+		writeData(w, payments)
 	}
 }
 

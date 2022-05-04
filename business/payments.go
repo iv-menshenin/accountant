@@ -24,11 +24,27 @@ func (p *Pay) PaymentCreate(ctx context.Context, q request.PostPaymentQuery) (*d
 }
 
 func (p *Pay) PaymentGet(ctx context.Context, q request.GetPaymentQuery) (*domain.Payment, error) {
-	object, err := p.payments.Lookup(ctx, q.PaymentID)
+	payment, err := p.payments.Lookup(ctx, q.PaymentID)
 	if err == storage.ErrNotFound {
 		return nil, generic.NotFound{}
 	}
-	return object, nil
+	return payment, nil
+}
+
+func (p *Pay) PaymentSave(ctx context.Context, q request.PutPaymentQuery) (*domain.Payment, error) {
+	payment, err := p.payments.Lookup(ctx, q.PaymentID)
+	if err == storage.ErrNotFound {
+		return nil, generic.NotFound{}
+	}
+	if err != nil {
+		return nil, err
+	}
+	payment.PaymentData.PaymentChangeableData = q.Data
+	err = p.payments.Replace(ctx, q.PaymentID, *payment)
+	if err != nil {
+		return nil, err
+	}
+	return payment, nil
 }
 
 func (p *Pay) PaymentDelete(ctx context.Context, q request.DeletePaymentQuery) error {

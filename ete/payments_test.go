@@ -24,55 +24,61 @@ func testPayments(t *testing.T, logData fmt.Stringer, actor httpActor) {
 		{
 			AccountID: accountID,
 			PaymentData: domain.PaymentData{
-				PersonID: &personID,
-				ObjectID: &objectID,
-				Period: domain.Period{
-					Month: 9,
-					Year:  2021,
-				},
-				Target: domain.TargetHead{
-					TargetID: targetID,
-					Type:     "test",
-				},
 				Payment:     12000,
 				PaymentDate: nil,
-				Receipt:     "",
+				PaymentChangeableData: domain.PaymentChangeableData{
+					PersonID: &personID,
+					ObjectID: &objectID,
+					Period: domain.Period{
+						Month: 9,
+						Year:  2021,
+					},
+					Target: domain.TargetHead{
+						TargetID: targetID,
+						Type:     "test",
+					},
+					Receipt: "",
+				},
 			},
 		},
 		{
 			AccountID: accountID,
 			PaymentData: domain.PaymentData{
-				PersonID: nil,
-				ObjectID: nil,
-				Period: domain.Period{
-					Month: 10,
-					Year:  2021,
-				},
-				Target: domain.TargetHead{
-					TargetID: targetID,
-					Type:     "test",
-				},
 				Payment:     3400,
 				PaymentDate: nil,
-				Receipt:     "",
+				PaymentChangeableData: domain.PaymentChangeableData{
+					PersonID: nil,
+					ObjectID: nil,
+					Period: domain.Period{
+						Month: 10,
+						Year:  2021,
+					},
+					Target: domain.TargetHead{
+						TargetID: targetID,
+						Type:     "test",
+					},
+					Receipt: "",
+				},
 			},
 		},
 		{
 			AccountID: uuid.NewUUID(),
 			PaymentData: domain.PaymentData{
-				PersonID: nil,
-				ObjectID: nil,
-				Period: domain.Period{
-					Month: 11,
-					Year:  2021,
-				},
-				Target: domain.TargetHead{
-					TargetID: targetID,
-					Type:     "test",
-				},
 				Payment:     1230,
 				PaymentDate: nil,
-				Receipt:     "",
+				PaymentChangeableData: domain.PaymentChangeableData{
+					PersonID: nil,
+					ObjectID: nil,
+					Period: domain.Period{
+						Month: 11,
+						Year:  2021,
+					},
+					Target: domain.TargetHead{
+						TargetID: targetID,
+						Type:     "test",
+					},
+					Receipt: "",
+				},
 			},
 		},
 	}

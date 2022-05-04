@@ -66,6 +66,7 @@ type (
 	PaymentsCollection interface {
 		Create(context.Context, domain.Payment) error
 		Lookup(context.Context, uuid.UUID) (*domain.Payment, error)
+		Replace(context.Context, uuid.UUID, domain.Payment) error
 		Delete(context.Context, uuid.UUID) error
 		FindBy(context.Context, *uuid.UUID, *uuid.UUID, *uuid.UUID, *uuid.UUID) ([]domain.Payment, error)
 		FindByIDs(context.Context, []uuid.UUID) ([]domain.Payment, error)

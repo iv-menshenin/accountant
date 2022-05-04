@@ -68,6 +68,18 @@ func (p *PaymentCollection) Lookup(ctx context.Context, paymentID uuid.UUID) (*d
 	}
 }
 
+func (p *PaymentCollection) Replace(ctx context.Context, paymentID uuid.UUID, payment domain.Payment) error {
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	default:
+		var filter = paymentIdFilter(paymentID)
+		var record = mapPaymentToRecord(ctx, payment)
+		_, err := p.storage.UpdateOne(ctx, filter, bson.M{"$set": record}, options.Update())
+		return p.mapError(err)
+	}
+}
+
 func (p *PaymentCollection) Delete(ctx context.Context, paymentID uuid.UUID) error {
 	select {
 	case <-ctx.Done():
