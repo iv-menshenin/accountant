@@ -141,7 +141,7 @@ paths:
     post:
       summary: "Add Object to Account"
       parameters:
-        - $ref: "#/components/parameters/ObjectIDPath"
+        - $ref: "#/components/parameters/AccountIDPath"
       requestBody:
         $ref: "#/components/requestBodies/ObjectData"
       responses:
