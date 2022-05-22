@@ -122,10 +122,94 @@ paths:
       parameters:
         - name: account_id
           in: query
-          required: true
+          schema:
+            type: string
+            format: uuid
+          required: false
+        - name: person
+          in: query
+          schema:
+            type: string
+          required: false
       responses:
         '200':
           $ref: "#/components/responses/persons"
+        '404':
+          description: Not found
+
+  /accounts/{account_id}/objects:
+    post:
+      summary: "Add Object to Account"
+      parameters:
+        - $ref: "#/components/parameters/ObjectIDPath"
+      requestBody:
+        $ref: "#/components/requestBodies/ObjectData"
+      responses:
+        '200':
+          $ref: "#/components/responses/object"
+        '404':
+          description: Not found
+
+  /accounts/{account_id}/objects/{object_id}:
+    get:
+      summary: "Get Object from Account by objectID"
+      parameters:
+        - $ref: "#/components/parameters/AccountIDPath"
+        - $ref: "#/components/parameters/ObjectIDPath"
+      responses:
+        '200':
+          $ref: "#/components/responses/object"
+        '404':
+          description: Not found
+
+    put:
+      summary: "Alter Object in Account"
+      parameters:
+        - $ref: "#/components/parameters/AccountIDPath"
+        - $ref: "#/components/parameters/ObjectIDPath"
+      requestBody:
+        $ref: "#/components/requestBodies/ObjectData"
+      responses:
+        '200':
+          $ref: "#/components/responses/object"
+        '404':
+          description: Not found
+
+    delete:
+      summary: "Delete Object from Account"
+      parameters:
+        - $ref: "#/components/parameters/AccountIDPath"
+        - $ref: "#/components/parameters/ObjectIDPath"
+      responses:
+        '200':
+          description: Deleted
+        '404':
+          description: Not found
+
+  /objects:
+    get:
+      summary: "Find Objects by filter parameters"
+      parameters:
+        - name: account_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+          required: false
+        - name: address
+          in: query
+          schema:
+            type: string
+          required: false
+        - name: number
+          in: query
+          schema:
+            type: number
+            format: int32
+          required: false
+      responses:
+        '200':
+          $ref: "#/components/responses/objects"
         '404':
           description: Not found
 
@@ -149,6 +233,14 @@ components:
         format: uuid
       required: true
 
+    ObjectIDPath:
+      name: object_id
+      in: path
+      schema:
+        type: string
+        format: uuid
+      required: true
+
   requestBodies:
 
     AccountData:
@@ -158,13 +250,19 @@ components:
           schema:
             $ref: "#/components/schemas/AccountData"
 
-
     PersonData:
       required: true
       content:
         'application/json':
           schema:
             $ref: "#/components/schemas/PersonData"
+
+    ObjectData:
+      required: true
+      content:
+        'application/json':
+          schema:
+            $ref: "#/components/schemas/ObjectData"
 
   responses:
 
@@ -219,6 +317,32 @@ components:
                 type: array
                 items:
                   $ref: "#/components/schemas/Person"
+
+    object:
+      description: "Object information"
+      content:
+        'application/json':
+          schema:
+            type: object
+            properties:
+              meta:
+                $ref: "#/components/schemas/Meta"
+              data:
+                $ref: "#/components/schemas/Object"
+
+    objects:
+      description: "List of objects"
+      content:
+        'application/json':
+          schema:
+            type: object
+            properties:
+              meta:
+                $ref: "#/components/schemas/Meta"
+              data:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Object"
 
   schemas:
 
