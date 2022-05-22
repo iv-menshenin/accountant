@@ -1,0 +1,361 @@
+openapi: 3.0.3
+
+servers:
+  # Added by API Auto Mocking Plugin
+  - description: SwaggerHub API Auto Mocking
+    url: https://virtserver.swaggerhub.com/iv-menshenin/accountant/1.0.0
+
+info:
+  version: "1.0.0"
+  title: Accountant Application
+  description: ""
+
+security:
+  - ApiKeyAuth: []
+
+paths:
+  /accounts:
+    get:
+      summary: "Find Accounts"
+      parameters:
+        - name: account
+          in: query
+          schema:
+            type: string
+          required: false
+      responses:
+        '200':
+          $ref: "#/components/responses/accounts"
+        '404':
+          description: Not found
+    post:
+      summary: "Create new Account"
+      requestBody:
+        $ref: "#/components/requestBodies/AccountData"
+      responses:
+        '200':
+          $ref: "#/components/responses/accounts"
+
+  /accounts/{account_id}:
+    get:
+      summary: "Get Account information"
+      parameters:
+        - $ref: "#/components/parameters/AccountIDPath"
+      responses:
+        '200':
+          $ref: "#/components/responses/account"
+        '404':
+          description: Not found
+    put:
+      summary: "Change Account information"
+      parameters:
+        - $ref: "#/components/parameters/AccountIDPath"
+      requestBody:
+        $ref: "#/components/requestBodies/AccountData"
+      responses:
+        '200':
+          $ref: "#/components/responses/account"
+        '404':
+          description: Not found
+    delete:
+      summary: "Delete Account"
+      parameters:
+        - $ref: "#/components/parameters/AccountIDPath"
+      responses:
+        '204':
+          description: Deleted
+        '404':
+          description: Not found
+
+  /accounts/{account_id}/persons:
+    post:
+      summary: "Add Person to Account"
+      parameters:
+        - $ref: "#/components/parameters/AccountIDPath"
+      requestBody:
+        $ref: "#/components/requestBodies/PersonData"
+      responses:
+        '200':
+          $ref: "#/components/responses/person"
+        '404':
+          description: Not found
+
+  /accounts/{account_id}/persons/{person_id}:
+    get:
+      summary: "Get Person from Account by personID"
+      parameters:
+        - $ref: "#/components/parameters/AccountIDPath"
+        - $ref: "#/components/parameters/PersonIDPath"
+      responses:
+        '200':
+          $ref: "#/components/responses/person"
+        '404':
+          description: Not found
+
+    put:
+      summary: "Alter Person in Account"
+      parameters:
+        - $ref: "#/components/parameters/AccountIDPath"
+        - $ref: "#/components/parameters/PersonIDPath"
+      requestBody:
+        $ref: "#/components/requestBodies/PersonData"
+      responses:
+        '200':
+          $ref: "#/components/responses/person"
+        '404':
+          description: Not found
+
+    delete:
+      summary: "Delete Person from Account"
+      parameters:
+        - $ref: "#/components/parameters/AccountIDPath"
+        - $ref: "#/components/parameters/PersonIDPath"
+      responses:
+        '200':
+          description: Deleted
+        '404':
+          description: Not found
+
+  /persons:
+    get:
+      summary: "Find Persons by filter parameters"
+      parameters:
+        - name: account_id
+          in: query
+          required: true
+      responses:
+        '200':
+          $ref: "#/components/responses/persons"
+        '404':
+          description: Not found
+
+components:
+
+  parameters:
+
+    AccountIDPath:
+      name: account_id
+      in: path
+      schema:
+        type: string
+        format: uuid
+      required: true
+
+    PersonIDPath:
+      name: person_id
+      in: path
+      schema:
+        type: string
+        format: uuid
+      required: true
+
+  requestBodies:
+
+    AccountData:
+      required: true
+      content:
+        'application/json':
+          schema:
+            $ref: "#/components/schemas/AccountData"
+
+
+    PersonData:
+      required: true
+      content:
+        'application/json':
+          schema:
+            $ref: "#/components/schemas/PersonData"
+
+  responses:
+
+    account:
+      description: "Account information"
+      content:
+        'application/json':
+          schema:
+            type: object
+            properties:
+              meta:
+                $ref: "#/components/schemas/Meta"
+              data:
+                $ref: "#/components/schemas/Account"
+
+    accounts:
+      description: "List of Accounts"
+      content:
+        'application/json':
+          schema:
+            type: object
+            properties:
+              meta:
+                $ref: "#/components/schemas/Meta"
+              data:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Account"
+
+    person:
+      description: "Person information"
+      content:
+        'application/json':
+          schema:
+            type: object
+            properties:
+              meta:
+                $ref: "#/components/schemas/Meta"
+              data:
+                $ref: "#/components/schemas/Person"
+
+    persons:
+      description: "List of persons"
+      content:
+        'application/json':
+          schema:
+            type: object
+            properties:
+              meta:
+                $ref: "#/components/schemas/Meta"
+              data:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Person"
+
+  schemas:
+
+    Meta:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [QueryError, InternalError, Forbidden, Unauthorized, NotFound, Ok]
+        message:
+          type: string
+      required: [status]
+
+    Account:
+      description: "Account information"
+      allOf:
+        - $ref: "#/components/schemas/AccountHead"
+        - $ref: "#/components/schemas/AccountData"
+
+    AccountHead:
+      description: "Unchangeable part of Account"
+      type: object
+      properties:
+        account_id:
+          type: string
+          format: uuid
+        persons:
+          type: array
+          items:
+            $ref: "#/components/schemas/Person"
+        objects:
+          type: array
+          items:
+            $ref: "#/components/schemas/Object"
+      required: [account_id]
+
+    AccountData:
+      description: "Changeable part of Account"
+      type: object
+      properties:
+        account:
+          type: string
+        cad_number:
+          type: string
+          format: "^\d+:\d+:\d{6-7}:\d+$"
+          example: "32:54:836619:43"
+        agreement:
+          type: string
+        agreement_date:
+          type: string
+          format: date-time
+        purchase_kind:
+          type: string
+        purchase_date:
+          type: string
+          format: date-time
+        comment:
+          type: string
+      required: [account]
+
+    Person:
+      description: "Person information"
+      allOf:
+        - $ref: "#/components/schemas/PersonHead"
+        - $ref: "#/components/schemas/PersonData"
+
+    PersonHead:
+      description: "Unchangeable part of Person"
+      type: object
+      properties:
+        person_id:
+          type: string
+          format: uuid
+      required: [person_id]
+
+    PersonData:
+      description: ""
+      type: object
+      properties:
+        name:
+          type: string
+        surname:
+          type: string
+        pat_name:
+          type: string
+        dob:
+          type: string
+          format: date-time
+        is_member:
+          type: boolean
+        phone:
+          type: string
+        email:
+          type: string
+
+    Object:
+      description: "Object information"
+      allOf:
+        - $ref: "#/components/schemas/ObjectHead"
+        - $ref: "#/components/schemas/ObjectData"
+
+    ObjectHead:
+      description: "Unchangeable part of Object"
+      type: object
+      properties:
+        object_id:
+          type: string
+          format: uuid
+      required: [object_id]
+
+    ObjectData:
+      description: "Changeable part of Object"
+      type: object
+      properties:
+        postal_code:
+          type: string
+        city:
+          type: string
+        village:
+          type: string
+        street:
+          type: string
+        number:
+          type: number
+          format: int32
+        area:
+          type: number
+          format: float
+        cad_number:
+          type: string
+          format: "^\d+:\d+:\d{6-7}:\d+$"
+          example: "32:54:836619:43"
+      required: [number]
+
+  securitySchemes:
+
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-Session
