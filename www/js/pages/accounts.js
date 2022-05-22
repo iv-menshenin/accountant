@@ -333,10 +333,10 @@ function makeTripleAccountBlock(account, accountInfoBlock) {
                 let summary = 0;
                 payments.forEach((payment) => {
                     let construct = buildPaymentElement(payment);
-                    paymentsContainer.append({tag: "li", class: ["collection-item", "avatar"], content: [
+                    paymentsContainer.append({tag: "a", class: ["collection-item", "avatar"], content: [
                             construct.primary,
                             {tag: "span", class: "secondary-content", content: construct.secondary},
-                        ]});
+                        ], href: "#payments:uuid=" + payment.payment_id});
                     summary = summary + payment.payment;
                 });
                 paymentsSummary.content(summary + " руб.");

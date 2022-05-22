@@ -321,3 +321,38 @@ function formHeader(title) {
 function windowHeader(title) {
     return {tag: "h4", content: title};
 }
+
+function preloader() {
+    let preloader = {
+        tag: "div",
+        class: ["preloader-wrapper", "big", "active"],
+        content: {
+            tag: "div",
+            class: ["spinner-layer", "spinner-blue-only"],
+            content: [
+                {
+                    tag: "div",
+                    class: ["circle-clipper", "left"],
+                    content: {tag: "div", class: "circle"}
+                },
+                {
+                    tag: "div",
+                    class: ["gap-patch"],
+                    content: {tag: "div", class: "circle"}
+                },
+                {
+                    tag: "div",
+                    class: ["circle-clipper", "right"],
+                    content: {tag: "div", class: "circle"}
+                },
+            ]
+        }
+    };
+    return {
+        tag: "div", class: ["row", "valign-wrapper"], style: "height: 60%",
+        content: {
+            tag: "div", class: ["col", "s12", "center"],
+            content: preloader
+        }
+    }
+}

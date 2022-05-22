@@ -3,6 +3,17 @@ function PaymentsPage(props) {
     if (props.action === "new") {
         return NewPaymentsPage(props)
     }
+    if (props.uuid) {
+        manager.GetPayment(props.uuid, (payment)=>{
+            manager.GetAccount(payment.account_id, (account) => {
+                PaymentEditorPage(account, payment)
+            }, (err) => {toast(err)})
+        }, (err) => {toast(err)});
+
+        let paymentsPage = new Render("#main-page-container");
+        paymentsPage.content(preloader());
+        return () => {}
+    }
 }
 
 function NewPaymentsPage(props) {
@@ -41,11 +52,43 @@ function NewPaymentsPage(props) {
     };
 }
 
-function makePaymentEditor(account) {
+function PaymentEditorPage(account, payment) {
+    let paymentInfoBlock = [
+        {tag: "div", id: "payment-attrs"},
+        {tag: "div", id: "payment-ctrls"},
+    ];
+    let paymentsPage = new Render("#main-page-container");
+    paymentsPage.content(paymentInfoBlock);
+
+    let editor = makePaymentEditor(account, payment);
+    editor.renderTo("#payment-attrs", "#payment-ctrls");
+}
+
+function makePaymentEditor(account, payment) {
     let header = {tag: "span", class: ["truncate"], content: "Новая оплата " + getFirstPersonName(account)};
+    if (payment) {
+        header = {tag: "span", class: ["truncate"], content: "Оплата " + getFirstPersonName(account)};
+    }
     if (!account.account_id) {
         return
     }
+    if (!payment) {
+        payment = {
+            person_id: undefined,
+            object_id: undefined,
+            period: {
+                year: (new Date()).getFullYear(),
+                month: (new Date()).getMonth() + 1
+            },
+            target: {
+                target_id: undefined
+            },
+            payment: 0,
+            payment_date: new Date(),
+            receipt: ""
+        }
+    }
+
     let persons = account.persons.reduce((obj, person) => {
         obj[getPersonFullName(person)] = person.person_id;
         return obj;
@@ -55,13 +98,13 @@ function makePaymentEditor(account) {
         return obj;
     }, {});
     return new EditorForm(header, {
-        year: {label: "Год", type: "number", value: (new Date()).getFullYear(), short: true},
-        month: {label: "Месяц", type: "number", value: (new Date()).getMonth() + 1, short: true},
-        payment: {label: "Сумма", type: "number", value: 0, short: true},
-        payment_date: {label: "Дата оплаты", type: "date", value: new Date(), short: true},
-        receipt: {label: "Номер чека", type: "text", value: "", short: false},
-        person: {label: "Владелец", type: "select", options: Object.keys(persons)},
-        object: {label: "Объект", type: "select", options: Object.keys(objects)},
+        year: {label: "Год", type: "number", value: payment.period.year, short: true},
+        month: {label: "Месяц", type: "number", value: payment.period.month, short: true},
+        payment: {label: "Сумма", type: "number", value: payment.payment, short: true},
+        payment_date: {label: "Дата оплаты", type: "date", value: payment.payment_date, short: true},
+        receipt: {label: "Номер чека", type: "text", value: payment.receipt, short: false},
+        person: {label: "Владелец", type: "select", value: persons[payment.person_id], options: Object.keys(persons)},
+        object: {label: "Объект", type: "select", value: objects[payment.object_id], options: Object.keys(objects)},
     }, (updated)=>{
         updated.person_id = persons[updated.person];
         updated.object_id = objects[updated.object];

@@ -185,6 +185,11 @@ class apiManager {
         this.apiExecute(this.accountsPath, "GET", undefined, undefined, onSuccess, onError);
     }
 
+    // GetAccount загружает ЛС по идентификатору
+    GetAccount(accountID, onSuccess, onError) {
+        this.apiExecute(this.accountsPath + "/" + accountID, "GET", undefined, undefined, onSuccess, onError);
+    }
+
     // CreateAccount создает новый лицевой счет в ответе на запрос присылает полную структуру данных созданного ЛС
     CreateAccount(account, onSuccess, onError) {
         let body = {
@@ -384,6 +389,11 @@ class apiManager {
             receipt: payment.receipt
         };
         this.apiExecute(this.accountsPath + "/" + account_id + this.paymentsPath, "POST", undefined, body, onSuccess, onError);
+    }
+
+    // GetPayments загружает начисление по идентификатору
+    GetPayment(paymentID, onSuccess, onError) {
+        this.apiExecute(this.paymentsPath + "/" + paymentID, "GET", undefined, undefined, onSuccess, onError);
     }
 
     // FindPayments производит поиск начислений

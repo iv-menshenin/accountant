@@ -99,6 +99,7 @@ func (a *AccountsCollection) Delete(ctx context.Context, id uuid.UUID) error {
 		return ctx.Err()
 	default:
 		var filter = accountIdFilter(id)
+		// FIXME not to delete account, set deleted = Now() instead
 		_, err := a.storage.DeleteOne(ctx, filter, options.Delete())
 		return a.mapError(err)
 	}
