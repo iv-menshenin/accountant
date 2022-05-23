@@ -184,6 +184,19 @@ paths:
         '404':
           description: Not found
 
+  /accounts/{account_id}/bills:
+    post:
+      summary: "Add Bill to Account"
+      parameters:
+        - $ref: "#/components/parameters/AccountIDPath"
+      requestBody:
+        $ref: "#/components/requestBodies/BillData"
+      responses:
+        '200':
+          $ref: "#/components/responses/Bill"
+        '404':
+          description: Not found
+
   /persons:
     get:
       summary: "Find Persons by filter parameters"
@@ -298,6 +311,7 @@ paths:
       parameters:
         - $ref: "#/components/parameters/AccountIDQuery"
         - $ref: "#/components/parameters/TargetIDQuery"
+        - $ref: "#/components/parameters/PaymentIDQuery"
         - $ref: "#/components/parameters/PeriodQuery"
       responses:
         '200':
@@ -338,16 +352,63 @@ paths:
         '404':
           description: Not found
 
-  /accounts/{account_id}/bills:
+  /payments:
+    get:
+      summary: "Find Payments by filter"
+      parameters:
+        - $ref: "#/components/parameters/TargetIDQuery"
+        - $ref: "#/components/parameters/AccountIDQuery"
+        - $ref: "#/components/parameters/PersonIDQuery"
+        - $ref: "#/components/parameters/ObjectIDQuery"
+      responses:
+        '200':
+          $ref: "#/components/responses/Payments"
+        '404':
+          description: Not found
+
+  /payments/{payment_id}:
+    get:
+      summary: "Update Payment data by ID"
+      parameters:
+        - $ref: "#/components/parameters/PaymentIDPath"
+      responses:
+        '200':
+          $ref: "#/components/responses/Payment"
+        '404':
+          description: Not found
+
+    put:
+      summary: "Get Payment data by ID"
+      parameters:
+        - $ref: "#/components/parameters/PaymentIDPath"
+      requestBody:
+        $ref: "#/components/requestBodies/PaymentDataForUpdate"
+      responses:
+        '200':
+          $ref: "#/components/responses/Payment"
+        '404':
+          description: Not found
+
+    delete:
+      summary: "Delete Payment by ID"
+      parameters:
+        - $ref: "#/components/parameters/PaymentIDPath"
+      responses:
+        '200':
+          description: Deleted
+        '404':
+          description: Not found
+
+  /accounts/{account_id}/payments:
     post:
-      summary: "Add Bill to Account"
+      summary: "Create new Payment for Account"
       parameters:
         - $ref: "#/components/parameters/AccountIDPath"
       requestBody:
-        $ref: "#/components/requestBodies/BillData"
+        $ref: "#/components/requestBodies/PaymentDataForInsert"
       responses:
         '200':
-          $ref: "#/components/responses/Bill"
+          $ref: "#/components/responses/Payment"
         '404':
           description: Not found
 
@@ -395,6 +456,14 @@ components:
         format: uuid
       required: true
 
+    PaymentIDPath:
+      name: payment_id
+      in: path
+      schema:
+        type: string
+        format: uuid
+      required: true
+
     TargetIDQuery:
       name: target_id
       in: query
@@ -411,8 +480,32 @@ components:
         format: uuid
       required: false
 
+    PersonIDQuery:
+      name: person_id
+      in: query
+      schema:
+        type: string
+        format: uuid
+      required: false
+
+    ObjectIDQuery:
+      name: object_id
+      in: query
+      schema:
+        type: string
+        format: uuid
+      required: false
+
     PeriodQuery:
       name: period
+      in: query
+      schema:
+        type: string
+        format: mm.yyyy
+      required: false
+
+    PaymentIDQuery:
+      name: payment_id
       in: query
       schema:
         type: string
@@ -478,6 +571,22 @@ components:
         'application/json':
           schema:
             $ref: "#/components/schemas/BillData"
+
+    PaymentDataForUpdate:
+      required: true
+      content:
+        'application/json':
+          schema:
+            $ref: "#/components/schemas/PaymentData"
+
+    PaymentDataForInsert:
+      required: true
+      content:
+        'application/json':
+          schema:
+            allOf:
+              - $ref: "#/components/schemas/PaymentFixed"
+              - $ref: "#/components/schemas/PaymentData"
 
   responses:
 
@@ -628,6 +737,32 @@ components:
                 type: array
                 items:
                   $ref: "#/components/schemas/Bill"
+
+    Payment:
+      description: "Payment information"
+      content:
+        'application/json':
+          schema:
+            type: object
+            properties:
+              meta:
+                $ref: "#/components/schemas/Meta"
+              data:
+                $ref: "#/components/schemas/Payment"
+
+    Payments:
+      description: "List of Payments"
+      content:
+        'application/json':
+          schema:
+            type: object
+            properties:
+              meta:
+                $ref: "#/components/schemas/Meta"
+              data:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Payment"
 
   schemas:
 
@@ -842,6 +977,55 @@ components:
             type: string
             format: uuid
       required: [formed, period, target, bill]
+
+    Payment:
+      description: "Payment that paid"
+      allOf:
+        - $ref: "#/components/schemas/PaymentHead"
+        - $ref: "#/components/schemas/PaymentFixed"
+        - $ref: "#/components/schemas/PaymentData"
+
+    PaymentHead:
+      description: "Unchangeable part of Payment data"
+      type: object
+      properties:
+        payment_id:
+          type: string
+          format: uuid
+        account_id:
+          type: string
+          format: uuid
+      required: [payment_id, account_id]
+
+    PaymentFixed:
+      description: "Fixed part of Payment data"
+      type: object
+      properties:
+        payment:
+          type: number
+          format: float
+        payment_date:
+          type: string
+          format: date-time
+      required: [payment]
+
+    PaymentData:
+      description: "Changeable part of Payment data"
+      type: object
+      properties:
+        person_id:
+          type: string
+          format: uuid
+        object_id:
+          type: string
+          format: uuid
+        period:
+          $ref: "#/components/schemas/Period"
+        target:
+          $ref: "#/components/schemas/TargetHead"
+        receipt:
+          type: string
+      required: [period, target]
 
     Period:
       description: "Year and month of particular period"

@@ -167,6 +167,7 @@ func deleteBillMapper(r *http.Request) (q request.DeleteBillQuery, err error) {
 }
 
 func (b *Bills) FindHandler() http.HandlerFunc {
+	// TODO find by payment_id
 	return func(w http.ResponseWriter, r *http.Request) {
 		q, err := findBillMapper(r)
 		if err != nil {
