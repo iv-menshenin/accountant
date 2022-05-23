@@ -14,6 +14,25 @@ security:
   - ApiKeyAuth: []
 
 paths:
+
+  /login:
+    post:
+      summary: "Authentication"
+      requestBody:
+        $ref: "#/components/requestBodies/Credentials"
+      responses:
+        '200':
+          $ref: "#/components/responses/AuthInfo"
+
+  /refresh:
+    post:
+      summary: "Refresh token"
+      requestBody:
+        $ref: "#/components/requestBodies/Token"
+      responses:
+        '200':
+          $ref: "#/components/responses/AuthInfo"
+
   /accounts:
     get:
       summary: "Find Accounts"
@@ -25,7 +44,7 @@ paths:
           required: false
       responses:
         '200':
-          $ref: "#/components/responses/accounts"
+          $ref: "#/components/responses/Accounts"
         '404':
           description: Not found
     post:
@@ -34,7 +53,7 @@ paths:
         $ref: "#/components/requestBodies/AccountData"
       responses:
         '200':
-          $ref: "#/components/responses/accounts"
+          $ref: "#/components/responses/Accounts"
 
   /accounts/{account_id}:
     get:
@@ -43,7 +62,7 @@ paths:
         - $ref: "#/components/parameters/AccountIDPath"
       responses:
         '200':
-          $ref: "#/components/responses/account"
+          $ref: "#/components/responses/Account"
         '404':
           description: Not found
     put:
@@ -54,7 +73,7 @@ paths:
         $ref: "#/components/requestBodies/AccountData"
       responses:
         '200':
-          $ref: "#/components/responses/account"
+          $ref: "#/components/responses/Account"
         '404':
           description: Not found
     delete:
@@ -76,7 +95,7 @@ paths:
         $ref: "#/components/requestBodies/PersonData"
       responses:
         '200':
-          $ref: "#/components/responses/person"
+          $ref: "#/components/responses/Person"
         '404':
           description: Not found
 
@@ -88,7 +107,7 @@ paths:
         - $ref: "#/components/parameters/PersonIDPath"
       responses:
         '200':
-          $ref: "#/components/responses/person"
+          $ref: "#/components/responses/Person"
         '404':
           description: Not found
 
@@ -101,7 +120,7 @@ paths:
         $ref: "#/components/requestBodies/PersonData"
       responses:
         '200':
-          $ref: "#/components/responses/person"
+          $ref: "#/components/responses/Person"
         '404':
           description: Not found
 
@@ -133,7 +152,7 @@ paths:
           required: false
       responses:
         '200':
-          $ref: "#/components/responses/persons"
+          $ref: "#/components/responses/Persons"
         '404':
           description: Not found
 
@@ -146,7 +165,7 @@ paths:
         $ref: "#/components/requestBodies/ObjectData"
       responses:
         '200':
-          $ref: "#/components/responses/object"
+          $ref: "#/components/responses/Object"
         '404':
           description: Not found
 
@@ -158,7 +177,7 @@ paths:
         - $ref: "#/components/parameters/ObjectIDPath"
       responses:
         '200':
-          $ref: "#/components/responses/object"
+          $ref: "#/components/responses/Object"
         '404':
           description: Not found
 
@@ -171,7 +190,7 @@ paths:
         $ref: "#/components/requestBodies/ObjectData"
       responses:
         '200':
-          $ref: "#/components/responses/object"
+          $ref: "#/components/responses/Object"
         '404':
           description: Not found
 
@@ -209,7 +228,7 @@ paths:
           required: false
       responses:
         '200':
-          $ref: "#/components/responses/objects"
+          $ref: "#/components/responses/Objects"
         '404':
           description: Not found
 
@@ -243,6 +262,29 @@ components:
 
   requestBodies:
 
+    Credentials:
+      required: true
+      content:
+        'application:json':
+          schema:
+            type: object
+            properties:
+              login:
+                type: string
+              password:
+                type: string
+            required: [ login, password ]
+
+    Token:
+      required: true
+      content:
+        'application/json':
+          schema:
+            type: object
+            properties:
+              token:
+                type: string
+
     AccountData:
       required: true
       content:
@@ -266,7 +308,25 @@ components:
 
   responses:
 
-    account:
+    AuthInfo:
+      description: OK
+      content:
+        'application/json':
+          schema:
+            type: object
+            properties:
+              jwt_token:
+                type: string
+              user_id:
+                type: string
+                format: uuid
+              context:
+                type: array
+                items: { type: string }
+              refresh_token:
+                type: string
+
+    Account:
       description: "Account information"
       content:
         'application/json':
@@ -278,7 +338,7 @@ components:
               data:
                 $ref: "#/components/schemas/Account"
 
-    accounts:
+    Accounts:
       description: "List of Accounts"
       content:
         'application/json':
@@ -292,7 +352,7 @@ components:
                 items:
                   $ref: "#/components/schemas/Account"
 
-    person:
+    Person:
       description: "Person information"
       content:
         'application/json':
@@ -304,7 +364,7 @@ components:
               data:
                 $ref: "#/components/schemas/Person"
 
-    persons:
+    Persons:
       description: "List of persons"
       content:
         'application/json':
@@ -318,7 +378,7 @@ components:
                 items:
                   $ref: "#/components/schemas/Person"
 
-    object:
+    Object:
       description: "Object information"
       content:
         'application/json':
@@ -330,7 +390,7 @@ components:
               data:
                 $ref: "#/components/schemas/Object"
 
-    objects:
+    Objects:
       description: "List of objects"
       content:
         'application/json':
