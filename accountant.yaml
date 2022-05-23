@@ -135,27 +135,6 @@ paths:
         '404':
           description: Not found
 
-  /persons:
-    get:
-      summary: "Find Persons by filter parameters"
-      parameters:
-        - name: account_id
-          in: query
-          schema:
-            type: string
-            format: uuid
-          required: false
-        - name: person
-          in: query
-          schema:
-            type: string
-          required: false
-      responses:
-        '200':
-          $ref: "#/components/responses/Persons"
-        '404':
-          description: Not found
-
   /accounts/{account_id}/objects:
     post:
       summary: "Add Object to Account"
@@ -205,16 +184,27 @@ paths:
         '404':
           description: Not found
 
+  /persons:
+    get:
+      summary: "Find Persons by filter parameters"
+      parameters:
+        - $ref: "#/components/parameters/AccountIDQuery"
+        - name: person
+          in: query
+          schema:
+            type: string
+          required: false
+      responses:
+        '200':
+          $ref: "#/components/responses/Persons"
+        '404':
+          description: Not found
+
   /objects:
     get:
       summary: "Find Objects by filter parameters"
       parameters:
-        - name: account_id
-          in: query
-          schema:
-            type: string
-            format: uuid
-          required: false
+        - $ref: "#/components/parameters/AccountIDQuery"
         - name: address
           in: query
           schema:
@@ -302,6 +292,65 @@ paths:
         '404':
           description: Not found
 
+  /bills:
+    get:
+      summary: "Find Bills by filter"
+      parameters:
+        - $ref: "#/components/parameters/AccountIDQuery"
+        - $ref: "#/components/parameters/TargetIDQuery"
+        - $ref: "#/components/parameters/PeriodQuery"
+      responses:
+        '200':
+          $ref: "#/components/responses/Bills"
+        '404':
+          description: Not found
+
+  /bills/{bill_id}:
+    get:
+      summary: "Get Bill by ID"
+      parameters:
+        - $ref: "#/components/parameters/BillIDPath"
+      responses:
+        '200':
+          $ref: "#/components/responses/Bill"
+        '404':
+          description: Not found
+
+    put:
+      summary: "Alter Bill data"
+      parameters:
+        - $ref: "#/components/parameters/BillIDPath"
+      requestBody:
+        $ref: "#/components/requestBodies/BillData"
+      responses:
+        '200':
+          $ref: "#/components/responses/Bill"
+        '404':
+          description: Not found
+
+    delete:
+      summary: "Delete Bill"
+      parameters:
+        - $ref: "#/components/parameters/BillIDPath"
+      responses:
+        '200':
+          $ref: "#/components/responses/Bill"
+        '404':
+          description: Not found
+
+  /accounts/{account_id}/bills:
+    post:
+      summary: "Add Bill to Account"
+      parameters:
+        - $ref: "#/components/parameters/AccountIDPath"
+      requestBody:
+        $ref: "#/components/requestBodies/BillData"
+      responses:
+        '200':
+          $ref: "#/components/responses/Bill"
+        '404':
+          description: Not found
+
 components:
 
   parameters:
@@ -337,6 +386,38 @@ components:
         type: string
         format: uuid
       required: true
+
+    BillIDPath:
+      name: bill_id
+      in: path
+      schema:
+        type: string
+        format: uuid
+      required: true
+
+    TargetIDQuery:
+      name: target_id
+      in: query
+      schema:
+        type: string
+        format: uuid
+      required: false
+
+    AccountIDQuery:
+      name: account_id
+      in: query
+      schema:
+        type: string
+        format: uuid
+      required: false
+
+    PeriodQuery:
+      name: period
+      in: query
+      schema:
+        type: string
+        format: mm.yyyy
+      required: false
 
   requestBodies:
 
@@ -390,6 +471,13 @@ components:
         'application/json':
           schema:
             $ref: "#/components/schemas/TargetData"
+
+    BillData:
+      required: true
+      content:
+        'application/json':
+          schema:
+            $ref: "#/components/schemas/BillData"
 
   responses:
 
@@ -514,6 +602,32 @@ components:
                 type: array
                 items:
                   $ref: "#/components/schemas/Target"
+
+    Bill:
+      description: "Bill information"
+      content:
+        'application/json':
+          schema:
+            type: object
+            properties:
+              meta:
+                $ref: "#/components/schemas/Meta"
+              data:
+                $ref: "#/components/schemas/Bill"
+
+    Bills:
+      description: "List of Bills"
+      content:
+        'application/json':
+          schema:
+            type: object
+            properties:
+              meta:
+                $ref: "#/components/schemas/Meta"
+              data:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Bill"
 
   schemas:
 
@@ -684,6 +798,50 @@ components:
         comment:
           type: string
       required: [period, cost]
+
+    Bill:
+      description: "Charges to be paid"
+      allOf:
+        - $ref: "#/components/schemas/BillHead"
+        - $ref: "#/components/schemas/BillData"
+
+    BillHead:
+      description: "Unchangeable part of Bill"
+      type: object
+      properties:
+        bill_id:
+          type: string
+          format: uuid
+        account_id:
+          type: string
+          format: uuid
+      required: [bill_id, account_id]
+
+    BillData:
+      description: "Changeable part of Bill"
+      type: object
+      properties:
+        formed:
+          type: string
+          format: date-time
+        object_id:
+          type: string
+          format: uuid
+        period:
+          $ref: "#/components/schemas/Period"
+        target:
+          $ref: "#/components/schemas/TargetHead"
+        bill:
+          type: number
+          format: float
+          minimum: 1
+        payment_linked:
+          description: "UUID of Payments"
+          type: array
+          items:
+            type: string
+            format: uuid
+      required: [formed, period, target, bill]
 
     Period:
       description: "Year and month of particular period"
