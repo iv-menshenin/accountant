@@ -223,12 +223,82 @@ paths:
         - name: number
           in: query
           schema:
-            type: number
-            format: int32
+            type: integer
           required: false
       responses:
         '200':
           $ref: "#/components/responses/Objects"
+        '404':
+          description: Not found
+
+  /targets:
+    get:
+      summary: "Search Targets by filter"
+      parameters:
+        - name: show_closed
+          in: query
+          schema:
+            type: boolean
+          required: false
+        - name: year
+          in: query
+          schema:
+            type: integer
+          required: false
+        - name: month
+          in: query
+          schema:
+            type: integer
+          required: false
+      responses:
+        '200':
+          $ref: "#/components/responses/Targets"
+        '404':
+          description: Not found
+
+    post:
+      summary: "Create new Target"
+      parameters:
+        - name: type
+          in: query
+          schema:
+            $ref: "#/components/schemas/TargetType"
+      requestBody:
+        $ref: "#/components/requestBodies/TargetData"
+      responses:
+        '200':
+          $ref: "#/components/responses/Target"
+
+  /targets/{target_id}:
+    get:
+      summary: "Get Target by ID"
+      parameters:
+        - $ref: "#/components/parameters/TargetIDPath"
+      responses:
+        '200':
+          $ref: "#/components/responses/Target"
+        '404':
+          description: Not found
+
+    put:
+      summary: "Alter Target data"
+      parameters:
+        - $ref: "#/components/parameters/TargetIDPath"
+      requestBody:
+        $ref: "#/components/requestBodies/TargetData"
+      responses:
+        '200':
+          $ref: "#/components/responses/Target"
+        '404':
+          description: Not found
+
+    delete:
+      summary: "Delete Target"
+      parameters:
+        - $ref: "#/components/parameters/TargetIDPath"
+      responses:
+        '200':
+          $ref: "#/components/responses/Target"
         '404':
           description: Not found
 
@@ -254,6 +324,14 @@ components:
 
     ObjectIDPath:
       name: object_id
+      in: path
+      schema:
+        type: string
+        format: uuid
+      required: true
+
+    TargetIDPath:
+      name: target_id
       in: path
       schema:
         type: string
@@ -305,6 +383,13 @@ components:
         'application/json':
           schema:
             $ref: "#/components/schemas/ObjectData"
+
+    TargetData:
+      required: true
+      content:
+        'application/json':
+          schema:
+            $ref: "#/components/schemas/TargetData"
 
   responses:
 
@@ -403,6 +488,32 @@ components:
                 type: array
                 items:
                   $ref: "#/components/schemas/Object"
+
+    Target:
+      description: "Target information"
+      content:
+        'application/json':
+          schema:
+            type: object
+            properties:
+              meta:
+                $ref: "#/components/schemas/Meta"
+              data:
+                $ref: "#/components/schemas/Target"
+
+    Targets:
+      description: "List of Targets"
+      content:
+        'application/json':
+          schema:
+            type: object
+            properties:
+              meta:
+                $ref: "#/components/schemas/Meta"
+              data:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Target"
 
   schemas:
 
@@ -526,8 +637,7 @@ components:
         street:
           type: string
         number:
-          type: number
-          format: int32
+          type: integer
         area:
           type: number
           format: float
@@ -536,6 +646,58 @@ components:
           format: "^\\d+:\\d+:\\d{6-7}:\\d+$"
           example: "32:54:836619:43"
       required: [number]
+
+    Target:
+      description: "Purpose of the fee"
+      allOf:
+        - $ref: "#/components/schemas/TargetHead"
+        - $ref: "#/components/schemas/TargetData"
+
+    TargetHead:
+      description: "Unchangeable part og Target data"
+      type: object
+      properties:
+        target_id:
+          type: string
+          format: uuid
+        type:
+          $ref: "#/components/schemas/TargetType"
+      required: [target_id, type]
+
+    TargetType:
+      description: "Short description about Target"
+      type: string
+      maxLength: 64
+
+    TargetData:
+      description: "Changeable part og Target data"
+      type: object
+      properties:
+        period:
+          $ref: "#/components/schemas/Period"
+        closed:
+          type: string
+          format: date-time
+        cost:
+          type: number
+          format: float
+        comment:
+          type: string
+      required: [period, cost]
+
+    Period:
+      description: "Year and month of particular period"
+      type: object
+      properties:
+        year:
+          type: integer
+          minimum: 1900
+          maximum: 2100
+        month:
+          type: integer
+          minimum: 1
+          maximum: 12
+      required: [year, month]
 
   securitySchemes:
 
