@@ -150,7 +150,7 @@ paths:
         '404':
           description: Not found
 
-  /accounts/{account_id}/objects/{object_id}:
+  /api/accounts/{account_id}/objects/{object_id}:
     get:
       summary: "Get Object from Account by objectID"
       parameters:
