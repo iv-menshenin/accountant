@@ -28,6 +28,7 @@ const (
 
 func makeRouter(rp RequestProcessor, auth AuthCore) http.Handler {
 	router := mux.NewRouter()
+	router.Methods(http.MethodOptions).Handler(http.HandlerFunc(optionHandler))
 	wwwSubRouter := router.PathPrefix(PathWWW).Subrouter()
 
 	stat := static.New()
@@ -61,5 +62,33 @@ func makeRouter(rp RequestProcessor, auth AuthCore) http.Handler {
 	authP := ep.NewAuthEP(auth)
 	authP.SetupRouting(authSubRouter)
 
+	router.Use(DontCareAboutCORS)
 	return router
+}
+
+const (
+	corsAllowHeaders     = "X-Auth-Token,X-Requested-With"
+	corsAllowMethods     = "HEAD,GET,POST,PUT,DELETE,OPTIONS"
+	corsAllowOrigin      = "*"
+	corsAllowCredentials = "true"
+)
+
+func DontCareAboutCORS(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+		w.Header().Set("Access-Control-Allow-Credentials", corsAllowCredentials)
+		w.Header().Set("Access-Control-Allow-Headers", corsAllowHeaders)
+		w.Header().Set("Access-Control-Allow-Methods", corsAllowMethods)
+		w.Header().Set("Access-Control-Allow-Origin", corsAllowOrigin)
+
+		next.ServeHTTP(w, r)
+	})
+}
+
+func optionHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Credentials", corsAllowCredentials)
+	w.Header().Set("Access-Control-Allow-Headers", corsAllowHeaders)
+	w.Header().Set("Access-Control-Allow-Methods", corsAllowMethods)
+	w.Header().Set("Access-Control-Allow-Origin", corsAllowOrigin)
+	w.WriteHeader(http.StatusOK)
 }

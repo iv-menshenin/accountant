@@ -14,7 +14,7 @@ class apiManager {
     constructor() {
         if (document.domain === "localhost") {
             this.server = "localhost";
-            this.port = document.location.port;
+            this.port = 8080;
             this.proto = "http:";
         } else {
             this.server = document.location.hostname;
@@ -122,10 +122,14 @@ class apiManager {
             "Accept": "application/json",
             "X-Requested-With": this.requestedWith,
         };
+        let server = this.server;
+        if (this.port) {
+            server = server + ":" + this.port;
+        }
         $.ajax({
             crossDomain: true,
             type: "POST",
-            url: this.loginPath,
+            url: this.proto + "//" + server + this.loginPath,
             headers: headers,
             data: JSON.stringify(body),
             success: function (responseData) {
@@ -157,10 +161,14 @@ class apiManager {
             "Accept": "application/json",
             "X-Requested-With": this.requestedWith,
         };
+        let server = this.server;
+        if (this.port) {
+            server = server + ":" + this.port;
+        }
         $.ajax({
             crossDomain: true,
             type: "POST",
-            url: this.refreshPath,
+            url: this.proto + "//" + server + this.refreshPath,
             headers: headers,
             data: JSON.stringify(body),
             success: function (responseData) {

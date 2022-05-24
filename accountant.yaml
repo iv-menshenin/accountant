@@ -4,6 +4,8 @@ servers:
   # Added by API Auto Mocking Plugin
   - description: SwaggerHub API Auto Mocking
     url: https://virtserver.swaggerhub.com/iv-menshenin/accountant/1.0.0
+  - description: devaliada.ru
+    url: https://victoria.devaliada.ru
 
 info:
   version: "1.0.0"
@@ -15,7 +17,7 @@ security:
 
 paths:
 
-  /login:
+  /auth/login:
     post:
       summary: "Authentication"
       requestBody:
@@ -24,7 +26,7 @@ paths:
         '200':
           $ref: "#/components/responses/AuthInfo"
 
-  /refresh:
+  /auth/refresh:
     post:
       summary: "Refresh token"
       requestBody:
@@ -33,7 +35,7 @@ paths:
         '200':
           $ref: "#/components/responses/AuthInfo"
 
-  /accounts:
+  /api/accounts:
     get:
       summary: "Find Accounts"
       parameters:
@@ -55,7 +57,7 @@ paths:
         '200':
           $ref: "#/components/responses/Accounts"
 
-  /accounts/{account_id}:
+  /api/accounts/{account_id}:
     get:
       summary: "Get Account information"
       parameters:
@@ -86,7 +88,7 @@ paths:
         '404':
           description: Not found
 
-  /accounts/{account_id}/persons:
+  /api/accounts/{account_id}/persons:
     post:
       summary: "Add Person to Account"
       parameters:
@@ -99,7 +101,7 @@ paths:
         '404':
           description: Not found
 
-  /accounts/{account_id}/persons/{person_id}:
+  /api/accounts/{account_id}/persons/{person_id}:
     get:
       summary: "Get Person from Account by personID"
       parameters:
@@ -135,7 +137,7 @@ paths:
         '404':
           description: Not found
 
-  /accounts/{account_id}/objects:
+  /api/accounts/{account_id}/objects:
     post:
       summary: "Add Object to Account"
       parameters:
@@ -184,7 +186,7 @@ paths:
         '404':
           description: Not found
 
-  /accounts/{account_id}/bills:
+  /api/accounts/{account_id}/bills:
     post:
       summary: "Add Bill to Account"
       parameters:
@@ -197,7 +199,7 @@ paths:
         '404':
           description: Not found
 
-  /persons:
+  /api/persons:
     get:
       summary: "Find Persons by filter parameters"
       parameters:
@@ -213,7 +215,7 @@ paths:
         '404':
           description: Not found
 
-  /objects:
+  /api/objects:
     get:
       summary: "Find Objects by filter parameters"
       parameters:
@@ -234,7 +236,7 @@ paths:
         '404':
           description: Not found
 
-  /targets:
+  /api/targets:
     get:
       summary: "Search Targets by filter"
       parameters:
@@ -272,7 +274,7 @@ paths:
         '200':
           $ref: "#/components/responses/Target"
 
-  /targets/{target_id}:
+  /api/targets/{target_id}:
     get:
       summary: "Get Target by ID"
       parameters:
@@ -305,7 +307,7 @@ paths:
         '404':
           description: Not found
 
-  /bills:
+  /api/bills:
     get:
       summary: "Find Bills by filter"
       parameters:
@@ -319,7 +321,7 @@ paths:
         '404':
           description: Not found
 
-  /bills/{bill_id}:
+  /api/bills/{bill_id}:
     get:
       summary: "Get Bill by ID"
       parameters:
@@ -352,7 +354,7 @@ paths:
         '404':
           description: Not found
 
-  /payments:
+  /api/payments:
     get:
       summary: "Find Payments by filter"
       parameters:
@@ -366,7 +368,7 @@ paths:
         '404':
           description: Not found
 
-  /payments/{payment_id}:
+  /api/payments/{payment_id}:
     get:
       summary: "Update Payment data by ID"
       parameters:
@@ -399,7 +401,7 @@ paths:
         '404':
           description: Not found
 
-  /accounts/{account_id}/payments:
+  /api/accounts/{account_id}/payments:
     post:
       summary: "Create new Payment for Account"
       parameters:
@@ -1046,4 +1048,4 @@ components:
     ApiKeyAuth:
       type: apiKey
       in: header
-      name: X-Session
+      name: X-Auth-Token
