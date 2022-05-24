@@ -1,0 +1,19 @@
+<template>
+  <div class="page" data-name="persons">
+    <div class="navbar">
+      <div class="navbar-bg"></div>
+      <div class="navbar-inner sliding">
+        <div class="title">Persons</div>
+      </div>
+    </div>
+
+    <div class="page-content">
+      Persons
+    </div>
+  </div>
+</template>
+<script>
+export default () => {
+  return $render;
+}
+</script>

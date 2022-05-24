@@ -1,0 +1,41 @@
+<template>
+  <div class="page" data-name="login">
+    <div class="page-content login-screen-content">
+      <div class="login-screen-title">Вход</div>
+      <form>
+        <div class="list">
+          <ul>
+            <li class="item-content item-input">
+              <div class="item-inner">
+                <div class="item-title item-label">Логин</div>
+                <div class="item-input-wrap">
+                  <input type="text" name="login" placeholder="Введите ваш логин" />
+                </div>
+              </div>
+            </li>
+            <li class="item-content item-input">
+              <div class="item-inner">
+                <div class="item-title item-label">Пароль</div>
+                <div class="item-input-wrap">
+                  <input type="password" name="password" placeholder="Введите ваш пароль" />
+                </div>
+              </div>
+            </li>
+          </ul>
+        </div>
+        <div class="list">
+          <ul>
+            <li>
+              <a class="list-button" href="#">Войти</a>
+            </li>
+          </ul>
+        </div>
+      </form>
+    </div>
+  </div>
+</template>
+<script>
+export default () => {
+  return $render;
+}
+</script>

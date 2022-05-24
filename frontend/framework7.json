@@ -1,0 +1,54 @@
+{
+  "cwd": "/Users/sergeivoroshilov/Development/accountant/frontend",
+  "type": [
+    "web"
+  ],
+  "name": "Accountant",
+  "framework": "core",
+  "template": "blank",
+  "bundler": "vite",
+  "cssPreProcessor": "less",
+  "theming": {
+    "customColor": true,
+    "color": "#3e6b83",
+    "darkTheme": false,
+    "iconFonts": true,
+    "fillBars": true
+  },
+  "customBuild": true,
+  "customBuildConfig": {
+    "rtl": false,
+    "darkTheme": false,
+    "lightTheme": true,
+    "themes": [
+      "aurora"
+    ],
+    "components": [
+      "calendar",
+      "card",
+      "checkbox",
+      "contacts-list",
+      "chip",
+      "data-table",
+      "dialog",
+      "form",
+      "grid",
+      "infinite-scroll",
+      "input",
+      "login-screen",
+      "panel",
+      "popover",
+      "popup",
+      "preloader",
+      "progressbar",
+      "radio",
+      "searchbar",
+      "skeleton",
+      "toast",
+      "toggle",
+      "tooltip",
+      "typography",
+      "virtual-list"
+    ]
+  }
+}
