@@ -28,4 +28,15 @@ var app = new Framework7({
   store: store,
   // App routes
   routes: routes,
+
+  on: {
+    init() {
+      this.request.setup({
+        beforeCreate: (parameters) => {
+          parameters.url = 'https://victoria.devaliada.ru' + parameters.url;
+          parameters.headers.authorization = window.localStorage.getItem('devalio_token');
+        },
+      });
+    },
+  },
 });

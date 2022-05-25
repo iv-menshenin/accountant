@@ -56,5 +56,5 @@ function checkAuth({ to, resolve }) {
 }
 
 function isAuth() {
-  return false;
+  return Boolean(window.localStorage.getItem('devalio_token'));
 }

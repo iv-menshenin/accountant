@@ -2,14 +2,14 @@
   <div class="page" data-name="login">
     <div class="page-content login-screen-content">
       <div class="login-screen-title">Вход</div>
-      <form>
+      <form @submit=${submit}>
         <div class="list">
           <ul>
             <li class="item-content item-input">
               <div class="item-inner">
                 <div class="item-title item-label">Логин</div>
                 <div class="item-input-wrap">
-                  <input type="text" name="login" placeholder="Введите ваш логин" />
+                  <input type="text" name="login" placeholder="Введите ваш логин" required validate disabled=${loading.value} />
                 </div>
               </div>
             </li>
@@ -17,7 +17,7 @@
               <div class="item-inner">
                 <div class="item-title item-label">Пароль</div>
                 <div class="item-input-wrap">
-                  <input type="password" name="password" placeholder="Введите ваш пароль" />
+                  <input type="password" name="password" placeholder="Введите ваш пароль" required validate disabled=${loading.value} />
                 </div>
               </div>
             </li>
@@ -26,7 +26,10 @@
         <div class="list">
           <ul>
             <li>
-              <a class="list-button" href="#">Войти</a>
+              <button class="button button-large list-button button-preloader ${loading.value && 'button-loading disabled'}">
+                <span class="preloader"></span>
+                <span>Войти</span>
+              </button>
             </li>
           </ul>
         </div>
@@ -34,8 +37,32 @@
     </div>
   </div>
 </template>
+
+<style>
+.button.disabled {
+  pointer-events: none;
+}
+</style>
+
 <script>
-export default () => {
+export default (props, { $f7, $f7router, $ref }) => {
+  const loading = $ref(false);
+
+  async function submit(event) {
+    event.preventDefault();
+
+    try {
+      loading.value = true;
+
+      const { data } = await $f7.request.postJSON('/auth/login', $f7.form.convertToData(event.target));
+      window.localStorage.setItem('devalio_token', data.data.jwt_token);
+      $f7router.navigate('/');
+    } catch (error) {
+      console.error(error);
+    } finally {
+      loading.value = false;
+    }
+  }
   return $render;
 }
 </script>
