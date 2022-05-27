@@ -2,13 +2,71 @@
 <template>
   <div id="app">
 
-  <!-- Your main view, should have "view-main" class -->
-  <div class="view view-main view-init safe-areas" data-url="/" data-browser-history="true" data-browser-history-separator=${''} data-browser-history-root=${window.location.origin}></div>
+    <div class="panel panel-left panel-init" data-visible-breakpoint="768">
+      <div class="navbar">
+        <div class="navbar-bg"></div>
+        <div class="navbar-inner sliding">
+          <div class="title">Меню</div>
+        </div>
+      </div>
+
+      <div class="list menu-list">
+        <ul>
+          <li>
+            <a href="/accounts/" class="item-content item-link panel-close ${selected.value === 'accounts' && 'item-selected'}">
+              <div class="item-media">
+                <i class="icon f7-icons">doc_plaintext</i>
+              </div>
+              <div class="item-inner">
+                <div class="item-title">Лицевые счета</div>
+              </div>
+            </a>
+          </li>
+          <li>
+            <a href="/persons/" class="item-content item-link panel-close ${selected.value === 'persons' && 'item-selected'}">
+              <div class="item-media">
+                <i class="icon f7-icons">person_2_fill</i>
+              </div>
+              <div class="item-inner">
+                <div class="item-title">Владельцы</div>
+              </div>
+            </a>
+          </li>
+          <li>
+            <a href="/objects/" class="item-content item-link panel-close ${selected.value === 'objects' && 'item-selected'}">
+              <div class="item-media">
+                <i class="icon f7-icons">skew</i>
+              </div>
+              <div class="item-inner">
+                <div class="item-title">Участки</div>
+              </div>
+            </a>
+          </li>
+          <li>
+            <a href="/targets/" class="item-content item-link panel-close ${selected.value === 'targets' && 'item-selected'}">
+              <div class="item-media">
+                <i class="icon f7-icons">money_rubl_circle</i>
+              </div>
+              <div class="item-inner">
+                <div class="item-title">Взносы</div>
+              </div>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="view view-main view-init safe-areas" data-url="/" data-browser-history="true" data-browser-history-separator=${''} data-browser-history-root=${window.location.origin}></div>
 
   </div>
 </template>
+
 <script>
-  export default () => {
+  export default (props, { $on, $ref }) => {
+    const selected = $ref('accounts');
+
+    $on('pageBeforein', (page) => selected.value = page.detail.name);
+
     return $render;
   }
 </script>

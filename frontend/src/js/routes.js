@@ -1,6 +1,7 @@
 export default [
   {
     path: '/login/',
+    name: 'login',
     asyncComponent: () => import('@/pages/login.f7'),
     beforeEnter: checkAuth,
     options: {
@@ -9,6 +10,7 @@ export default [
   },
   {
     path: '/accounts/',
+    name: 'accounts',
     asyncComponent: () => import('@/pages/accounts.f7'),
     beforeEnter: checkAuth,
     options: {
@@ -17,6 +19,7 @@ export default [
   },
   {
     path: '/persons/',
+    name: 'persons',
     asyncComponent: () => import('@/pages/persons.f7'),
     beforeEnter: checkAuth,
     options: {
@@ -25,6 +28,7 @@ export default [
   },
   {
     path: '/objects/',
+    name: 'objects',
     asyncComponent: () => import('@/pages/objects.f7'),
     beforeEnter: checkAuth,
     options: {
@@ -33,6 +37,7 @@ export default [
   },
   {
     path: '/targets/',
+    name: 'targets',
     asyncComponent: () => import('@/pages/targets.f7'),
     beforeEnter: checkAuth,
     options: {

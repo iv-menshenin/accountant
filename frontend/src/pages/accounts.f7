@@ -3,7 +3,12 @@
     <div class="navbar">
       <div class="navbar-bg"></div>
       <div class="navbar-inner sliding">
-        <div class="title">Accounts</div>
+        <div class="left no-display-medium">
+          <a class="link panel-open">
+            <i class="icon f7-icons">list_bullet</i>
+          </a>
+        </div>
+        <div class="title">Лицевые счета</div>
       </div>
     </div>
 
