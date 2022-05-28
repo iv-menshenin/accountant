@@ -65,7 +65,5 @@ type (
 		Number     int    `bson:"number" json:"number"`
 		// Area это площадь территории
 		Area float64 `bson:"area,omitempty" json:"area,omitempty"`
-		// FIXME CadNumber кадастровый номер
-		CadNumber string `bson:"cad_number" json:"cad_number"`
 	}
 )

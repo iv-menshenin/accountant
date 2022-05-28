@@ -892,10 +892,6 @@ components:
         area:
           type: number
           format: float
-        cad_number:
-          type: string
-          format: "^\\d+:\\d+:\\d{6-7}:\\d+$"
-          example: "32:54:836619:43"
       required: [number]
 
     Target:
