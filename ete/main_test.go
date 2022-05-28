@@ -32,7 +32,7 @@ const (
 	pathBills    = "/bills"
 	pathPayments = "/payments"
 
-	mongoDbHost = "192.168.1.18"
+	mongoDbHost = "192.168.1.72"
 	mongoDbName = "test"
 	mongoDbUser = "mongo"
 	mongoDbPass = "gfhjkm"
