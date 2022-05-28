@@ -25,6 +25,7 @@ import Toggle from 'framework7/components/toggle';
 import Tooltip from 'framework7/components/tooltip';
 import Typography from 'framework7/components/typography';
 import VirtualList from 'framework7/components/virtual-list';
+import Fab from 'framework7/components/fab';
 
 Framework7.use([
   Calendar,
@@ -51,7 +52,8 @@ Framework7.use([
   Toggle,
   Tooltip,
   Typography,
-  VirtualList
+  VirtualList,
+  Fab,
 ]);
 
 export default Framework7;

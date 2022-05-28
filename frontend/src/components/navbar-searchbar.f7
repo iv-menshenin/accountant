@@ -1,0 +1,44 @@
+<template>
+  <form class="searchbar searchbar-init navbar-searchbar ${props.active ? 'active' : ''}" data-search-container=${props.searchContainer} data-search-item="li" data-search-in=${props.searchIn}>
+    <div class="searchbar-inner">
+      <div class="searchbar-input-wrap">
+        <input type="search" placeholder=${props.placeholder} />
+        <i class="searchbar-icon"></i>
+        <span class="input-clear-button"></span>
+      </div>
+      <a class="link margin-left" @click=${cancel}>Отмена</a>
+    </div>
+  </form>
+</template>
+
+<style>
+.navbar-searchbar {
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: calc(100% - 40px);
+  transform: translateX(100%);
+  transition: transform 0.2s;
+  --f7-searchbar-input-bg-color: var(--f7-page-bg-color);
+}
+
+.navbar-searchbar.active {
+  transform: translateX(0%);
+}
+
+@media screen and (min-width: 768px) {
+  .navbar-searchbar {
+    width: calc(100%);
+  }
+}
+</style>
+
+<script>
+export default (props, { $emit, $el, $f7 }) => {
+  function cancel() {
+    $f7.searchbar.clear($el.value);
+    $emit('searchbar:close');
+  }
+  return $render;
+}
+</script>

@@ -56,6 +56,7 @@ export default (props, { $f7, $f7router, $ref }) => {
 
       const { data } = await $f7.request.postJSON('/auth/login', $f7.form.convertToData(event.target));
       window.localStorage.setItem('devalio_token', data.data.jwt_token);
+      window.localStorage.setItem('devalio_refresh', data.data.refresh_token);
       $f7router.navigate('/');
     } catch (error) {
       console.error(error);

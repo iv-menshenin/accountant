@@ -34,8 +34,25 @@ var app = new Framework7({
       this.request.setup({
         beforeCreate: (parameters) => {
           parameters.url = 'https://victoria.devaliada.ru' + parameters.url;
-          parameters.headers.authorization = window.localStorage.getItem('devalio_token');
+          if (parameters.url !== '/auth/refresh') {
+            parameters.headers['X-Auth-Token'] = window.localStorage.getItem('devalio_token');
+          }
         },
+        statusCode: {
+          401: async (xhr) => {
+            try {
+              const { method, url } = xhr.requestParameters;
+              const { data } = await this.request.postJSON('/auth/refresh', { token: window.localStorage.getItem('devalio_refresh') });
+              window.localStorage.setItem('devalio_token', data.data.jwt_token);
+              window.localStorage.setItem('devalio_refresh', data.data.refresh_token);
+              xhr.open(method, url);
+              xhr.setRequestHeader('X-Auth-Token', data.data.jwt_token);
+              xhr.send();
+            } catch (error) {
+              console.error('401', error);
+            }
+          },
+        }
       });
     },
   },

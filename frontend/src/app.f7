@@ -2,7 +2,7 @@
 <template>
   <div id="app">
 
-    <div class="panel panel-left panel-init" data-visible-breakpoint="768">
+    <div id="menu-panel" class="panel panel-left" data-visible-breakpoint="768">
       <div class="navbar">
         <div class="navbar-bg"></div>
         <div class="navbar-inner sliding">
@@ -10,7 +10,7 @@
         </div>
       </div>
 
-      <div class="list menu-list">
+      <div class="list menu-list no-margin-bottom">
         <ul>
           <li>
             <a href="/accounts/" class="item-content item-link panel-close ${selected.value === 'accounts' && 'item-selected'}">
@@ -54,6 +54,21 @@
           </li>
         </ul>
       </div>
+
+      <div class="list no-hairlines no-margin">
+        <ul>
+          <li>
+            <a href="#" class="item-content item-link no-chevron" @click=${logout}>
+              <div class="item-media">
+                <i class="icon f7-icons">square_arrow_right</i>
+              </div>
+              <div class="item-inner">
+                <div class="item-title">Выход</div>
+              </div>
+            </a>
+          </li>
+        </ul>
+      </div>
     </div>
 
     <div class="view view-main view-init safe-areas" data-url="/" data-browser-history="true" data-browser-history-separator=${''} data-browser-history-root=${window.location.origin}></div>
@@ -62,10 +77,31 @@
 </template>
 
 <script>
-  export default (props, { $on, $ref }) => {
+  export default (props, { $on, $ref, $f7 }) => {
     const selected = $ref('accounts');
+    let menuPanel;
 
-    $on('pageBeforein', (page) => selected.value = page.detail.name);
+    function logout() {
+      window.localStorage.removeItem('devalio_token');
+      window.localStorage.removeItem('devalio_refresh');
+      $f7.view.main.router.navigate('/login/');
+    }
+
+    $on('pageBeforein', (page) => {
+      selected.value = page.detail.name;
+
+      if (page.detail.name === 'login') {
+        if (menuPanel) {
+          $f7.panel.destroy('#menu-panel');
+          menuPanel = null;
+        }
+      } else if (!menuPanel) {
+        menuPanel = $f7.panel.create({
+          el: '#menu-panel',
+          visibleBreakpoint: 768,
+        });
+      }
+    });
 
     return $render;
   }

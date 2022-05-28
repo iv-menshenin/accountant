@@ -2,23 +2,138 @@
   <div class="page" data-name="accounts">
     <div class="navbar">
       <div class="navbar-bg"></div>
-      <div class="navbar-inner sliding">
+      <div class="navbar-inner">
         <div class="left no-display-medium">
           <a class="link panel-open">
             <i class="icon f7-icons">list_bullet</i>
           </a>
         </div>
         <div class="title">Лицевые счета</div>
+        <div class="right">
+          <a class="link" @click=${() => serachbarActive.value = true}>
+            <i class="icon f7-icons">search</i>
+          </a>
+        </div>
+        <${NavbarSearchbar} placeholder="Поиск лицевого счета" search-container="#account-list" search-in=".item-title" active=${serachbarActive.value} @searchbar:close=${() => serachbarActive.value = false}></${NavbarSearchbar}>
       </div>
     </div>
 
-    <div class="page-content">
-      Accounts
+    <div class="fab fab-right-bottom">
+      <a href="#">
+        <i class="icon f7-icons">plus</i>
+      </a>
+    </div>
+
+    <div class="page-content containerized-content">
+      <div class="block text-align-center searchbar-not-found">
+        Лицевых счетов не найдено
+      </div>
+
+      ${loading.value && $h`
+        <div class="list media-list medium-inset">
+          <ul>
+            ${[1, 2, 3].map(() => $h`
+              <li class="item-content skeleton-effect-wave">
+                <div class="item-media">
+                  <div class="item-icon skeleton-block"></div>
+                </div>
+                <div class="item-inner skeleton-text">
+                  <div class="item-title-row">
+                    <div class="item-title">Number</div>
+                  </div>
+                  <div class="item-subtitle">Account Persona</div>
+                  <div class="item-text">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi lobortis et massa ac
+                    interdum. Cras consequat felis at consequat hendrerit.</div>
+                </div>
+              </li>
+            `)}
+          </ul>
+        </div>
+      `}
+
+      <div class="list media-list medium-inset searchbar-found" id="account-list">
+        ${accounts.value.length > 0 ? $h`
+          <ul>
+            ${accounts.value.map((item) => $h`
+              <li class="item-content">
+                <div class="item-media">
+                  <div class="item-icon bg-color-primary">
+                    <i class="icon f7-icons">doc_plaintext</i>
+                  </div>
+                </div>
+                <div class="item-inner">
+                  <div class="item-title-row">
+                    <div class="item-title">${item.account}</div>
+                  </div>
+                  ${item.persons && item.persons.length > 0 ? $h`
+                    <div class="item-subtitle">
+                      <span>${item.persons[0].surname} ${item.persons[0].name} ${item.persons[0].pat_name}</span>
+                      ${item.persons.length > 1 && $h`
+                        <span>, +${item.persons.length - 1}</span>
+                      `}
+                    </div>
+                  ` : $h`
+                    <div class="item-subtitle">CEO</div>
+                  `}
+                  <div class="item-text">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi lobortis et massa ac
+                    interdum. Cras consequat felis at consequat hendrerit. Aliquam vestibulum vitae lorem ac iaculis.
+                    Praesent nec pharetra massa, at blandit lectus. Sed tincidunt, lectus eu convallis elementum, nibh nisi
+                    aliquet urna, nec imperdiet felis sapien at enim.</div>
+                </div>
+              </li>
+            `)}
+          </ul>
+        ` : $h`
+          <ul>
+
+          </ul>
+        `}
+        <ul>
+
+          <!-- <li class="item-content">
+            <div class="item-media">
+              <div class="item-icon bg-color-primary">
+                <i class="icon f7-icons">doc_plaintext</i>
+              </div>
+            </div>
+            <div class="item-inner">
+              <div class="item-title-row">
+                <div class="item-title">John Doe</div>
+              </div>
+              <div class="item-subtitle">CEO</div>
+              <div class="item-text">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi lobortis et massa ac
+                interdum. Cras consequat felis at consequat hendrerit. Aliquam vestibulum vitae lorem ac iaculis.
+                Praesent nec pharetra massa, at blandit lectus. Sed tincidunt, lectus eu convallis elementum, nibh nisi
+                aliquet urna, nec imperdiet felis sapien at enim.</div>
+            </div>
+          </li> -->
+        </ul>
+      </div>
     </div>
   </div>
 </template>
+
 <script>
-export default () => {
+import NavbarSearchbar from '@/components/navbar-searchbar.f7';
+
+export default (props, { $f7, $ref, $on, $el }) => {
+  const accounts = $ref([]);
+  const serachbarActive = $ref(false);
+  const loading = $ref(false);
+
+  function loadData() {
+    loading.value = true;
+
+    $f7.request.json('/api/accounts', (data, status, xhr) => {
+      accounts.value = data.data;
+      loading.value = false;
+    }, (xhr, status, message) => {
+      if (status !== 401) loading.value = false;
+    });
+  }
+
+  $on('pageInit', loadData);
+
   return $render;
 }
 </script>
