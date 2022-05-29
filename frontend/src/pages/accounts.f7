@@ -24,90 +24,76 @@
       </a>
     </div>
 
-    <div class="page-content containerized-content">
-      <div class="block text-align-center searchbar-not-found">
-        Лицевых счетов не найдено
-      </div>
-
-      ${loading.value && $h`
-        <div class="list media-list medium-inset">
-          <ul>
-            ${[1, 2, 3].map(() => $h`
-              <li class="item-content skeleton-effect-wave">
-                <div class="item-media">
-                  <div class="item-icon skeleton-block"></div>
-                </div>
-                <div class="item-inner skeleton-text">
-                  <div class="item-title-row">
-                    <div class="item-title">Number</div>
-                  </div>
-                  <div class="item-subtitle">Account Persona</div>
-                  <div class="item-text">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi lobortis et massa ac
-                    interdum. Cras consequat felis at consequat hendrerit.</div>
-                </div>
-              </li>
-            `)}
-          </ul>
+    <div class="page-content">
+      <div class="page-container">
+        <div class="block text-align-center searchbar-not-found">
+          Лицевых счетов не найдено
         </div>
-      `}
 
-      <div class="list media-list medium-inset searchbar-found" id="account-list">
-        ${accounts.value.length > 0 ? $h`
-          <ul>
-            ${accounts.value.map((item) => $h`
-              <li class="item-content">
-                <div class="item-media">
-                  <div class="item-icon bg-color-primary">
-                    <i class="icon f7-icons">doc_plaintext</i>
+        ${loading.value && $h`
+          <div class="list media-list medium-inset">
+            <ul>
+              ${[1, 2, 3, 4, 5].map(() => $h`
+                <li class="item-content skeleton-effect-wave">
+                  <div class="item-media">
+                    <div class="item-icon skeleton-block"></div>
                   </div>
-                </div>
-                <div class="item-inner">
-                  <div class="item-title-row">
-                    <div class="item-title">${item.account}</div>
+                  <div class="item-inner skeleton-text">
+                    <div class="item-title-row">
+                      <div class="item-title">Number</div>
+                    </div>
+                    <div class="item-subtitle">Account Persona Fullname</div>
+                    <div class="item-text">Lorem ipsum dolor sit amet</div>
                   </div>
-                  ${item.persons && item.persons.length > 0 ? $h`
-                    <div class="item-subtitle">
-                      <span>${item.persons[0].surname} ${item.persons[0].name} ${item.persons[0].pat_name}</span>
-                      ${item.persons.length > 1 && $h`
-                        <span>, +${item.persons.length - 1}</span>
+                </li>
+              `)}
+            </ul>
+          </div>
+        `}
+
+        <div class="list media-list medium-inset searchbar-found" id="account-list">
+          ${accounts.value.length > 0 && $h`
+            <ul>
+              ${accounts.value.map((item) => $h`
+                <li class="item-content">
+                  <div class="item-media">
+                    ${Boolean(item.account) ? $h`
+                      <div class="item-icon bg-color-primary">
+                        <i class="icon f7-icons">doc_plaintext</i>
+                      </div>
+                    ` : $h`
+                      <div class="item-icon bg-color-red">
+                        <i class="icon f7-icons" style="position: relative; top: -1px;">exclamationmark_triangle</i>
+                      </div>
+                    `}
+                  </div>
+                  <div class="item-inner">
+                    <div class="item-title-row">
+                      <div class="item-title">${Boolean(item.account) ? item.account : 'Нет номера'}</div>
+                    </div>
+                    ${item.persons && item.persons.length > 0 ? $h`
+                      <div class="item-subtitle">
+                        <span>${item.persons[0].surname} ${item.persons[0].name} ${item.persons[0].pat_name}</span>
+                        ${item.persons.length > 1 && $h`
+                          <span>, +${item.persons.length - 1}</span>
+                        `}
+                      </div>
+                    ` : $h`
+                      <div class="item-subtitle">Нет владельцев</div>
+                    `}
+                    <div class="item-text">
+                      ${item.objects && item.objects.length > 0 ? $h`
+                        <span>${item.objects[0].street}, ${item.objects[0].number}</span>
+                      ` : $h`
+                        <span>Нет участков</span>
                       `}
                     </div>
-                  ` : $h`
-                    <div class="item-subtitle">CEO</div>
-                  `}
-                  <div class="item-text">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi lobortis et massa ac
-                    interdum. Cras consequat felis at consequat hendrerit. Aliquam vestibulum vitae lorem ac iaculis.
-                    Praesent nec pharetra massa, at blandit lectus. Sed tincidunt, lectus eu convallis elementum, nibh nisi
-                    aliquet urna, nec imperdiet felis sapien at enim.</div>
-                </div>
-              </li>
-            `)}
-          </ul>
-        ` : $h`
-          <ul>
-
-          </ul>
-        `}
-        <ul>
-
-          <!-- <li class="item-content">
-            <div class="item-media">
-              <div class="item-icon bg-color-primary">
-                <i class="icon f7-icons">doc_plaintext</i>
-              </div>
-            </div>
-            <div class="item-inner">
-              <div class="item-title-row">
-                <div class="item-title">John Doe</div>
-              </div>
-              <div class="item-subtitle">CEO</div>
-              <div class="item-text">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi lobortis et massa ac
-                interdum. Cras consequat felis at consequat hendrerit. Aliquam vestibulum vitae lorem ac iaculis.
-                Praesent nec pharetra massa, at blandit lectus. Sed tincidunt, lectus eu convallis elementum, nibh nisi
-                aliquet urna, nec imperdiet felis sapien at enim.</div>
-            </div>
-          </li> -->
-        </ul>
+                  </div>
+                </li>
+              `)}
+            </ul>
+          `}
+        </div>
       </div>
     </div>
   </div>
