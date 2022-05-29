@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/iv-menshenin/accountant/utils/uuid"
 	"io"
 	"log"
 	"math/rand"
@@ -20,6 +19,7 @@ import (
 	"github.com/iv-menshenin/accountant/storage"
 	"github.com/iv-menshenin/accountant/storage/mongodb"
 	"github.com/iv-menshenin/accountant/transport"
+	"github.com/iv-menshenin/accountant/utils/uuid"
 )
 
 const (
@@ -31,11 +31,6 @@ const (
 	pathTargets  = "/targets"
 	pathBills    = "/bills"
 	pathPayments = "/payments"
-
-	mongoDbHost = "192.168.1.72"
-	mongoDbName = "test"
-	mongoDbUser = "mongo"
-	mongoDbPass = "gfhjkm"
 )
 
 var ErrNotFound = errors.New("not found")
@@ -102,6 +97,10 @@ func Test_ete(t *testing.T) {
 func upService(t *testing.T, logData io.Writer) httpActor {
 	rand.Seed(time.Now().UnixNano())
 	var (
+		mongoDbHost    = config.EnvString("TST_MONGO_HOST", "127.0.0.1")
+		mongoDbName    = config.EnvString("TST_MONGO_DBNAME", "test")
+		mongoDbUser    = config.EnvString("TST_MONGO_USERNAME", "mongo")
+		mongoDbPass    = config.EnvString("TST_MONGO_PASSWORD", "mongo")
 		listeningError = make(chan error)
 		logger         = log.New(logData, "test logger::", 0)
 		dbConfig       = config.New(
