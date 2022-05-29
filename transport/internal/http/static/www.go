@@ -6,8 +6,11 @@ import (
 	"github.com/gorilla/mux"
 	"io"
 	"log"
+	"mime"
 	"net/http"
 	"os"
+	"path"
+	"strings"
 )
 
 type (
@@ -38,6 +41,7 @@ func (r *Resources) SetupRouting(router *mux.Router) {
 	router.Path("/html/{filename:[a-z0-9\\-_/]+}.html").Methods(http.MethodGet).Handler(http.HandlerFunc(r.Html))
 	router.Path("/css/{filename:[a-z0-9\\-_/]+}.css").Methods(http.MethodGet).Handler(http.HandlerFunc(r.Css))
 	router.Path("/png/{filename:[a-z0-9\\-_/]+}.png").Methods(http.MethodGet).Handler(http.HandlerFunc(r.Png))
+	router.Methods(http.MethodGet).Handler(http.HandlerFunc(r.Any))
 }
 
 func (r *Resources) Script(w http.ResponseWriter, q *http.Request) {
@@ -94,6 +98,29 @@ func (r *Resources) Png(w http.ResponseWriter, q *http.Request) {
 	}
 	defer f.Close()
 	w.Header().Set(contentType, "image/png")
+	_, err = io.Copy(w, f)
+	if err != nil {
+		log.Println(err)
+	}
+}
+
+func (r *Resources) Any(w http.ResponseWriter, q *http.Request) {
+	fileName := q.URL.Path
+	if strings.Contains(fileName, "../") {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+	f, err := os.Open(r.staticFiles + "/" + fileName)
+	if err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+	defer f.Close()
+
+	mimeType := mime.TypeByExtension(path.Ext(fileName))
+	if mimeType != "" {
+		w.Header().Set(contentType, mimeType)
+	}
 	_, err = io.Copy(w, f)
 	if err != nil {
 		log.Println(err)
