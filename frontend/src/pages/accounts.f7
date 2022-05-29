@@ -120,7 +120,7 @@ export default (props, { $f7, $ref, $on, $el }) => {
               `}
               <div class="item-text">
                 ${item.objects && item.objects.length > 0 ? `
-                  <span>${item.objects[0].street}, ${item.objects[0].number}</span>
+                  ${item.objects.map((object) => `<span>${object.street}, ${object.number}</span>`).join('; ')}
                 ` : `
                   <span>Нет участков</span>
                 `}
