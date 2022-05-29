@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-// EnvInt returns integer environment variable. Returns default if there is no env. Panics on wrong integer format
+// EnvInt returns integer environment variable value. Returns default if there is no env. Panics on wrong integer format
 func EnvInt(envName string, def int) int {
 	if val := os.Getenv(envName); val != "" {
 		i, err := strconv.Atoi(val)
@@ -18,6 +18,7 @@ func EnvInt(envName string, def int) int {
 	return def
 }
 
+// EnvString returns string environment variable value. Returns default if the environment variable is not exists.
 func EnvString(envName, def string) string {
 	if val := os.Getenv(envName); val != "" {
 		return val
@@ -25,6 +26,7 @@ func EnvString(envName, def string) string {
 	return def
 }
 
+// EnvDuration returns time.Duration environment variable value. Returns default if the environment variable is not exists.
 func EnvDuration(envName string, def time.Duration) time.Duration {
 	if val := os.Getenv(envName); val != "" {
 		d, err := time.ParseDuration(val)
