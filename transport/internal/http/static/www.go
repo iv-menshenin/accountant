@@ -113,7 +113,7 @@ func (r *Resources) Png(w http.ResponseWriter, q *http.Request) {
 func (r *Resources) Any(w http.ResponseWriter, q *http.Request) {
 	fileName := q.URL.Path
 	if strings.Contains(fileName, "../") {
-		r.logger.Printf("DETECTED UPLEVEL: %s", fileName)
+		r.logger.Printf("DETECTED UPLEVEL: %s\n", fileName)
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}

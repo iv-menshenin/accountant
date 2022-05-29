@@ -1,8 +1,10 @@
 package http
 
 import (
+	"flag"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/gorilla/mux"
 
@@ -27,9 +29,21 @@ const (
 	PathWWW  = "/www"
 )
 
+var (
+	startPath = flag.String("www-start", os.Getenv("HTML_START"), "http-server homepage")
+)
+
 func makeRouter(rp RequestProcessor, auth AuthCore, logger *log.Logger) http.Handler {
 	router := mux.NewRouter()
 	router.Methods(http.MethodOptions).Handler(http.HandlerFunc(optionHandler))
+	router.Path("/").Methods(http.MethodGet).Handler(http.HandlerFunc(func(w http.ResponseWriter, q *http.Request) {
+		if *startPath == "/" || *startPath == "" {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+		http.Redirect(w, q, *startPath, http.StatusFound)
+	}))
+
 	wwwSubRouter := router.PathPrefix(PathWWW).Subrouter()
 
 	stat := static.New(logger)
