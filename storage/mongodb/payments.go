@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	mid "go.mongodb.org/mongo-driver/x/mongo/driver/uuid"
 
@@ -14,11 +13,8 @@ import (
 )
 
 type (
-	PaymentCollection struct {
-		storage  *mongo.Collection
-		mapError func(error) error
-	}
-	paymentRecord struct {
+	PaymentCollection Collection
+	paymentRecord     struct {
 		ID       mid.UUID       `bson:"_id"`
 		Data     domain.Payment `bson:"data"`
 		Created  time.Time      `bson:"created"`
@@ -27,6 +23,10 @@ type (
 		OwnerCtx mid.UUID       `bson:"ownerCtx"`
 	}
 )
+
+func (p *PaymentCollection) mapError(err error) error {
+	return (*Collection)(p).mapError(err)
+}
 
 func (p *PaymentCollection) Create(ctx context.Context, payment domain.Payment) error {
 	select {
@@ -189,8 +189,10 @@ func paymentFilter(accountID, personID, objectID, targetID *uuid.UUID) interface
 }
 
 func (s *Storage) NewPaymentsCollection(mapError func(error) error) *PaymentCollection {
+	payments := s.mongo.Payments()
 	return &PaymentCollection{
-		storage:  s.mongo.Payments(),
-		mapError: mapError,
+		storage:   payments.Collection,
+		logger:    payments.Logger,
+		mapErrorF: mapError,
 	}
 }

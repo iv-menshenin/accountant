@@ -1,6 +1,7 @@
 package http
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -26,12 +27,12 @@ const (
 	PathWWW  = "/www"
 )
 
-func makeRouter(rp RequestProcessor, auth AuthCore) http.Handler {
+func makeRouter(rp RequestProcessor, auth AuthCore, logger *log.Logger) http.Handler {
 	router := mux.NewRouter()
 	router.Methods(http.MethodOptions).Handler(http.HandlerFunc(optionHandler))
 	wwwSubRouter := router.PathPrefix(PathWWW).Subrouter()
 
-	stat := static.New()
+	stat := static.New(logger)
 	stat.SetupRouting(wwwSubRouter)
 
 	apiSubRouter := router.PathPrefix(PathAPI).Subrouter()

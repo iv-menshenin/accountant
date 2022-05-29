@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	mid "go.mongodb.org/mongo-driver/x/mongo/driver/uuid"
 
@@ -14,11 +13,8 @@ import (
 )
 
 type (
-	BillsCollection struct {
-		storage  *mongo.Collection
-		mapError func(error) error
-	}
-	billRecord struct {
+	BillsCollection Collection
+	billRecord      struct {
 		ID       mid.UUID    `bson:"_id"`
 		Data     domain.Bill `bson:"data"`
 		Created  time.Time   `bson:"created"`
@@ -27,6 +23,10 @@ type (
 		OwnerCtx mid.UUID    `bson:"ownerCtx"`
 	}
 )
+
+func (b *BillsCollection) mapError(err error) error {
+	return (*Collection)(b).mapError(err)
+}
 
 func (b *BillsCollection) Create(ctx context.Context, bill domain.Bill) error {
 	select {
@@ -149,8 +149,10 @@ func (b *BillsCollection) Delete(ctx context.Context, billID uuid.UUID) error {
 }
 
 func (s *Storage) NewBillsCollection(mapError func(error) error) *BillsCollection {
+	bills := s.mongo.Bills()
 	return &BillsCollection{
-		storage:  s.mongo.Bills(),
-		mapError: mapError,
+		storage:   bills.Collection,
+		logger:    bills.Logger,
+		mapErrorF: mapError,
 	}
 }

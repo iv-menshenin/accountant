@@ -27,6 +27,7 @@ func New(config utils.Config, logger *log.Logger) (*Database, error) {
 	if err != nil {
 		return nil, err
 	}
+	logger.Printf("database initialization: %v", optClient.Hosts)
 	db.client, err = mongo.NewClient(optClient)
 	if err != nil {
 		return nil, err
@@ -36,6 +37,9 @@ func New(config utils.Config, logger *log.Logger) (*Database, error) {
 		return nil, err
 	}
 	err = db.client.Ping(context.Background(), nil)
+	if err != nil {
+		logger.Printf("database ping error: %v", err)
+	}
 
 	return &db, err
 }

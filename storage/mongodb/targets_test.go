@@ -20,7 +20,7 @@ func Test_Targets(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
 	defer cancel()
 
-	_, err := testStorage.mongo.Targets().DeleteMany(ctx, bson.D{})
+	_, err := testStorage.mongo.Targets().Collection.DeleteMany(ctx, bson.D{})
 	if err != nil {
 		t.Fatalf("cannot delete targets: %s", err)
 	}

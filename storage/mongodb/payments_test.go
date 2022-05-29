@@ -21,7 +21,7 @@ func Test_Payments(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
 	defer cancel()
 
-	_, err := testStorage.mongo.Payments().DeleteMany(ctx, bson.D{})
+	_, err := testStorage.mongo.Payments().Collection.DeleteMany(ctx, bson.D{})
 	if err != nil {
 		t.Fatalf("cannot delete payments: %s", err)
 	}

@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	mid "go.mongodb.org/mongo-driver/x/mongo/driver/uuid"
 
@@ -15,11 +14,8 @@ import (
 )
 
 type (
-	TargetsCollection struct {
-		storage  *mongo.Collection
-		mapError func(error) error
-	}
-	targetRecord struct {
+	TargetsCollection Collection
+	targetRecord      struct {
 		ID       mid.UUID      `bson:"_id"`
 		Data     domain.Target `bson:"data"`
 		Created  time.Time     `bson:"created"`
@@ -29,6 +25,10 @@ type (
 	}
 )
 
+func (t *TargetsCollection) mapError(err error) error {
+	return (*Collection)(t).mapError(err)
+}
+
 func (t *TargetsCollection) Create(ctx context.Context, target domain.Target) error {
 	select {
 	case <-ctx.Done():
@@ -36,7 +36,7 @@ func (t *TargetsCollection) Create(ctx context.Context, target domain.Target) er
 	default:
 		var record = mapTargetToRecord(ctx, target)
 		_, err := t.storage.InsertOne(ctx, record, options.InsertOne())
-		return t.mapError(err)
+		return (*Collection)(t).mapError(err)
 	}
 }
 
@@ -147,8 +147,10 @@ func targetPeriodFilter(option storage.FindTargetOption) interface{} {
 }
 
 func (s *Storage) NewTargetsCollection(mapError func(error) error) *TargetsCollection {
+	targets := s.mongo.Targets()
 	return &TargetsCollection{
-		storage:  s.mongo.Targets(),
-		mapError: mapError,
+		storage:   targets.Collection,
+		logger:    targets.Logger,
+		mapErrorF: mapError,
 	}
 }

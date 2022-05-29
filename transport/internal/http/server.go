@@ -75,7 +75,7 @@ func (t *Server) ConnState(_ net.Conn, state http.ConnState) {
 }
 
 func New(config utils.Config, logger *log.Logger, rp RequestProcessor, auth AuthCore) *Server {
-	var httpServer = makeServer(config, makeRouter(rp, auth), logger)
+	var httpServer = makeServer(config, makeRouter(rp, auth, logger), logger)
 	var server = Server{
 		server: &httpServer,
 	}

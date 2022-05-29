@@ -38,7 +38,7 @@ func initTestEnv() {
 	if err != nil {
 		panic(err)
 	}
-	_, err = testStorage.mongo.Accounts().DeleteMany(context.Background(), bson.D{})
+	_, err = testStorage.mongo.Accounts().Collection.DeleteMany(context.Background(), bson.D{})
 	if err != nil {
 		panic(err)
 	}

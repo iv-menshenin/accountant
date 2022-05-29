@@ -20,7 +20,7 @@ func Test_Bills(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
 	defer cancel()
 
-	_, err := testStorage.mongo.Bills().DeleteMany(ctx, bson.D{})
+	_, err := testStorage.mongo.Bills().Collection.DeleteMany(ctx, bson.D{})
 	if err != nil {
 		t.Fatalf("cannot delete bills: %s", err)
 	}

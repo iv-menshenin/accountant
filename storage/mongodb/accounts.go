@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	mid "go.mongodb.org/mongo-driver/x/mongo/driver/uuid"
 
@@ -15,11 +14,8 @@ import (
 )
 
 type (
-	AccountsCollection struct {
-		storage  *mongo.Collection
-		mapError func(error) error
-	}
-	accountRecord struct {
+	AccountsCollection Collection
+	accountRecord      struct {
 		ID       mid.UUID           `bson:"_id"`
 		Data     domain.AccountData `bson:"data"`
 		Persons  []domain.Person    `bson:"persons"`
@@ -29,6 +25,10 @@ type (
 		OwnerCtx mid.UUID           `bson:"ownerCtx"`
 	}
 )
+
+func (a *AccountsCollection) mapError(err error) error {
+	return (*Collection)(a).mapError(err)
+}
 
 func (a *AccountsCollection) Create(ctx context.Context, account domain.Account) error {
 	select {
@@ -159,8 +159,10 @@ func mapRecordToAccount(record accountRecord) *domain.Account {
 }
 
 func (s *Storage) NewAccountsCollection(mapError func(error) error) *AccountsCollection {
+	accounts := s.mongo.Accounts()
 	return &AccountsCollection{
-		storage:  s.mongo.Accounts(),
-		mapError: mapError,
+		storage:   accounts.Collection,
+		logger:    accounts.Logger,
+		mapErrorF: mapError,
 	}
 }
