@@ -14,7 +14,7 @@ export default {
 
   ],
   root: SRC_DIR,
-  base: '/',
+  base: '/www/',
   publicDir: PUBLIC_DIR,
   build: {
     outDir: BUILD_DIR,
