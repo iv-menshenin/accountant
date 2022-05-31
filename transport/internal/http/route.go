@@ -30,10 +30,6 @@ const (
 func makeRouter(rp RequestProcessor, auth AuthCore, logger *log.Logger) http.Handler {
 	router := mux.NewRouter()
 	router.Methods(http.MethodOptions).Handler(http.HandlerFunc(optionHandler))
-	wwwSubRouter := router.PathPrefix(PathWWW).Subrouter()
-
-	stat := static.New(logger)
-	stat.SetupRouting(wwwSubRouter)
 
 	apiSubRouter := router.PathPrefix(PathAPI).Subrouter()
 	if auth != nil {
@@ -59,9 +55,12 @@ func makeRouter(rp RequestProcessor, auth AuthCore, logger *log.Logger) http.Han
 	payments.SetupRouting(apiSubRouter)
 
 	authSubRouter := router.PathPrefix(PathAuth).Subrouter()
-
 	authP := ep.NewAuthEP(auth)
 	authP.SetupRouting(authSubRouter)
+
+	wwwSubRouter := router.PathPrefix(PathWWW).Subrouter()
+	stat := static.New(logger)
+	stat.SetupRouting(wwwSubRouter)
 
 	router.Use(DontCareAboutCORS)
 	return router
