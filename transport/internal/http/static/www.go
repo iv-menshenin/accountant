@@ -110,8 +110,17 @@ func (r *Resources) Png(w http.ResponseWriter, q *http.Request) {
 	}
 }
 
+var startPath = flag.String("www-start", os.Getenv("HTML_START"), "http-server homepage")
+
 func (r *Resources) Any(w http.ResponseWriter, q *http.Request) {
 	fileName := q.URL.Path
+	if fileName == "" {
+		if *startPath == "/" || *startPath == "" {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+		http.Redirect(w, q, *startPath, http.StatusFound)
+	}
 	if strings.Contains(fileName, "../") {
 		r.logger.Printf("DETECTED UPLEVEL: %s\n", fileName)
 		w.WriteHeader(http.StatusNotFound)

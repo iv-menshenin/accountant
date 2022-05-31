@@ -2,7 +2,7 @@
 function buildTargetElement(target) {
     return {
         primary: [
-            {tag: "img", class: "circle", src: "/www/png/badge_catalog.png"},
+            {tag: "img", class: "circle", src: "png/badge_catalog.png"},
             {tag: "span", class: ["title", "black-text"], content: target.type},
             {tag: "p", class: ["grey-text"], content: target.comment},
         ],
@@ -20,7 +20,7 @@ function targetHeader(target) {
 function buildAccountElement(account) {
     return {
         primary: [
-            {tag: "img", class: "circle", src: "/www/png/badge_account.png"},
+            {tag: "img", class: "circle", src: "png/badge_account.png"},
             {tag: "span", class: ["title", "black-text", "truncate"], content: "<b>" + account.account + "</b><br />" + getAllPersonNames(account)}, // ФИО
             {tag: "p", class: ["grey-text"], content: getShortAddress(account)},     // информация об участках
         ],
@@ -31,7 +31,7 @@ function buildAccountElement(account) {
 function buildPersonElement(person) {
     return {
         primary: [
-            {tag: "img", class: "circle", src: "/www/png/butterfly.png"},
+            {tag: "img", class: "circle", src: "png/butterfly.png"},
             {tag: "span", class: ["title", "black-text", "truncate"], content: getPersonFullName(person)}, // ФИО
             {tag: "p", class: ["grey-text"], content: (person.phone ? person.phone : "")},     // телефон
         ],
@@ -42,7 +42,7 @@ function buildPersonElement(person) {
 function buildObjectElement(object) {
     return {
         primary: [
-            {tag: "img", class: "circle", src: "/www/png/badge_object.png"},
+            {tag: "img", class: "circle", src: "png/badge_object.png"},
             {tag: "span", class: ["title", "black-text", "truncate"], content: getObjectShortAddress(object)},
             {tag: "p", class: ["grey-text"], content: (object.village ? object.village : "") + " " + (object.area ? "[" + object.area + " m2]" : "?")},
         ],
@@ -53,7 +53,7 @@ function buildObjectElement(object) {
 function buildBillElement(bill) {
     return {
         primary: [
-            {tag: "img", class: "circle", src: "/www/png/bills.png"},
+            {tag: "img", class: "circle", src: "png/bills.png"},
             {tag: "span", class: ["title", "black-text", "truncate"], content: bill.bill + " руб."},
             {tag: "p", class: ["grey-text"], content: bill.target.type + " " + (new Date(bill.formed).toLocaleDateString())},
         ],
@@ -64,7 +64,7 @@ function buildBillElement(bill) {
 function buildPaymentElement(payment) {
     return {
         primary: [
-            {tag: "img", class: "circle", src: "/www/png/money.png"},
+            {tag: "img", class: "circle", src: "png/money.png"},
             {tag: "span", class: ["title", "black-text", "truncate"], content: payment.payment + " руб. (" + payment.target.type + ")"},
             {tag: "p", class: ["grey-text", "truncate"], content: (new Date(payment.payment_date).toLocaleDateString() + " " + payment.receipt)},
         ],
