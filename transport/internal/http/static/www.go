@@ -114,12 +114,13 @@ var startPath = flag.String("www-start", os.Getenv("HTML_START"), "http-server h
 
 func (r *Resources) Any(w http.ResponseWriter, q *http.Request) {
 	fileName := q.URL.Path
-	if fileName == "" {
+	if fileName == "" || fileName == "/" {
 		if *startPath == "/" || *startPath == "" {
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
 		http.Redirect(w, q, *startPath, http.StatusFound)
+		return
 	}
 	if strings.Contains(fileName, "../") {
 		r.logger.Printf("DETECTED UPLEVEL: %s\n", fileName)
