@@ -1,0 +1,355 @@
+<template>
+  <div class="popup">
+    <div class="view">
+      <div class="page">
+        <div class="navbar">
+          <div class="navbar-bg"></div>
+          <div class="navbar-inner">
+            <div class="title">
+              ${$f7route.name === 'new_account' ?
+                'Новый лицевой счет' :
+                $h`Лицевой счет №<span>${accountData.value.account ?? '0000'}</span>`
+              }
+            </div>
+            <div class="right">
+              <a class="link popup-close">
+                <i class="icon f7-icons">multiply</i>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <form class="page-content" @submit=${saveAccountData}>
+          <div class="block-title">Данные лицевого счета</div>
+          <div class="list">
+            <ul>
+              <li>
+                <div class="item-content item-input">
+                  <div class="item-inner">
+                    <div class="item-title item-label">Номер лицевого счета</div>
+                    <div class="item-input-wrap ${loading.value && 'skeleton-effect-wave'}">
+                      <input type="text" name="account" value=${accountData.value.account} placeholder="0000" autocomplete="off" required validate disabled=${saving.value} @invalid=${() => $el.value.find('.page-content').scrollTop(0, 300)} />
+                    </div>
+                  </div>
+                </div>
+              </li>
+              <li>
+                <div class="item-content item-input">
+                  <div class="item-inner">
+                    <div class="item-title item-label">Кадастровый номер</div>
+                    <div class="item-input-wrap ${loading.value && 'skeleton-effect-wave'}">
+                      <input type="text" name="cad_number" value=${accountData.value.cad_number} placeholder="32:54:000000:00" autocomplete="off" required validate disabled=${saving.value} @invalid=${() => $el.value.find('.page-content').scrollTop(0, 300)} />
+                    </div>
+                  </div>
+                </div>
+              </li>
+              <li>
+                <div class="item-content item-input">
+                  <div class="item-inner">
+                    <div class="item-title item-label">Номер договора</div>
+                    <div class="item-input-wrap ${loading.value && 'skeleton-effect-wave'}">
+                      <input type="text" name="agreement" value=${accountData.value.agreement} placeholder="12345" autocomplete="off" disabled=${saving.value} />
+                    </div>
+                  </div>
+                </div>
+              </li>
+              <li>
+                <div class="item-content item-input">
+                  <div class="item-inner">
+                    <div class="item-title item-label">Дата договора</div>
+                    <div class="item-input-wrap ${loading.value && 'skeleton-effect-wave'}">
+                      <input type="text" name="agreement_date" placeholder="03.02.2020" disabled=${saving.value} />
+                    </div>
+                  </div>
+                </div>
+              </li>
+              <li class="item-content item-input">
+                <div class="item-inner">
+                  <div class="item-title item-label">Вид собственности</div>
+                  <div class="item-input-wrap ${loading.value && 'skeleton-effect-wave'}">
+                    <input type="text" name="purchase_kind" value=${accountData.value.purchase_kind} placeholder="Введите значение" autocomplete="off" required validate disabled=${saving.value} />
+                  </div>
+                </div>
+              </li>
+              <li>
+                <div class="item-content item-input">
+                  <div class="item-inner">
+                    <div class="item-title item-label">Дата приобретения</div>
+                    <div class="item-input-wrap ${loading.value && 'skeleton-effect-wave'}">
+                      <input type="text" name="purchase_date" placeholder="03.02.2020" autocomplete="off" required validate disabled=${saving.value} />
+                    </div>
+                  </div>
+                </div>
+              </li>
+              <li class="item-content item-input">
+                <div class="item-inner">
+                  <div class="item-title item-label">Комментарий</div>
+                  <div class="item-input-wrap ${loading.value && 'skeleton-effect-wave'}">
+                    <textarea class="resizable" name="comment" value=${accountData.value.comment} placeholder="Дополнительная информация" disabled=${saving.value}></textarea>
+                  </div>
+                </div>
+              </li>
+            </ul>
+          </div>
+
+          <div class="block-title display-flex justify-content-space-between align-items-center">
+            <span>Владельцы</span>
+            <div class="button button-small display-inline-block">
+              <i class="icon f7-icons" style="font-size: 1em">plus</i>
+              <span>Добавить</span>
+            </div>
+          </div>
+          ${accountData.value.persons && accountData.value.persons.length > 0 ? $h`
+            <div class="list media-list">
+              <ul>
+                ${accountData.value.persons.map((person) => $h`
+                  <li class="item-content">
+                    <div class="item-media">
+                      <div class="item-icon bg-color-primary">
+                        <i class="icon f7-icons">person</i>
+                      </div>
+                    </div>
+                    <div class="item-inner">
+                      <div class="item-title-row">
+                        <div class="item-title">
+                          <span>${person.surname} ${person.name} ${person.pat_name}</span>
+                          ${person.is_member && $h`
+                            <i class="icon f7-icons color-blue margin-left-half tooltip-init" style="font-size: 1em" data-tooltip="Член садового товарищества">checkmark_seal_fill</i>
+                          `}
+                        </div>
+                        <div class="item-after">
+                          <a href="#" class="link color-red">
+                            <i class="icon f7-icons">trash</i>
+                          </a>
+                        </div>
+                      </div>
+                      <div class="item-subtitle">${person.phone}</div>
+                    </div>
+                  </li>
+                `)}
+              </ul>
+            </div>
+          ` : $h`
+            <div class="block display-flex flex-direction-column align-items-center">
+              Нет владельцев
+            </div>
+          `}
+
+          <div class="block-title display-flex justify-content-space-between align-items-center">
+            <span>Участки</span>
+            <div class="button button-small display-inline-block">
+              <i class="icon f7-icons" style="font-size: 1em">plus</i>
+              <span>Добавить</span>
+            </div>
+          </div>
+          ${accountData.value.objects && accountData.value.objects.length > 0 ? $h`
+            <div class="list media-list">
+              <ul>
+                ${accountData.value.objects.map((object) => $h`
+                  <li class="item-content">
+                    <div class="item-media">
+                      <div class="item-icon bg-color-primary">
+                        <i class="icon f7-icons">skew</i>
+                      </div>
+                    </div>
+                    <div class="item-inner">
+                      <div class="item-title-row">
+                        <div class="item-title">
+                          <span>${object.street}, ${object.number}</span>
+                        </div>
+                        <div class="item-after">
+                          <a href="#" class="link color-red">
+                            <i class="icon f7-icons">trash</i>
+                          </a>
+                        </div>
+                      </div>
+                      ${object.area && $h`
+                        <div class="item-subtitle">
+                          ${object.area} м²
+                        </div>
+                      `}
+                    </div>
+                  </li>
+                `)}
+              </ul>
+            </div>
+          ` : $h`
+            <div class="block display-flex flex-direction-column align-items-center">
+              Нет участков
+            </div>
+          `}
+
+          <div class="block">
+            <button type="submit" class="button button-fill button-large button-preloader ${saving.value && 'button-loading disabled'}">
+              <div class="preloader">
+                <span class="preloader-inner">
+                  <span class="preloader-inner-circle"></span>
+                </span>
+              </div>
+              <span>Сохранить</span>
+            </button>
+
+            ${$f7route.name === 'account' && $h`
+              <button type="button" class="button button-large color-red  margin-top" @click=${deleteAccount}>Удалить</button>
+            `}
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+export default (props, { $f7router, $f7route, $on, $f7, $ref, $el }) => {
+  const purchaseKindList = ['договор к/п', 'наследство', 'постановление', 'дарение'];
+  const accountData = $ref({});
+  const loading = $ref(false);
+  const saving = $ref(false);
+  let agreementDateCalendar;
+  let purchaseDateCalendar;
+
+  $on('popupInit', () => {
+    initForm();
+
+    if (props.id) {
+      getAccountData();
+    }
+  });
+
+  function initForm() {
+    agreementDateCalendar = $f7.calendar.create({
+      inputEl: 'input[name="agreement_date"]',
+      closeOnSelect: true,
+      inputReadOnly: false,
+    });
+    purchaseDateCalendar = $f7.calendar.create({
+      inputEl: 'input[name="purchase_date"]',
+      closeOnSelect: true,
+      inputReadOnly: false,
+    });
+
+    $f7.autocomplete.create({
+      inputEl: 'input[name="purchase_kind"]',
+      openIn: 'dropdown',
+      source: (query, render) => {
+        let results = [];
+
+        for (let i = 0; i < purchaseKindList.length; i++) {
+          if (purchaseKindList[i].toLowerCase().indexOf(query.toLowerCase()) >= 0) {
+            results.push(purchaseKindList[i]);
+          }
+        }
+
+        render(results);
+      },
+    });
+  }
+
+  async function getAccountData() {
+    console.log('getAccountData');
+    loading.value = true;
+
+    $f7.request.json(`/api/accounts/${props.id}`, (data, status, xhr) => {
+      loading.value = false;
+      accountData.value = data.data;
+
+      if (Boolean(accountData.value.agreement_date)) {
+        agreementDateCalendar.setValue([new Date(accountData.value.agreement_date)]);
+      }
+      if (Boolean(accountData.value.purchase_date)) {
+        purchaseDateCalendar.setValue([new Date(accountData.value.purchase_date)]);
+      }
+    }, (xhr, status, message) => {
+      if (status !== 401) {
+        loading.value = false;
+      }
+    });
+  }
+
+  async function saveAccountData(event) {
+    event.preventDefault();
+
+    saving.value = true;
+    const data = $f7.form.convertToData(event.target);
+
+    data.agreement_date = Boolean(data.agreement_date) ? agreementDateCalendar.value[0].toISOString() : '';
+    data.purchase_date = Boolean(data.purchase_date) ? purchaseDateCalendar.value[0].toISOString() : '';
+
+    for (let property in data) {
+      if (data.hasOwnProperty(property)) {
+        if (data[property] ===  '') {
+          delete data[property];
+        }
+      }
+    }
+
+    console.log($f7route.name);
+    $f7.request({
+      method: $f7route.name === 'account' ? 'PUT' : 'POST',
+      url: '/api/accounts' + ($f7route.name === 'account' ? `/${accountData.value.account_id}` : ''),
+      data,
+      contentType: 'application/json',
+      dataType: 'json',
+      success: (data, status, xhr) => {
+        saving.value = false;
+        accountData.value = data.data;
+
+        if (Boolean(accountData.value.agreement_date)) {
+          agreementDateCalendar.setValue([new Date(accountData.value.agreement_date)]);
+        }
+        if (Boolean(accountData.value.purchase_date)) {
+          purchaseDateCalendar.setValue([new Date(accountData.value.purchase_date)]);
+        }
+
+        if ($f7route.name === 'account') {
+          // updated
+          $f7.emit('account:update', accountData.value);
+        } else {
+          // created
+          $f7router.updateCurrentUrl(`/accounts/${accountData.value.account_id}/`);
+          $f7route.name = 'account';
+          $f7.emit('account:create', accountData.value);
+        }
+      },
+      error: (xhr, status, message) => {
+        if (status !== 401) saving.value = false;
+      },
+    });
+  }
+
+  async function deleteAccount() {
+    $f7.dialog.create({
+      title: `Удалить Лицевой счет${Boolean(accountData.value.account) ? ' №' + accountData.value.account : ''}?`,
+      text: 'Это действие нельзя будет отменить',
+      buttons: [
+        {
+          text: 'Отмена',
+        },
+        {
+          text: 'Удалить',
+          color: 'red',
+          onClick: () => {
+            $f7.preloader.show();
+
+            $f7.request({
+              method: 'DELETE',
+              url: `/api/accounts/${accountData.value.account_id}`,
+              success: (data, status, xhr) => {
+                $f7.emit('account:delete', accountData.value.account_id);
+                $f7.preloader.hide();
+                $f7.popup.close($el.value, true);
+              },
+              error: (xhr, status, message) => {
+                if (status !== 401) $f7.preloader.hide();
+              },
+            });
+          },
+        },
+      ],
+      destroyOnClose: true,
+    }).open();
+  }
+
+  return $render;
+};
+</script>

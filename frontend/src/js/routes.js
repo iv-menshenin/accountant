@@ -16,6 +16,30 @@ export default [
     options: {
       auth: true,
     },
+    routes: [
+      {
+        path: 'new/',
+        name: 'new_account',
+        popup: {
+          asyncComponent: () => import('@/pages/account.f7'),
+        },
+        beforeEnter: checkAuth,
+        options: {
+          auth: true,
+        },
+      },
+      {
+        path: ':id/',
+        name: 'account',
+        popup: {
+          asyncComponent: () => import('@/pages/account.f7'),
+        },
+        beforeEnter: checkAuth,
+        options: {
+          auth: true,
+        },
+      },
+    ],
   },
   {
     path: '/persons/',

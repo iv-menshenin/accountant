@@ -26,6 +26,8 @@ import Tooltip from 'framework7/components/tooltip';
 import Typography from 'framework7/components/typography';
 import VirtualList from 'framework7/components/virtual-list';
 import Fab from 'framework7/components/fab';
+import Autocomplete from 'framework7/components/autocomplete';
+import Picker from 'framework7/components/picker';
 
 Framework7.use([
   Calendar,
@@ -54,6 +56,8 @@ Framework7.use([
   Typography,
   VirtualList,
   Fab,
+  Autocomplete,
+  Picker,
 ]);
 
 export default Framework7;
