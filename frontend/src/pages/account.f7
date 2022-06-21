@@ -58,7 +58,7 @@
                   <div class="item-inner">
                     <div class="item-title item-label">Дата договора</div>
                     <div class="item-input-wrap ${loading.value && 'skeleton-effect-wave'}">
-                      <input type="text" name="agreement_date" placeholder="03.02.2020" disabled=${saving.value} />
+                      <input type="text" name="agreement_date" placeholder="03.02.2020" disabled=${saving.value} readonly />
                     </div>
                   </div>
                 </div>
@@ -76,7 +76,7 @@
                   <div class="item-inner">
                     <div class="item-title item-label">Дата приобретения</div>
                     <div class="item-input-wrap ${loading.value && 'skeleton-effect-wave'}">
-                      <input type="text" name="purchase_date" placeholder="03.02.2020" autocomplete="off" required validate disabled=${saving.value} />
+                      <input type="text" name="purchase_date" placeholder="03.02.2020" autocomplete="off" required validate disabled=${saving.value} readonly />
                     </div>
                   </div>
                 </div>
@@ -221,11 +221,13 @@ export default (props, { $f7router, $f7route, $on, $f7, $ref, $el }) => {
       inputEl: 'input[name="agreement_date"]',
       closeOnSelect: true,
       inputReadOnly: false,
+      openIn: 'popover',
     });
     purchaseDateCalendar = $f7.calendar.create({
       inputEl: 'input[name="purchase_date"]',
       closeOnSelect: true,
       inputReadOnly: false,
+      openIn: 'popover',
     });
 
     $f7.autocomplete.create({
