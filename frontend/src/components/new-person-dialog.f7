@@ -1,0 +1,144 @@
+<template>
+  <div class="new-person-dialog">
+    <a href="#" class="button button-small display-inline-block" @click=${() => dialog.open()}>
+      <i class="icon f7-icons" style="font-size: 1em">plus</i>
+      <span>Добавить</span>
+    </a>
+
+    <form class="dialog dialog-buttons-2" @submit=${submit}>
+      <div class="dialog-inner">
+        <div class="dialog-title">Добавить владельца</div>
+        <div class="new-person-dialog-input-list list no-margin-bottom margin-top no-hairlines">
+          <ul>
+            <li>
+              <div class="item-content item-input">
+                <div class="item-inner">
+                  <div class="item-title item-label">Фамилия</div>
+                  <div class="item-input-wrap">
+                    <input type="text" name="surname" placeholder="Иванов" autocomplete="off" required validate />
+                  </div>
+                </div>
+              </div>
+            </li>
+            <li>
+              <div class="item-content item-input">
+                <div class="item-inner">
+                  <div class="item-title item-label">Имя</div>
+                  <div class="item-input-wrap">
+                    <input type="text" name="name" placeholder="Иван" autocomplete="off" required validate />
+                  </div>
+                </div>
+              </div>
+            </li>
+            <li>
+              <div class="item-content item-input">
+                <div class="item-inner">
+                  <div class="item-title item-label">Отчество</div>
+                  <div class="item-input-wrap">
+                    <input type="text" name="pat_name" placeholder="Иванович" autocomplete="off" />
+                  </div>
+                </div>
+              </div>
+            </li>
+            <li>
+              <div class="item-content item-input">
+                <div class="item-inner">
+                  <div class="item-title item-label">Номер телефона</div>
+                  <div class="item-input-wrap">
+                    <input type="tel" name="phone" placeholder="+7 (999) 555-00-00" autocomplete="off" validate pattern="^[0-9-+\s()]*$" />
+                  </div>
+                </div>
+              </div>
+            </li>
+            <li>
+              <div class="item-content item-input">
+                <div class="item-inner">
+                  <div class="item-title item-label">Адрес электронной почты</div>
+                  <div class="item-input-wrap">
+                    <input type="email" name="email" placeholder="ivanov@example.com" autocomplete="off" validate />
+                  </div>
+                </div>
+              </div>
+            </li>
+            <li>
+              <label class="item-checkbox item-content">
+                <input type="checkbox" name="is_member" />
+                <i class="icon icon-checkbox"></i>
+                <div class="item-inner">
+                  <div class="item-title">Член садового товарищества</div>
+                </div>
+              </label>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="dialog-buttons">
+        <button type="reset" class="dialog-button dialog-second-button" style="width: auto;">Отмена</button>
+        <button type="submit" class="dialog-button" style="width: auto;">Добавить</button>
+      </div>
+    </form>
+  </div>
+</template>
+
+<style>
+  .new-person-dialog .dialog {
+    display: none;
+  }
+  .new-person-dialog-input-list {
+    --f7-list-item-padding-horizontal: 0;
+  }
+</style>
+
+<script>
+import PhoneNumber from 'awesome-phonenumber';
+
+export default (props, { $f7, $el, $onMounted, $onBeforeUnmount, $emit }) => {
+  let dialog;
+
+  $onMounted(() => {
+    dialog = $f7.dialog.create({
+      el: $el.value.find('.dialog'),
+      title: 'Добавить владельца',
+      buttons: [
+        {
+          text: 'Отмена',
+          cssClass: 'dialog-second-button',
+        },
+        {
+          text: 'Добавить',
+          close: false,
+        },
+      ],
+      on: {
+        opened: (dialog) => dialog.$el.find('input')[0].focus(),
+      },
+    });
+
+    $el.value.find('.dialog').remove();
+  });
+
+  function submit(event) {
+    event.preventDefault();
+
+    const data = $f7.form.convertToData(event.target);
+    data.is_member = data.is_member.length > 0;
+    data.phone = PhoneNumber(data.phone).getNumber('international') ?? data.phone;
+
+    for (let property in data) {
+      if (data.hasOwnProperty(property)) {
+        if (data[property] ===  '') {
+          delete data[property];
+        }
+      }
+    }
+
+    $emit('added', data);
+    event.target.reset();
+    dialog.close();
+  }
+
+  $onBeforeUnmount(() => dialog.destroy());
+
+  return $render;
+}
+</script>
