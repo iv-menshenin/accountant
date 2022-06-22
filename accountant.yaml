@@ -859,6 +859,7 @@ components:
           type: string
         email:
           type: string
+      required: [ name, surname, is_member ]
 
     Object:
       description: "Object information"
