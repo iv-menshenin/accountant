@@ -2,7 +2,7 @@
 <template>
   <div id="app">
 
-    <div id="menu-panel" class="panel panel-left" data-visible-breakpoint="768">
+    <div id="menu-panel" class="panel panel-left panel-push">
       <div class="navbar">
         <div class="navbar-bg"></div>
         <div class="navbar-inner sliding">
