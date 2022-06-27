@@ -134,10 +134,7 @@
 
           <div class="block-title display-flex justify-content-space-between align-items-center">
             <span>Участки</span>
-            <div class="button button-small display-inline-block">
-              <i class="icon f7-icons" style="font-size: 1em">plus</i>
-              <span>Добавить</span>
-            </div>
+            <${NewObjectDialog} @added=${addObject}></${NewObjectDialog}>
           </div>
           ${accountData.value.objects && accountData.value.objects.length > 0 ? $h`
             <div class="list media-list">
@@ -155,7 +152,7 @@
                           <span>${object.street}, ${object.number}</span>
                         </div>
                         <div class="item-after">
-                          <a href="#" class="link color-red">
+                          <a href="#" class="link color-red" @click=${() => deleteObject(object)}>
                             <i class="icon f7-icons">trash</i>
                           </a>
                         </div>
@@ -198,6 +195,7 @@
 
 <script>
 import NewPersonDialog from '@/components/new-person-dialog.f7';
+import NewObjectDialog from '@/components/new-object-dialog.f7';
 
 export default (props, { $f7router, $f7route, $on, $f7, $ref, $el, $update }) => {
   const purchaseKindList = ['договор к/п', 'наследство', 'постановление', 'дарение'];
@@ -208,6 +206,8 @@ export default (props, { $f7router, $f7route, $on, $f7, $ref, $el, $update }) =>
   let purchaseDateCalendar;
   let addedPersons = [];
   let deletedPersons = [];
+  let addedObjects = [];
+  let deletedObjects = [];
 
   $on('popupInit', async () => {
     initForm();
@@ -311,6 +311,7 @@ export default (props, { $f7router, $f7route, $on, $f7, $ref, $el, $update }) =>
       });
 
       await savePersons();
+      await saveObjects();
       await getAccountData();
 
       if ($f7route.name === 'account') {
@@ -445,6 +446,87 @@ export default (props, { $f7router, $f7route, $on, $f7, $ref, $el, $update }) =>
     return Promise.all([
       addPersons(),
       deletePersons(),
+    ]);
+  }
+
+  function addObject({ detail }) {
+    addedObjects.push(detail);
+    accountData.value.objects ?
+      accountData.value.objects.push(detail) :
+      accountData.value.objects = [detail];
+    $update();
+
+    console.log('addedObjects', addedObjects);
+  }
+
+  function deleteObject(object) {
+    $f7.dialog.create({
+      title: `Удалить участок?`,
+      text: `Участок ${object.street}, ${object.number} будет удален${$f7route.name === 'new_account' ? '' : ' из счета №' + accountData.value.account}`,
+      buttons: [
+        {
+          text: 'Отмена',
+          cssClass: 'dialog-second-button',
+        },
+        {
+          text: 'Удалить',
+          color: 'red',
+          onClick: () => {
+            if (object.object_id) {
+              deletedObjects.push(object.object_id);
+            } else {
+              const index = addedObjects.findIndex((o) => o.street === object.street && o.number == object.number);
+              addedObjects.splice(index, 1);
+            }
+
+            accountData.value.objects.splice(accountData.value.objects.indexOf(object), 1);
+            $update();
+
+            console.log('deletedObjects', deletedObjects);
+          },
+        },
+      ],
+      destroyOnClose: true,
+    }).open();
+  }
+
+  function saveObjects() {
+    function addObjects() {
+      return Promise.all(addedObjects.map((object) => new Promise((resolve, reject) => {
+        $f7.request({
+          method: 'POST',
+          url: `/api/accounts/${accountData.value.account_id}/objects`,
+          data: object,
+          contentType: 'application/json',
+          dataType: 'json',
+          success: resolve,
+          error: (xhr, status, message) => {
+            if (status !== 401) {
+              reject(`${status}: ${message}`);
+            }
+          },
+        });
+      })));
+    }
+
+    function deleteObjects() {
+      return Promise.all(deletedObjects.map((objectId) => new Promise((resolve, reject) => {
+        $f7.request({
+          method: 'DELETE',
+          url: `/api/accounts/${accountData.value.account_id}/objects/${objectId}`,
+          success: resolve,
+          error: (xhr, status, message) => {
+            if (status !== 401) {
+              reject(`${status}: ${message}`);
+            }
+          },
+        });
+      })));
+    }
+
+    return Promise.all([
+      addObjects(),
+      deleteObjects(),
     ]);
   }
 

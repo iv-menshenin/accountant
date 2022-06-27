@@ -73,7 +73,6 @@ export default (props, { $f7, $ref, $on, $el }) => {
       items = data.data;
       virtualList.appendItems(items);
       loading.value = false;
-      console.log(items);
     }, (xhr, status, message) => {
       if (status !== 401) loading.value = false;
     });

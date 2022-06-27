@@ -1,0 +1,138 @@
+<template>
+  <div class="new-object-dialog">
+    <a href="#" class="button button-small display-inline-block" @click=${() => dialog.open()}>
+      <i class="icon f7-icons" style="font-size: 1em">plus</i>
+      <span>Добавить</span>
+    </a>
+
+    <form class="dialog dialog-buttons-2" @submit=${submit}>
+      <div class="dialog-inner">
+        <div class="dialog-title">Добавить участок</div>
+        <div class="new-object-dialog-input-list list no-margin-bottom margin-top no-hairlines">
+          <ul>
+            <li>
+              <div class="item-content item-input">
+                <div class="item-inner">
+                  <div class="item-title item-label">Индекс</div>
+                  <div class="item-input-wrap">
+                    <input type="text" inputmode="numeric" name="postal_code" placeholder="347900" autocomplete="off" validate pattern="^[0-9]{6}$" />
+                  </div>
+                </div>
+              </div>
+            </li>
+            <li>
+              <div class="item-content item-input">
+                <div class="item-inner">
+                  <div class="item-title item-label">Улица</div>
+                  <div class="item-input-wrap">
+                    <input type="text" name="street" placeholder="Лесная" autocomplete="off" />
+                  </div>
+                </div>
+              </div>
+            </li>
+            <li>
+              <div class="item-content item-input">
+                <div class="item-inner">
+                  <div class="item-title item-label">Номер дома</div>
+                  <div class="item-input-wrap">
+                    <input type="text" inputmode="numeric" name="number" placeholder="1" autocomplete="off" validate required pattern="^[0-9]{1,}$" />
+                  </div>
+                </div>
+              </div>
+            </li>
+            <li>
+              <div class="item-content item-input">
+                <div class="item-inner">
+                  <div class="item-title item-label">Площадь, м²</div>
+                  <div class="item-input-wrap">
+                    <input type="number" name="area" placeholder="123" autocomplete="off" />
+                  </div>
+                </div>
+              </div>
+            </li>
+            <li>
+              <div class="item-content item-input">
+                <div class="item-inner">
+                  <div class="item-title item-label">Кадастровый номер</div>
+                  <div class="item-input-wrap">
+                    <input type="text" name="cad_number" placeholder="32:54:000000:00" autocomplete="off" />
+                  </div>
+                </div>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="dialog-buttons">
+        <button type="reset" class="dialog-button dialog-second-button" style="width: auto;">Отмена</button>
+        <button type="submit" class="dialog-button" style="width: auto;">Добавить</button>
+      </div>
+    </form>
+  </div>
+</template>
+
+<style>
+  .new-object-dialog .dialog {
+    display: none;
+  }
+  .new-object-dialog-input-list {
+    --f7-list-item-padding-horizontal: 0;
+  }
+</style>
+
+<script>
+import PhoneNumber from 'awesome-phonenumber';
+
+export default (props, { $f7, $el, $onMounted, $onBeforeUnmount, $emit }) => {
+  let dialog;
+
+  $onMounted(() => {
+    dialog = $f7.dialog.create({
+      el: $el.value.find('.dialog'),
+      title: 'Добавить участок',
+      buttons: [
+        {
+          text: 'Отмена',
+          cssClass: 'dialog-second-button',
+        },
+        {
+          text: 'Добавить',
+          close: false,
+        },
+      ],
+      on: {
+        opened: (dialog) => dialog.$el.find('input')[0].focus(),
+      },
+    });
+
+    $el.value.find('.dialog').remove();
+  });
+
+  function submit(event) {
+    event.preventDefault();
+
+    const data = $f7.form.convertToData(event.target);
+    data.number = Number(data.number);
+
+    if (data.area) {
+      data.area = Number(data.area);
+    }
+
+    for (let property in data) {
+      if (data.hasOwnProperty(property)) {
+        if (data[property] ===  '') {
+          delete data[property];
+        }
+      }
+    }
+
+    $emit('added', data);
+    event.target.reset();
+    dialog.close();
+  }
+
+  $onBeforeUnmount(() => dialog.destroy());
+
+  return $render;
+}
+</script>
