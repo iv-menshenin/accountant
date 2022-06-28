@@ -11,6 +11,7 @@ const (
 	paymentsCollectionName = "Payments"
 	targetsCollectionName  = "Targets"
 	billsCollectionName    = "Bills"
+	usersCollectionName    = "Users"
 )
 
 type (
@@ -44,6 +45,13 @@ func (d *Database) Targets() Collection {
 func (d *Database) Bills() Collection {
 	return Collection{
 		Collection: d.client.Database(d.dbName).Collection(billsCollectionName),
+		Logger:     d.logger,
+	}
+}
+
+func (d *Database) Users() Collection {
+	return Collection{
+		Collection: d.client.Database(d.dbName).Collection(usersCollectionName),
 		Logger:     d.logger,
 	}
 }
