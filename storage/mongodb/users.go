@@ -12,11 +12,6 @@ import (
 	mid "go.mongodb.org/mongo-driver/x/mongo/driver/uuid"
 )
 
-/*
-GetUserInfo(ctx context.Context, user, pass string) (UserInfo, error)
-GetUserInfoByRefresh(uuid.UUID) (UserInfo, error)
-*/
-
 type (
 	UsersCollection Collection
 	userRecord      struct {
@@ -62,6 +57,21 @@ func (c *UsersCollection) FindByLogin(ctx context.Context, login string) (domain
 			"identity.login": login,
 			"deleted":        nil,
 		},
+		options.FindOne(),
+	)
+	var record userRecord
+	err := sr.Decode(&record)
+	if err != nil {
+		return domain.UserInfo{}, c.mapError(err)
+	}
+	user := mapDbToUserInfo(record)
+	return user, nil
+}
+
+func (c *UsersCollection) Lookup(ctx context.Context, ID uuid.UUID) (domain.UserInfo, error) {
+	sr := c.storage.FindOne(
+		ctx,
+		bson.M{"_id": mid.UUID(ID)},
 		options.FindOne(),
 	)
 	var record userRecord

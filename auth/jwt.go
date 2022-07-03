@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"context"
 	"crypto/rand"
 	"encoding/base64"
 	"errors"
@@ -8,13 +9,19 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 
+	"github.com/iv-menshenin/accountant/model/domain"
 	"github.com/iv-menshenin/accountant/model/generic"
 	"github.com/iv-menshenin/accountant/utils/uuid"
 )
 
 type (
 	JWTCore struct {
-		private []byte
+		private    []byte
+		repository Repository
+	}
+	Repository interface {
+		FindByLogin(ctx context.Context, login string) (domain.UserInfo, error)
+		Lookup(ctx context.Context, ID uuid.UUID) (domain.UserInfo, error)
 	}
 	Claims struct {
 		UserID     uuid.UUID `json:"user_id"`
@@ -38,9 +45,11 @@ func (c Claims) Valid() error {
 	return nil
 }
 
-func New(private string) (*JWTCore, error) {
+func New(repository Repository, private string) (*JWTCore, error) {
 	var err error
-	var j JWTCore
+	var j = JWTCore{
+		repository: repository,
+	}
 	if private != "" {
 		j.private, err = base64.URLEncoding.DecodeString(private)
 	} else {

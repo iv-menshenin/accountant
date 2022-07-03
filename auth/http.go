@@ -2,11 +2,12 @@ package auth
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"strings"
 
+	"github.com/iv-menshenin/accountant/model/domain"
 	"github.com/iv-menshenin/accountant/model/generic"
-	"github.com/iv-menshenin/accountant/utils/uuid"
 )
 
 type contextAuth struct{}
@@ -37,14 +38,12 @@ func (c *JWTCore) Middleware() func(h http.Handler) http.Handler {
 	}
 }
 
-func (c *JWTCore) Auth(context.Context, generic.AuthQuery) (generic.AuthData, error) {
-	var user = generic.User{
-		UUID:     uuid.NilUUID(),
-		UserName: "test",
-		Context:  []string{"test", "admin"},
+func (c *JWTCore) Auth(ctx context.Context, q generic.AuthQuery) (generic.AuthData, error) {
+	userInfo, err := c.repository.FindByLogin(ctx, q.Login)
+	if err != nil {
+		return generic.AuthData{}, err
 	}
-
-	// dummy
+	user := mapUserInfoToParticipant(userInfo)
 
 	token, err := c.SignJWT(user)
 	if err != nil {
@@ -63,18 +62,20 @@ func (c *JWTCore) Auth(context.Context, generic.AuthQuery) (generic.AuthData, er
 }
 
 func (c *JWTCore) Refresh(ctx context.Context, r generic.RefreshTokenQuery) (generic.AuthData, error) {
-	var user = generic.User{
-		UUID:     uuid.NilUUID(),
-		UserName: "test",
-		Context:  []string{"test", "admin"},
-	}
-
-	// dummy
-
-	_, err := c.ParseRefreshToken(r.Token)
+	info, err := c.ParseRefreshToken(r.Token)
 	if err != nil {
 		return generic.AuthData{}, err
 	}
+	if err := info.Claims.Valid(); err != nil {
+		return generic.AuthData{}, err
+	}
+
+	userInfo, err := c.repository.Lookup(ctx, info.Claims.UserID)
+	if err != nil {
+		return generic.AuthData{}, err
+	}
+	user := mapUserInfoToParticipant(userInfo)
+
 	token, err := c.SignJWT(user)
 	if err != nil {
 		return generic.AuthData{}, err
@@ -89,4 +90,16 @@ func (c *JWTCore) Refresh(ctx context.Context, r generic.RefreshTokenQuery) (gen
 		Context: user.Context,
 		Refresh: refresh,
 	}, nil
+}
+
+func mapUserInfoToParticipant(i domain.UserInfo) generic.User {
+	var u = generic.User{
+		UUID:     i.ID,
+		UserName: i.Name,
+		Context:  make([]string, len(i.Permissions)),
+	}
+	for _, perm := range i.Permissions {
+		u.Context = append(u.Context, fmt.Sprintf("permission:%s", perm))
+	}
+	return u
 }

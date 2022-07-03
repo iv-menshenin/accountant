@@ -31,10 +31,6 @@ func main() {
 }
 
 func mainFunc(ctx context.Context, halt <-chan struct{}) (err error) {
-	authCore, err := auth.New("")
-	if err != nil {
-		return err
-	}
 	var logWriter = log.Default()
 
 	mongoStorage, err := mongodb.NewStorage(config.New("db"), logWriter)
@@ -52,6 +48,8 @@ func mainFunc(ctx context.Context, halt <-chan struct{}) (err error) {
 		billsCollection    = mongoStorage.NewBillsCollection(storage.MapMongodbErrors)
 		paymentsCollection = mongoStorage.NewPaymentsCollection(storage.MapMongodbErrors)
 
+		usersCollection = mongoStorage.NewUsersCollection(storage.MapMongodbErrors)
+
 		appHnd = business.New(
 			appLogger,
 			accountCollection,
@@ -61,8 +59,13 @@ func mainFunc(ctx context.Context, halt <-chan struct{}) (err error) {
 			billsCollection,
 			paymentsCollection,
 		)
-		queryTransport = transport.NewHTTPServer(config.New("http"), logWriter, appHnd, authCore)
 	)
+
+	authCore, err := auth.New(usersCollection, "")
+	if err != nil {
+		return err
+	}
+	queryTransport := transport.NewHTTPServer(config.New("http"), logWriter, appHnd, authCore)
 
 	go queryTransport.ListenAndServe(listeningError)
 	select {
