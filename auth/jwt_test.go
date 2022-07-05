@@ -60,16 +60,16 @@ func TestJWTCore_RandomKey(t *testing.T) {
 
 type mockRepo struct{}
 
-func (mockRepo) FindByLogin(ctx context.Context, login string) (domain.UserInfo, error) {
-	return domain.UserInfo{
+func (mockRepo) FindByLogin(ctx context.Context, login string) (*domain.UserInfo, error) {
+	return &domain.UserInfo{
 		ID:          uuid.NewUUID(),
 		Name:        "devalio",
 		Permissions: []domain.Permission{"green plum", "read", "write"},
 	}, nil
 }
 
-func (mockRepo) Lookup(ctx context.Context, ID uuid.UUID) (domain.UserInfo, error) {
-	return domain.UserInfo{
+func (mockRepo) Lookup(ctx context.Context, ID uuid.UUID) (*domain.UserInfo, error) {
+	return &domain.UserInfo{
 		ID:          uuid.NewUUID(),
 		Name:        "devalio",
 		Permissions: []domain.Permission{"green plum", "read", "write"},
