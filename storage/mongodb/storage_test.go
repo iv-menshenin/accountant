@@ -10,8 +10,6 @@ import (
 	"testing"
 	"time"
 
-	"go.mongodb.org/mongo-driver/bson"
-
 	"github.com/iv-menshenin/accountant/config"
 	"github.com/iv-menshenin/accountant/model/domain"
 	"github.com/iv-menshenin/accountant/utils/uuid"
@@ -34,11 +32,7 @@ func initTestEnv() {
 	rand.Seed(time.Now().UnixNano())
 	var err error
 	var logger = log.Default()
-	testStorage, err = NewStorage(config.New("tst"), logger)
-	if err != nil {
-		panic(err)
-	}
-	_, err = testStorage.mongo.Accounts().Collection.DeleteMany(context.Background(), bson.D{})
+	testStorage, err = NewTestStorage(config.New("tst"), logger)
 	if err != nil {
 		panic(err)
 	}
