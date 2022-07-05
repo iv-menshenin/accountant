@@ -132,6 +132,7 @@ func upService(t *testing.T, logData io.Writer) httpActor {
 		targetsCollection  = mongoStorage.NewTargetsCollection(storage.MapMongodbErrors)
 		billsCollection    = mongoStorage.NewBillsCollection(storage.MapMongodbErrors)
 		paymentsCollection = mongoStorage.NewPaymentsCollection(storage.MapMongodbErrors)
+		usersCollection    = mongoStorage.NewUsersCollection(storage.MapMongodbErrors)
 
 		appHnd = business.New(
 			&testLogger{l: logger},
@@ -141,6 +142,7 @@ func upService(t *testing.T, logData io.Writer) httpActor {
 			targetsCollection,
 			billsCollection,
 			paymentsCollection,
+			usersCollection,
 		)
 		queryTransport = transport.NewHTTPServer(httpConfig, logger, appHnd, nil)
 	)

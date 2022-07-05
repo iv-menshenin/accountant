@@ -43,7 +43,7 @@ func (c *JWTCore) Auth(ctx context.Context, q generic.AuthQuery) (generic.AuthDa
 	if err != nil {
 		return generic.AuthData{}, err
 	}
-	user := mapUserInfoToParticipant(userInfo)
+	user := mapUserInfoToParticipant(*userInfo)
 
 	token, err := c.SignJWT(user)
 	if err != nil {
@@ -74,7 +74,7 @@ func (c *JWTCore) Refresh(ctx context.Context, r generic.RefreshTokenQuery) (gen
 	if err != nil {
 		return generic.AuthData{}, err
 	}
-	user := mapUserInfoToParticipant(userInfo)
+	user := mapUserInfoToParticipant(*userInfo)
 
 	token, err := c.SignJWT(user)
 	if err != nil {

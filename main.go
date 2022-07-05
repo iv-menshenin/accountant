@@ -47,8 +47,7 @@ func mainFunc(ctx context.Context, halt <-chan struct{}) (err error) {
 		targetsCollection  = mongoStorage.NewTargetsCollection(storage.MapMongodbErrors)
 		billsCollection    = mongoStorage.NewBillsCollection(storage.MapMongodbErrors)
 		paymentsCollection = mongoStorage.NewPaymentsCollection(storage.MapMongodbErrors)
-
-		usersCollection = mongoStorage.NewUsersCollection(storage.MapMongodbErrors)
+		usersCollection    = mongoStorage.NewUsersCollection(storage.MapMongodbErrors)
 
 		appHnd = business.New(
 			appLogger,
@@ -58,6 +57,7 @@ func mainFunc(ctx context.Context, halt <-chan struct{}) (err error) {
 			targetsCollection,
 			billsCollection,
 			paymentsCollection,
+			usersCollection,
 		)
 	)
 

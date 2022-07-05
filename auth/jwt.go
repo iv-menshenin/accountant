@@ -20,8 +20,8 @@ type (
 		repository Repository
 	}
 	Repository interface {
-		FindByLogin(ctx context.Context, login string) (domain.UserInfo, error)
-		Lookup(ctx context.Context, ID uuid.UUID) (domain.UserInfo, error)
+		FindByLogin(ctx context.Context, login string) (*domain.UserInfo, error)
+		Lookup(ctx context.Context, ID uuid.UUID) (*domain.UserInfo, error)
 	}
 	Claims struct {
 		UserID     uuid.UUID `json:"user_id"`

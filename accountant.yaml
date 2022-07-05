@@ -597,6 +597,27 @@ components:
               - $ref: "#/components/schemas/PaymentFixed"
               - $ref: "#/components/schemas/PaymentData"
 
+    User:
+      required: true
+      content:
+        'application:json':
+          schema:
+            type: object
+            properties:
+              login:
+                type: string
+              name:
+                type: string
+              surname:
+                type: string
+              email:
+                type: string
+              permissions:
+                type: array
+                items: { type: string }
+                enum: [ reader, writer, money, admin ]
+            required: { login, name, email, permissions }
+
   responses:
 
     AuthInfo:

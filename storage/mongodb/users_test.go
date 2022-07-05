@@ -31,6 +31,7 @@ func Test_Users(t *testing.T) {
 			ID:          uuid.NewUUID(),
 			Name:        "Igor",
 			Surname:     "Menshenin",
+			EMail:       "igor_m@devaliada.ru",
 			Permissions: []domain.Permission{"read", "write"},
 		}
 		identity = domain.UserIdentity{
@@ -40,7 +41,7 @@ func Test_Users(t *testing.T) {
 	)
 
 	t.Run("Create User", func(t *testing.T) {
-		_, err = users.NewLogin(ctx, info, identity)
+		_, err = users.Create(ctx, info, identity)
 		if err != nil {
 			t.Fatalf("cannot insert user: %s", err)
 		}
@@ -49,7 +50,17 @@ func Test_Users(t *testing.T) {
 		if err != nil {
 			t.Fatalf("cannot find user: %s", err)
 		}
-		if !reflect.DeepEqual(info, got) {
+		if !reflect.DeepEqual(info, *got) {
+			t.Errorf("matching error\nwant: %+v\n got: %+v", info, *got)
+		}
+	})
+
+	t.Run("Find User", func(t *testing.T) {
+		got, err := users.Find(ctx, "igor_m")
+		if err != nil {
+			t.Fatalf("cannot find user: %s", err)
+		}
+		if !reflect.DeepEqual([]domain.UserInfo{info}, got) {
 			t.Errorf("matching error\nwant: %+v\n got: %+v", info, got)
 		}
 	})
@@ -61,7 +72,7 @@ func Test_Users(t *testing.T) {
 			Surname:     "Kolbasa",
 			Permissions: []domain.Permission{"get", "set"},
 		}
-		_, err = users.UserUpdate(ctx, newInfo)
+		_, err = users.Update(ctx, newInfo)
 		if err != nil {
 			t.Fatalf("cannot update user: %s", err)
 		}
@@ -70,13 +81,13 @@ func Test_Users(t *testing.T) {
 		if err != nil {
 			t.Fatalf("cannot find user: %s", err)
 		}
-		if !reflect.DeepEqual(newInfo, got) {
-			t.Errorf("matching error\nwant: %+v\n got: %+v", newInfo, got)
+		if !reflect.DeepEqual(newInfo, *got) {
+			t.Errorf("matching error\nwant: %+v\n got: %+v", newInfo, *got)
 		}
 	})
 
 	t.Run("Delete User", func(t *testing.T) {
-		if err := users.UserDelete(ctx, info.ID); err != nil {
+		if err := users.Delete(ctx, info.ID); err != nil {
 			t.Errorf("cannot delete user: %s", err)
 		}
 

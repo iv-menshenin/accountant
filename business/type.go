@@ -27,11 +27,17 @@ type (
 		payments  PaymentsCollection
 		getLogger func() Logger
 	}
+	Usr struct {
+		users     UsersCollection
+		getLogger func() Logger
+	}
+
 	App struct {
 		Acc
 		Tar
 		Bil
 		Pay
+		Usr
 	}
 	Logger interface {
 		Warning(format string, args ...interface{})
@@ -87,6 +93,15 @@ type (
 		FindBy(context.Context, *uuid.UUID, *uuid.UUID, *domain.Period) ([]domain.Bill, error)
 		Delete(context.Context, uuid.UUID) error
 	}
+
+	UsersCollection interface {
+		Create(ctx context.Context, info domain.UserInfo, identity domain.UserIdentity) (*domain.UserInfo, error)
+		Lookup(ctx context.Context, ID uuid.UUID) (*domain.UserInfo, error)
+		FindByLogin(ctx context.Context, login string) (*domain.UserInfo, error)
+		Update(ctx context.Context, info domain.UserInfo) (*domain.UserInfo, error)
+		Delete(ctx context.Context, ID uuid.UUID) error
+		Find(ctx context.Context, searchPattern string) ([]domain.UserInfo, error)
+	}
 )
 
 func New(
@@ -97,6 +112,7 @@ func New(
 	targets TargetsCollection,
 	bills BillsCollection,
 	payments PaymentsCollection,
+	users UsersCollection,
 ) *App {
 	return &App{
 		Acc: Acc{
@@ -121,6 +137,12 @@ func New(
 		},
 		Pay: Pay{
 			payments: payments,
+			getLogger: func() Logger {
+				return logger
+			},
+		},
+		Usr: Usr{
+			users: users,
 			getLogger: func() Logger {
 				return logger
 			},
