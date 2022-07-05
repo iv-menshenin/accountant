@@ -77,32 +77,9 @@ func Test_Persons(t *testing.T) {
 				return
 			}
 
-			acc.Persons[rndPerNum] = rndPer
-			objs, err := persons.Find(ctx, storage.FindPersonOption{AccountID: &acc.AccountID})
-			if err != nil {
-				errCh <- fmt.Errorf("cant find person: %w", err)
-				return
-			}
-			need := personsToNeed(acc.Persons, acc.AccountID)
-			if !reflect.DeepEqual(objs, need) {
-				errCh <- fmt.Errorf("error matching persons: %v, got: %v", need, objs)
-				return
-			}
-
 			err = persons.Delete(ctx, acc.AccountID, rndPer.PersonID)
 			if err != nil {
 				errCh <- fmt.Errorf("cant delete person: %w", err)
-				return
-			}
-			acc.Persons = append(acc.Persons[:rndPerNum], acc.Persons[rndPerNum+1:]...)
-			objs, err = persons.Find(ctx, storage.FindPersonOption{AccountID: &acc.AccountID})
-			if err != nil {
-				errCh <- fmt.Errorf("cant find person: %w", err)
-				return
-			}
-			need = personsToNeed(acc.Persons, acc.AccountID)
-			if !reflect.DeepEqual(objs, need) {
-				errCh <- fmt.Errorf("error matching persons: %v, got: %v", need, objs)
 				return
 			}
 

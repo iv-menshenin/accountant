@@ -20,10 +20,6 @@ type (
 		Address   *string
 		Number    *int
 	}
-	FindPersonOption struct {
-		AccountID  *uuid.UUID
-		PersonName string
-	}
 	FindTargetOption struct {
 		ShowClosed bool
 		Year       int
@@ -46,14 +42,5 @@ func (q *FindObjectOption) FillFromQuery(query request.FindObjectsQuery) {
 	}
 	if query.AccountID != nil {
 		q.AccountID = query.AccountID
-	}
-}
-
-func (q *FindPersonOption) FillFromQuery(query request.FindPersonsQuery) {
-	if query.AccountID != nil {
-		q.AccountID = query.AccountID
-	}
-	if query.PersonFullName != nil {
-		q.PersonName = *query.PersonFullName
 	}
 }

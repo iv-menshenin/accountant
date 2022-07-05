@@ -78,16 +78,6 @@ func Test_Accounts(t *testing.T) {
 				return
 			}
 
-			var foundPersons []domain.NestedPerson
-			var needPersons = personsToNeed(acc.Persons, acc.AccountID)
-			foundPersons, err = persons.Find(ctx, storage.FindPersonOption{
-				AccountID: &acc.AccountID,
-			})
-			if !reflect.DeepEqual(needPersons, foundPersons) {
-				errCh <- fmt.Errorf("[PERSONS]\nwant: %+v\n got: %+v", needPersons, foundPersons)
-				return
-			}
-
 			var foundObjects []domain.NestedObject
 			var needObjects = objectsToNeed(acc.Objects, acc.AccountID)
 			foundObjects, err = objects.Find(ctx, storage.FindObjectOption{

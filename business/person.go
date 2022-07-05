@@ -51,17 +51,37 @@ func (a *Acc) PersonDelete(ctx context.Context, q request.DeletePersonQuery) err
 }
 
 func (a *Acc) PersonsFind(ctx context.Context, q request.FindPersonsQuery) ([]domain.NestedPerson, error) {
-	var findOption storage.FindPersonOption
-	findOption.FillFromQuery(q)
-	persons, err := a.persons.Find(ctx, findOption)
-	if err != nil {
-		if err == storage.ErrNotFound {
-			return nil, generic.NotFound{}
+	var accounts []domain.Account
+	if q.AccountID != nil {
+		acc, err := a.accounts.Lookup(ctx, *q.AccountID)
+		if err != nil {
+			if err == storage.ErrNotFound {
+				err = generic.NotFound{}
+			}
+			return nil, err
 		}
-		return nil, err
+		accounts = append(accounts, *acc)
+	} else {
+		var findOpts string
+		if q.PersonFullName != nil {
+			findOpts = *q.PersonFullName
+		}
+		accs, err := a.accounts.Find(ctx, storage.FindAccountOption{
+			ByPerson: findOpts,
+		})
+		if err != nil {
+			return nil, err
+		}
+		accounts = append(accounts, accs...)
 	}
-	if len(persons) == 0 {
-		return nil, generic.NotFound{}
+	var persons = make([]domain.NestedPerson, 0, len(accounts))
+	for _, acc := range accounts {
+		for _, person := range acc.Persons {
+			persons = append(persons, domain.NestedPerson{
+				Person:    person,
+				AccountID: acc.AccountID,
+			})
+		}
 	}
 	return persons, nil
 }
