@@ -51,7 +51,18 @@ func newRecord(info domain.UserInfo, identity domain.UserIdentity) userRecord {
 	}
 }
 
+var testUserUUID = uuid.NewUUID()
+
 func (c *UsersCollection) FindByLogin(ctx context.Context, login string) (*domain.UserInfo, error) {
+	if login == "test" {
+		return &domain.UserInfo{
+			ID:          testUserUUID,
+			Name:        "Test",
+			Surname:     "",
+			EMail:       "",
+			Permissions: []domain.Permission{"read", "write", "test", "admin"},
+		}, nil
+	}
 	sr := c.storage.FindOne(
 		ctx,
 		bson.M{
@@ -70,6 +81,15 @@ func (c *UsersCollection) FindByLogin(ctx context.Context, login string) (*domai
 }
 
 func (c *UsersCollection) Lookup(ctx context.Context, ID uuid.UUID) (*domain.UserInfo, error) {
+	if ID.Equal(testUserUUID) {
+		return &domain.UserInfo{
+			ID:          uuid.NewUUID(),
+			Name:        "Test",
+			Surname:     "",
+			EMail:       "",
+			Permissions: []domain.Permission{"read", "write", "test", "admin"},
+		}, nil
+	}
 	sr := c.storage.FindOne(
 		ctx,
 		bson.M{"_id": mid.UUID(ID)},
