@@ -53,4 +53,7 @@ func (q *FindPersonOption) FillFromQuery(query request.FindPersonsQuery) {
 	if query.AccountID != nil {
 		q.AccountID = query.AccountID
 	}
+	if query.PersonFullName != nil {
+		q.PersonName = *query.PersonFullName
+	}
 }

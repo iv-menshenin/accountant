@@ -103,8 +103,8 @@ func wipeAccount(t *testing.T, logData fmt.Stringer, actor httpActor, account *d
 }
 
 func testPerson(t *testing.T, logData fmt.Stringer, actor httpActor, account *domain.Account) *domain.Account {
+	var testPersons []domain.NestedPerson
 	t.Run("create_person", func(t *testing.T) {
-
 		var person = domain.PersonData{
 			Name:     "Test1",
 			Surname:  "Testing",
@@ -123,6 +123,10 @@ func testPerson(t *testing.T, logData fmt.Stringer, actor httpActor, account *do
 		}
 
 		account.Persons = append(account.Persons, *gotPerson)
+		testPersons = append(testPersons, domain.NestedPerson{
+			Person:    *gotPerson,
+			AccountID: account.AccountID,
+		})
 	})
 	t.Run("add_new_person", func(t *testing.T) {
 		var person = domain.PersonData{
@@ -143,6 +147,10 @@ func testPerson(t *testing.T, logData fmt.Stringer, actor httpActor, account *do
 		}
 
 		account.Persons = append(account.Persons, *gotPerson)
+		testPersons = append(testPersons, domain.NestedPerson{
+			Person:    *gotPerson,
+			AccountID: account.AccountID,
+		})
 	})
 	t.Run("check_persons", func(t *testing.T) {
 		got, err := actor.getAccount(account.AccountID)
@@ -152,6 +160,14 @@ func testPerson(t *testing.T, logData fmt.Stringer, actor httpActor, account *do
 		} else if !reflect.DeepEqual(got, account) {
 			t.Log(logData.String())
 			t.Fatalf("error while account creating\nwant: %+v\n got: %+v", account, got)
+		}
+
+		gotPersons, err := actor.findPersons("Test2")
+		if err != nil {
+			t.Errorf("can't find persons: %s", err)
+		}
+		if !reflect.DeepEqual(gotPersons, testPersons) {
+			t.Errorf("matching error\nwwant: %+v\n got: %+v\n", testPersons, gotPersons)
 		}
 	})
 	t.Run("delete_first_person", func(t *testing.T) {
@@ -346,6 +362,20 @@ func (a *httpActor) getAccount(accID uuid.UUID) (result *domain.Account, err err
 		return nil, err
 	}
 	var respData AccountDataResponse
+	if err = a.exec(req, &respData); err != nil {
+		return nil, err
+	}
+	result = respData.Data
+	return
+}
+
+func (a *httpActor) findPersons(person string) (result []domain.NestedPerson, err error) {
+	var req *http.Request
+	req, err = http.NewRequest(http.MethodGet, a.personsURL+"?person="+person, nil)
+	if err != nil {
+		return nil, err
+	}
+	var respData PersonsDataResponse
 	if err = a.exec(req, &respData); err != nil {
 		return nil, err
 	}

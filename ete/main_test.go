@@ -28,6 +28,7 @@ const (
 	host         = "localhost"
 	pathAPI      = "/api"
 	pathAccounts = "/accounts"
+	pathPersons  = "/persons"
 	pathTargets  = "/targets"
 	pathBills    = "/bills"
 	pathPayments = "/payments"
@@ -116,11 +117,12 @@ func upService(t *testing.T, logData io.Writer) httpActor {
 			fmt.Sprintf("-http.host=%s", host),
 		)
 		accountsURL = fmt.Sprintf("%s://%s:%d%s%s", proto, host, port, pathAPI, pathAccounts)
+		personsURL  = fmt.Sprintf("%s://%s:%d%s%s", proto, host, port, pathAPI, pathPersons)
 		targetsURL  = fmt.Sprintf("%s://%s:%d%s%s", proto, host, port, pathAPI, pathTargets)
 		billsURL    = fmt.Sprintf("%s://%s:%d%s%s", proto, host, port, pathAPI, pathBills)
 		paymentsURL = fmt.Sprintf("%s://%s:%d%s%s", proto, host, port, pathAPI, pathPayments)
 	)
-	mongoStorage, err := mongodb.NewStorage(dbConfig, logger)
+	mongoStorage, err := mongodb.NewTestStorage(dbConfig, logger)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -152,6 +154,7 @@ func upService(t *testing.T, logData io.Writer) httpActor {
 
 	return httpActor{
 		accountsURL: accountsURL,
+		personsURL:  personsURL,
 		targetsURL:  targetsURL,
 		billsURL:    billsURL,
 		paymentsURL: paymentsURL,
@@ -175,6 +178,7 @@ func upService(t *testing.T, logData io.Writer) httpActor {
 type (
 	httpActor struct {
 		accountsURL string
+		personsURL  string
 		targetsURL  string
 		billsURL    string
 		paymentsURL string
@@ -195,6 +199,10 @@ type (
 	PersonDataResponse struct {
 		Meta ResponseMeta   `json:"meta"`
 		Data *domain.Person `json:"data,omitempty"`
+	}
+	PersonsDataResponse struct {
+		Meta ResponseMeta          `json:"meta"`
+		Data []domain.NestedPerson `json:"data,omitempty"`
 	}
 	ObjectDataResponse struct {
 		Meta ResponseMeta   `json:"meta"`
