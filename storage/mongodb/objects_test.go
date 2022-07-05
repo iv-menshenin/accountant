@@ -68,7 +68,10 @@ func Test_Objects(t *testing.T) {
 				}
 				var itsOk bool
 				for _, f := range found {
-					itsOk = itsOk || reflect.DeepEqual(f, obj)
+					itsOk = itsOk || reflect.DeepEqual(f, domain.NestedObject{
+						Object:    obj,
+						AccountID: acc.AccountID,
+					})
 				}
 				if !itsOk {
 					errCh <- fmt.Errorf("cant find object by address: %v\n: %v", obj, found)
@@ -103,8 +106,9 @@ func Test_Objects(t *testing.T) {
 				errCh <- fmt.Errorf("cant find object: %w", err)
 				return
 			}
-			if !reflect.DeepEqual(objs, acc.Objects) {
-				errCh <- fmt.Errorf("error matching objects: %v, got: %v", acc.Objects, objs)
+			var needObjs = objectsToNeed(acc.Objects, acc.AccountID)
+			if !reflect.DeepEqual(objs, needObjs) {
+				errCh <- fmt.Errorf("error matching objects\nneed: %v\n got: %v", needObjs, objs)
 				return
 			}
 
@@ -119,8 +123,9 @@ func Test_Objects(t *testing.T) {
 				errCh <- fmt.Errorf("cant find object: %w", err)
 				return
 			}
-			if !reflect.DeepEqual(objs, acc.Objects) {
-				errCh <- fmt.Errorf("error matching objects: %v, got: %v", acc.Objects, objs)
+			needObjects := objectsToNeed(acc.Objects, acc.AccountID)
+			if !reflect.DeepEqual(objs, needObjects) {
+				errCh <- fmt.Errorf("error matching objects: %v, got: %v", needObjects, objs)
 				return
 			}
 
@@ -136,4 +141,15 @@ func Test_Objects(t *testing.T) {
 	wg.Wait()
 	close(errCh)
 	<-closed
+}
+
+func objectsToNeed(objects []domain.Object, accountID uuid.UUID) []domain.NestedObject {
+	var needObjs = make([]domain.NestedObject, 0)
+	for _, object := range objects {
+		needObjs = append(needObjs, domain.NestedObject{
+			Object:    object,
+			AccountID: accountID,
+		})
+	}
+	return needObjs
 }

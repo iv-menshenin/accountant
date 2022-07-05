@@ -11,8 +11,9 @@ type (
 	FindAccountOption struct {
 		Account *string
 		// hidden options
-		Address *string
-		Number  *int
+		Address  *string
+		Number   *int
+		ByPerson string
 	}
 	FindObjectOption struct {
 		AccountID *uuid.UUID
@@ -20,7 +21,8 @@ type (
 		Number    *int
 	}
 	FindPersonOption struct {
-		AccountID *uuid.UUID
+		AccountID  *uuid.UUID
+		PersonName string
 	}
 	FindTargetOption struct {
 		ShowClosed bool

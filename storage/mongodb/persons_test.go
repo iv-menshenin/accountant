@@ -83,8 +83,9 @@ func Test_Persons(t *testing.T) {
 				errCh <- fmt.Errorf("cant find person: %w", err)
 				return
 			}
-			if !reflect.DeepEqual(objs, acc.Persons) {
-				errCh <- fmt.Errorf("error matching persons: %v, got: %v", acc.Persons, objs)
+			need := personsToNeed(acc.Persons, acc.AccountID)
+			if !reflect.DeepEqual(objs, need) {
+				errCh <- fmt.Errorf("error matching persons: %v, got: %v", need, objs)
 				return
 			}
 
@@ -99,8 +100,9 @@ func Test_Persons(t *testing.T) {
 				errCh <- fmt.Errorf("cant find person: %w", err)
 				return
 			}
-			if !reflect.DeepEqual(objs, acc.Persons) {
-				errCh <- fmt.Errorf("error matching persons: %v, got: %v", acc.Persons, objs)
+			need = personsToNeed(acc.Persons, acc.AccountID)
+			if !reflect.DeepEqual(objs, need) {
+				errCh <- fmt.Errorf("error matching persons: %v, got: %v", need, objs)
 				return
 			}
 
@@ -116,4 +118,15 @@ func Test_Persons(t *testing.T) {
 	wg.Wait()
 	close(errCh)
 	<-closed
+}
+
+func personsToNeed(persons []domain.Person, accountID uuid.UUID) []domain.NestedPerson {
+	var needPersons = make([]domain.NestedPerson, 0)
+	for _, person := range persons {
+		needPersons = append(needPersons, domain.NestedPerson{
+			Person:    person,
+			AccountID: accountID,
+		})
+	}
+	return needPersons
 }

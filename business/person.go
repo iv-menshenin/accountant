@@ -50,7 +50,7 @@ func (a *Acc) PersonDelete(ctx context.Context, q request.DeletePersonQuery) err
 	return err
 }
 
-func (a *Acc) PersonsFind(ctx context.Context, q request.FindPersonsQuery) ([]domain.Person, error) {
+func (a *Acc) PersonsFind(ctx context.Context, q request.FindPersonsQuery) ([]domain.NestedPerson, error) {
 	var findOption storage.FindPersonOption
 	findOption.FillFromQuery(q)
 	persons, err := a.persons.Find(ctx, findOption)

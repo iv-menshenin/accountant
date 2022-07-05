@@ -72,10 +72,14 @@ func (p *PersonsCollection) Delete(ctx context.Context, accountID uuid.UUID, per
 	return storage.ErrNotFound
 }
 
-func (p *PersonsCollection) Find(ctx context.Context, option storage.FindPersonOption) ([]domain.Person, error) {
+func (p *PersonsCollection) Find(ctx context.Context, option storage.FindPersonOption) ([]domain.NestedPerson, error) {
 	var err error
 	var accounts = make([]domain.Account, 0, 10)
-	if option.AccountID != nil {
+	if option.AccountID == nil {
+		accounts, err = p.accounts.Find(ctx, storage.FindAccountOption{
+			ByPerson: option.PersonName,
+		})
+	} else {
 		var account *domain.Account
 		account, err = p.accounts.Lookup(ctx, *option.AccountID)
 		if account != nil {
@@ -85,9 +89,14 @@ func (p *PersonsCollection) Find(ctx context.Context, option storage.FindPersonO
 	if err != nil {
 		return nil, p.mapError(err)
 	}
-	var persons = make([]domain.Person, 0, len(accounts))
+	var persons = make([]domain.NestedPerson, 0, len(accounts))
 	for _, account := range accounts {
-		persons = append(persons, account.Persons...)
+		for _, person := range account.Persons {
+			persons = append(persons, domain.NestedPerson{
+				Person:    person,
+				AccountID: account.AccountID,
+			})
+		}
 	}
 	return persons, nil
 }

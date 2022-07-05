@@ -44,7 +44,7 @@ type (
 		Lookup(context.Context, uuid.UUID, uuid.UUID) (*domain.Person, error)
 		Replace(context.Context, uuid.UUID, uuid.UUID, domain.Person) error
 		Delete(context.Context, uuid.UUID, uuid.UUID) error
-		Find(context.Context, storage.FindPersonOption) ([]domain.Person, error)
+		Find(context.Context, storage.FindPersonOption) ([]domain.NestedPerson, error)
 	}
 
 	ObjectsCollection interface {
@@ -52,7 +52,7 @@ type (
 		Lookup(context.Context, uuid.UUID, uuid.UUID) (*domain.Object, error)
 		Replace(context.Context, uuid.UUID, uuid.UUID, domain.Object) error
 		Delete(context.Context, uuid.UUID, uuid.UUID) error
-		Find(context.Context, storage.FindObjectOption) ([]domain.Object, error)
+		Find(context.Context, storage.FindObjectOption) ([]domain.NestedObject, error)
 	}
 
 	AccountsCollection interface {

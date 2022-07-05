@@ -9,6 +9,7 @@ import (
 	"github.com/gorilla/mux"
 
 	"github.com/iv-menshenin/accountant/model/request"
+	"github.com/iv-menshenin/accountant/utils/uuid"
 )
 
 type (
@@ -205,12 +206,11 @@ func (p *Persons) FindHandler() http.HandlerFunc {
 func findPersonMapper(r *http.Request) (q request.FindPersonsQuery, err error) {
 	params := queryParams{r: r}
 	id, _ := params.vars(parameterNameAccountID)
-	if id == "" {
-		err = errors.New(parameterNameAccountID + " must not be empty")
-		return
-	}
-	if err = q.AccountID.FromString(id); err != nil {
-		return
+	if id != "" {
+		q.AccountID = new(uuid.UUID)
+		if err = q.AccountID.FromString(id); err != nil {
+			return
+		}
 	}
 	if person, ok := params.vars(parameterNamePerson); ok {
 		q.PersonFullName = &person

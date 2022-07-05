@@ -3,6 +3,8 @@ package mongodb
 import (
 	"context"
 	"fmt"
+	"github.com/iv-menshenin/accountant/utils/uuid"
+	"go.mongodb.org/mongo-driver/bson"
 	"reflect"
 	"sync"
 	"testing"
@@ -76,21 +78,23 @@ func Test_Accounts(t *testing.T) {
 				return
 			}
 
-			var foundPersons []domain.Person
+			var foundPersons []domain.NestedPerson
+			var needPersons = personsToNeed(acc.Persons, acc.AccountID)
 			foundPersons, err = persons.Find(ctx, storage.FindPersonOption{
 				AccountID: &acc.AccountID,
 			})
-			if !reflect.DeepEqual(acc.Persons, foundPersons) {
-				errCh <- fmt.Errorf("[PERSONS] want: %+v, got: %+v", acc.Persons, foundPersons)
+			if !reflect.DeepEqual(needPersons, foundPersons) {
+				errCh <- fmt.Errorf("[PERSONS]\nwant: %+v\n got: %+v", needPersons, foundPersons)
 				return
 			}
 
-			var foundObjects []domain.Object
+			var foundObjects []domain.NestedObject
+			var needObjects = objectsToNeed(acc.Objects, acc.AccountID)
 			foundObjects, err = objects.Find(ctx, storage.FindObjectOption{
 				AccountID: &acc.AccountID,
 			})
-			if !reflect.DeepEqual(acc.Objects, foundObjects) {
-				errCh <- fmt.Errorf("[OBJECTS] want: %+v, got: %+v", acc.Objects, foundObjects)
+			if !reflect.DeepEqual(needObjects, foundObjects) {
+				errCh <- fmt.Errorf("[OBJECTS] want: %+v, got: %+v", needObjects, foundObjects)
 				return
 			}
 
@@ -114,4 +118,61 @@ func Test_Accounts(t *testing.T) {
 	wg.Wait()
 	close(errCh)
 	<-closed
+}
+
+func Test_Find_Accounts(t *testing.T) {
+	once.Do(initTestEnv)
+
+	accounts := testStorage.NewAccountsCollection(storage.MapMongodbErrors)
+	persons := testStorage.NewPersonsCollection(accounts, storage.MapMongodbErrors)
+	objects := testStorage.NewObjectsCollection(accounts, storage.MapMongodbErrors)
+
+	_, err := accounts.storage.DeleteMany(context.Background(), bson.M{"persons.name": "Ktulhu"})
+	if err != nil {
+		panic(err)
+	}
+
+	var manipulator = accManipulator{
+		accounts,
+		persons,
+		objects,
+	}
+	var case1 = domain.Account{
+		AccountID: uuid.NewUUID(),
+		Persons: []domain.Person{
+			{
+				PersonID: uuid.NewUUID(),
+				PersonData: domain.PersonData{
+					Name:    "Ktulhu",
+					Surname: "Fhtagn",
+					PatName: "Vladimirovitch",
+				},
+			},
+		},
+		Objects: []domain.Object{
+			{
+				ObjectID: uuid.NewUUID(),
+				ObjectData: domain.ObjectData{
+					Street: "Ingeenernaya",
+					Number: 54,
+				},
+			},
+		},
+	}
+	var testCases = []domain.Account{
+		case1,
+	}
+	for _, test := range testCases {
+		if err := manipulator.AccountsCollection.Create(context.Background(), test); err != nil {
+			t.Error(err)
+		}
+	}
+
+	acc, err := manipulator.AccountsCollection.Find(context.Background(), storage.FindAccountOption{ByPerson: "tulhu"})
+	if err != nil {
+		t.Error(err)
+	}
+	if !reflect.DeepEqual(acc, []domain.Account{case1}) {
+		t.Errorf("matching error\nwant: %+v\n got: %+v", []domain.Account{case1}, acc)
+	}
 }
