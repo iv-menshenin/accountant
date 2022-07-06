@@ -40,7 +40,7 @@ type (
 		PersonData `bson:",inline" json:",inline"`
 	}
 	NestedPerson struct {
-		Person    `json:"-,inline"`
+		Person    `json:",inline"`
 		AccountID uuid.UUID `json:"accountID"`
 	}
 	PersonData struct {
@@ -62,7 +62,7 @@ type (
 		ObjectData `bson:",inline" json:",inline"`
 	}
 	NestedObject struct {
-		Object    `json:"-,inline"`
+		Object    `json:",inline"`
 		AccountID uuid.UUID `json:"accountID"`
 	}
 	ObjectData struct {
