@@ -77,30 +77,9 @@ func Test_Persons(t *testing.T) {
 				return
 			}
 
-			acc.Persons[rndPerNum] = rndPer
-			objs, err := persons.Find(ctx, storage.FindPersonOption{AccountID: &acc.AccountID})
-			if err != nil {
-				errCh <- fmt.Errorf("cant find person: %w", err)
-				return
-			}
-			if !reflect.DeepEqual(objs, acc.Persons) {
-				errCh <- fmt.Errorf("error matching persons: %v, got: %v", acc.Persons, objs)
-				return
-			}
-
 			err = persons.Delete(ctx, acc.AccountID, rndPer.PersonID)
 			if err != nil {
 				errCh <- fmt.Errorf("cant delete person: %w", err)
-				return
-			}
-			acc.Persons = append(acc.Persons[:rndPerNum], acc.Persons[rndPerNum+1:]...)
-			objs, err = persons.Find(ctx, storage.FindPersonOption{AccountID: &acc.AccountID})
-			if err != nil {
-				errCh <- fmt.Errorf("cant find person: %w", err)
-				return
-			}
-			if !reflect.DeepEqual(objs, acc.Persons) {
-				errCh <- fmt.Errorf("error matching persons: %v, got: %v", acc.Persons, objs)
 				return
 			}
 
@@ -116,4 +95,15 @@ func Test_Persons(t *testing.T) {
 	wg.Wait()
 	close(errCh)
 	<-closed
+}
+
+func personsToNeed(persons []domain.Person, accountID uuid.UUID) []domain.NestedPerson {
+	var needPersons = make([]domain.NestedPerson, 0)
+	for _, person := range persons {
+		needPersons = append(needPersons, domain.NestedPerson{
+			Person:    person,
+			AccountID: accountID,
+		})
+	}
+	return needPersons
 }

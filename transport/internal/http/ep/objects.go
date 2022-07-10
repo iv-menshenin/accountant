@@ -10,6 +10,7 @@ import (
 	"github.com/gorilla/mux"
 
 	"github.com/iv-menshenin/accountant/model/request"
+	"github.com/iv-menshenin/accountant/utils/uuid"
 )
 
 type (
@@ -207,12 +208,11 @@ func (o *Objects) FindHandler() http.HandlerFunc {
 func findObjectMapper(r *http.Request) (q request.FindObjectsQuery, err error) {
 	params := queryParams{r: r}
 	id, _ := params.vars(parameterNameAccountID)
-	if id == "" {
-		err = errors.New(parameterNameAccountID + " must not be empty")
-		return
-	}
-	if err = q.AccountID.FromString(id); err != nil {
-		return
+	if id != "" {
+		q.AccountID = new(uuid.UUID)
+		if err = q.AccountID.FromString(id); err != nil {
+			return
+		}
 	}
 	if address, ok := params.vars(parameterNameAddress); ok {
 		q.Address = &address

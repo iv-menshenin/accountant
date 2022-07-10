@@ -74,7 +74,7 @@ func (o *ObjectsCollection) Delete(ctx context.Context, accountID uuid.UUID, obj
 	return storage.ErrNotFound
 }
 
-func (o *ObjectsCollection) Find(ctx context.Context, option storage.FindObjectOption) ([]domain.Object, error) {
+func (o *ObjectsCollection) Find(ctx context.Context, option storage.FindObjectOption) ([]domain.NestedObject, error) {
 	var err error
 	var accounts = make([]domain.Account, 0, 10)
 	if option.AccountID == nil {
@@ -89,11 +89,14 @@ func (o *ObjectsCollection) Find(ctx context.Context, option storage.FindObjectO
 	if err != nil {
 		return nil, o.mapError(err)
 	}
-	var objects = make([]domain.Object, 0, len(accounts))
+	var objects = make([]domain.NestedObject, 0, len(accounts))
 	for _, account := range accounts {
 		for _, object := range account.Objects {
 			if checkObjectFilter(object, option) {
-				objects = append(objects, object)
+				objects = append(objects, domain.NestedObject{
+					Object:    object,
+					AccountID: account.AccountID,
+				})
 			}
 		}
 	}

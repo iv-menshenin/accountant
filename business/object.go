@@ -50,7 +50,7 @@ func (a *Acc) ObjectDelete(ctx context.Context, q request.DeleteObjectQuery) err
 	return err
 }
 
-func (a *Acc) ObjectsFind(ctx context.Context, q request.FindObjectsQuery) ([]domain.Object, error) {
+func (a *Acc) ObjectsFind(ctx context.Context, q request.FindObjectsQuery) ([]domain.NestedObject, error) {
 	var findOption storage.FindObjectOption
 	findOption.FillFromQuery(q)
 	objects, err := a.objects.Find(ctx, findOption)

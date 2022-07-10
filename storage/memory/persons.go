@@ -72,28 +72,6 @@ func (p *PersonCollection) Delete(ctx context.Context, accountID uuid.UUID, pers
 	return storage.ErrNotFound
 }
 
-func (p *PersonCollection) Find(ctx context.Context, option storage.FindPersonOption) ([]domain.Person, error) {
-	var err error
-	var accounts = make([]domain.Account, 0, 10)
-	if option.AccountID == nil {
-		accounts, err = p.accounts.Find(ctx, storage.FindAccountOption{})
-	} else {
-		var account *domain.Account
-		account, err = p.accounts.Lookup(ctx, *option.AccountID)
-		if account != nil {
-			accounts = append(accounts, *account)
-		}
-	}
-	if err != nil {
-		return nil, p.mapError(err)
-	}
-	var persons = make([]domain.Person, 0, len(accounts))
-	for _, account := range accounts {
-		persons = append(persons, account.Persons...)
-	}
-	return persons, nil
-}
-
 func NewPersonCollection(accounts *AccountCollection, mapError func(error) error) *PersonCollection {
 	return &PersonCollection{
 		mapError: mapError,

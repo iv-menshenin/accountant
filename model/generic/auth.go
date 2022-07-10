@@ -17,9 +17,10 @@ type (
 		Token string `json:"token,omitempty"`
 	}
 
-	Unauthorized struct{}
-	Forbidden    struct{}
-	NotFound     struct{}
+	Unauthorized  struct{}
+	Forbidden     struct{}
+	NotFound      struct{}
+	AlreadyExists struct{}
 )
 
 func (u Unauthorized) Error() string {
@@ -32,4 +33,8 @@ func (f Forbidden) Error() string {
 
 func (n NotFound) Error() string {
 	return "Object not found"
+}
+
+func (a AlreadyExists) Error() string {
+	return "Object already exists"
 }

@@ -136,15 +136,21 @@ func accountIdFilter(id uuid.UUID) interface{} {
 }
 
 func accountFilter(options storage.FindAccountOption) interface{} {
-	var filter = bson.D{}
+	var filter = bson.M{}
 	if options.Account != nil {
-		filter = append(filter, bson.E{Key: "data.account", Value: *options.Account})
+		filter["data.account"] = bson.M{"$eq": *options.Account}
 	}
 	if options.Address != nil {
-		filter = append(filter, bson.E{Key: "objects.street", Value: *options.Address})
+		filter["objects.street"] = bson.M{"$eq": *options.Address}
 	}
 	if options.Number != nil {
-		filter = append(filter, bson.E{Key: "objects.number", Value: *options.Number})
+		filter["objects.number"] = bson.M{"$eq": *options.Number}
+	}
+	if options.ByPerson != "" {
+		filter["$or"] = bson.A{
+			bson.M{"persons.name": bson.M{"$regex": options.ByPerson}},
+			bson.M{"persons.surname": bson.M{"$regex": options.ByPerson}},
+		}
 	}
 	return filter
 }

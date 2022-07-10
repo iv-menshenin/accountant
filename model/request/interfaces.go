@@ -36,7 +36,7 @@ type (
 		ObjectDelete(context.Context, DeleteObjectQuery) error
 	}
 	ObjectFinder interface {
-		ObjectsFind(context.Context, FindObjectsQuery) ([]domain.Object, error)
+		ObjectsFind(context.Context, FindObjectsQuery) ([]domain.NestedObject, error)
 	}
 
 	PersonGetter interface {
@@ -52,7 +52,7 @@ type (
 		PersonDelete(context.Context, DeletePersonQuery) error
 	}
 	PersonFinder interface {
-		PersonsFind(context.Context, FindPersonsQuery) ([]domain.Person, error)
+		PersonsFind(context.Context, FindPersonsQuery) ([]domain.NestedPerson, error)
 	}
 
 	TargetGetter interface {

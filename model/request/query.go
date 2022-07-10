@@ -127,4 +127,28 @@ type (
 		ObjectID  *uuid.UUID
 		TargetID  *uuid.UUID
 	}
+
+	PostUserQuery struct {
+		Login       string   `json:"login"`
+		Name        string   `json:"name"`
+		Surname     string   `json:"surname"`
+		EMail       string   `json:"email"`
+		Permissions []string `json:"permissions"`
+	}
+	GetUserQuery struct {
+		ID uuid.UUID
+	}
+	DeleteUserQuery struct {
+		ID uuid.UUID
+	}
+	PutUserQuery struct {
+		ID          uuid.UUID
+		Name        string
+		Surname     string
+		EMail       string
+		Permissions []string
+	}
+	GetUsersQuery struct {
+		Pattern string
+	}
 )

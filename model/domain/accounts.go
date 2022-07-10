@@ -39,6 +39,10 @@ type (
 		PersonID   uuid.UUID `bson:"person_id" json:"person_id"`
 		PersonData `bson:",inline" json:",inline"`
 	}
+	NestedPerson struct {
+		Person    `json:",inline"`
+		AccountID uuid.UUID `json:"accountID"`
+	}
 	PersonData struct {
 		Name    string `bson:"name" json:"name"`
 		Surname string `bson:"surname" json:"surname"`
@@ -56,6 +60,10 @@ type (
 	Object struct {
 		ObjectID   uuid.UUID `bson:"object_id" json:"object_id"`
 		ObjectData `bson:",inline" json:",inline"`
+	}
+	NestedObject struct {
+		Object    `json:",inline"`
+		AccountID uuid.UUID `json:"accountID"`
 	}
 	ObjectData struct {
 		PostalCode string `bson:"postal_code" json:"postal_code"`

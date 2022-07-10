@@ -414,6 +414,13 @@ paths:
         '404':
           description: Not found
 
+  /api/users:
+    post:
+      summary: "Create new User"
+      requestBody:
+        - $ref: "#/components/requestBodies/User"
+
+
 components:
 
   parameters:
@@ -590,6 +597,27 @@ components:
               - $ref: "#/components/schemas/PaymentFixed"
               - $ref: "#/components/schemas/PaymentData"
 
+    User:
+      required: true
+      content:
+        'application:json':
+          schema:
+            type: object
+            properties:
+              login:
+                type: string
+              name:
+                type: string
+              surname:
+                type: string
+              email:
+                type: string
+              permissions:
+                type: array
+                items: { type: string }
+                enum: [ reader, writer, money, admin ]
+            required: { login, name, email, permissions }
+
   responses:
 
     AuthInfo:
@@ -660,7 +688,9 @@ components:
               data:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Person"
+                  allOf:
+                    - $ref: "#/components/schemas/Person"
+                    - $ref: "#/components/schemas/InAccount"
 
     Object:
       description: "Object information"
@@ -686,7 +716,9 @@ components:
               data:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Object"
+                  allOf:
+                    - $ref: "#/components/schemas/Object"
+                    - $ref: "#/components/schemas/InAccount"
 
     Target:
       description: "Target information"
@@ -894,6 +926,14 @@ components:
           type: number
           format: float
       required: [number]
+
+    InAccount:
+      description: "AccountID information about nested entity"
+      properties:
+        account_id:
+          type: string
+          format: uuid
+      required: [account_id]
 
     Target:
       description: "Purpose of the fee"

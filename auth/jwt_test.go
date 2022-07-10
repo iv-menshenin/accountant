@@ -1,7 +1,9 @@
 package auth
 
 import (
+	"context"
 	"fmt"
+	"github.com/iv-menshenin/accountant/model/domain"
 	"testing"
 
 	"github.com/iv-menshenin/accountant/model/generic"
@@ -9,7 +11,7 @@ import (
 )
 
 func TestJWTCore_InputKey(t *testing.T) {
-	jwtC, err := New("YmFzZTY0IGRhdGE=")
+	jwtC, err := New(mockRepo{}, "YmFzZTY0IGRhdGE=")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -33,7 +35,7 @@ func TestJWTCore_InputKey(t *testing.T) {
 }
 
 func TestJWTCore_RandomKey(t *testing.T) {
-	jwtC, err := New("")
+	jwtC, err := New(mockRepo{}, "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -54,4 +56,22 @@ func TestJWTCore_RandomKey(t *testing.T) {
 	if !info.Claims.UserID.Equal(user.UUID) {
 		t.Fatalf("wrong user_id, want: %s, got: %s", user.UUID, info.Claims.UserID)
 	}
+}
+
+type mockRepo struct{}
+
+func (mockRepo) FindByLogin(ctx context.Context, login string) (*domain.UserInfo, error) {
+	return &domain.UserInfo{
+		ID:          uuid.NewUUID(),
+		Name:        "devalio",
+		Permissions: []domain.Permission{"green plum", "read", "write"},
+	}, nil
+}
+
+func (mockRepo) Lookup(ctx context.Context, ID uuid.UUID) (*domain.UserInfo, error) {
+	return &domain.UserInfo{
+		ID:          uuid.NewUUID(),
+		Name:        "devalio",
+		Permissions: []domain.Permission{"green plum", "read", "write"},
+	}, nil
 }

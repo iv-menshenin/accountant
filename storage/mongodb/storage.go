@@ -1,6 +1,8 @@
 package mongodb
 
 import (
+	"context"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"log"
 
@@ -35,6 +37,24 @@ func NewStorage(config *config.ConfigStorage, logger *log.Logger) (*Storage, err
 	if err != nil {
 		return nil, err
 	}
+	return &Storage{
+		logger: logger,
+		mongo:  db,
+	}, nil
+}
+
+func NewTestStorage(config *config.ConfigStorage, logger *log.Logger) (*Storage, error) {
+	db, err := mongodb.New(config, logger)
+	if err != nil {
+		return nil, err
+	}
+
+	db.Accounts().Collection.DeleteMany(context.Background(), bson.D{})
+	db.Bills().Collection.DeleteMany(context.Background(), bson.D{})
+	db.Payments().Collection.DeleteMany(context.Background(), bson.D{})
+	db.Targets().Collection.DeleteMany(context.Background(), bson.D{})
+	db.Users().Collection.DeleteMany(context.Background(), bson.D{})
+
 	return &Storage{
 		logger: logger,
 		mongo:  db,
