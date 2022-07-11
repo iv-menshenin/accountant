@@ -94,34 +94,65 @@
 
           <div class="block-title display-flex justify-content-space-between align-items-center">
             <span>Владельцы</span>
-            <${NewPersonDialog} @added=${addPerson}></${NewPersonDialog}>
+            <a href="#" class="button button-small display-inline-block person-dialog-open" @click=${() => activePerson.value = {}}>
+              <i class="icon f7-icons" style="font-size: 1em">plus</i>
+              <span>Добавить</span>
+            </a>
           </div>
           ${accountData.value.persons && accountData.value.persons.length > 0 ? $h`
             <div class="list media-list">
               <ul>
                 ${accountData.value.persons.map((person) => $h`
-                  <li class="item-content">
-                    <div class="item-media">
-                      <div class="item-icon bg-color-primary">
-                        <i class="icon f7-icons">person</i>
-                      </div>
-                    </div>
-                    <div class="item-inner">
-                      <div class="item-title-row">
-                        <div class="item-title">
-                          <span>${person.surname} ${person.name} ${person.pat_name}</span>
-                          ${person.is_member && $h`
-                            <i class="icon f7-icons color-blue tooltip-init" style="font-size: 1em" data-tooltip="Член садового товарищества">checkmark_seal_fill</i>
-                          `}
+                  <li>
+                    ${person.person_id ? $h`
+                      <a href="#" class="item-link item-content person-dialog-open" @click=${() => activePerson.value = person}>
+                        <div class="item-media">
+                          <div class="item-icon bg-color-primary">
+                            <i class="icon f7-icons">person</i>
+                          </div>
                         </div>
-                        <div class="item-after">
-                          <a href="#" class="link color-red" @click=${() => deletePerson(person)}>
-                            <i class="icon f7-icons">trash</i>
-                          </a>
+                        <div class="item-inner">
+                          <div class="item-title-row">
+                            <div class="item-title">
+                              <span>${person.surname} ${person.name} ${person.pat_name}</span>
+                              ${person.is_member && $h`
+                                <i class="icon f7-icons color-blue tooltip-init" style="font-size: 1em" data-tooltip="Член садового товарищества">checkmark_seal_fill</i>
+                              `}
+                            </div>
+                            <div class="item-after">
+                              <a href="#" class="link color-red" @click=${(event) => deletePerson(person, event)}>
+                                <i class="icon f7-icons">trash</i>
+                              </a>
+                            </div>
+                          </div>
+                          <div class="item-subtitle">${person.phone}</div>
+                        </div>
+                      </a>
+                    ` : $h`
+                      <div class="item-content">
+                        <div class="item-media">
+                          <div class="item-icon bg-color-primary">
+                            <i class="icon f7-icons">person</i>
+                          </div>
+                        </div>
+                        <div class="item-inner">
+                          <div class="item-title-row">
+                            <div class="item-title">
+                              <span>${person.surname} ${person.name} ${person.pat_name}</span>
+                              ${person.is_member && $h`
+                                <i class="icon f7-icons color-blue tooltip-init" style="font-size: 1em" data-tooltip="Член садового товарищества">checkmark_seal_fill</i>
+                              `}
+                            </div>
+                            <div class="item-after">
+                              <a href="#" class="link color-red" @click=${(event) => deletePerson(person, event)}>
+                                <i class="icon f7-icons">trash</i>
+                              </a>
+                            </div>
+                          </div>
+                          <div class="item-subtitle">${person.phone}</div>
                         </div>
                       </div>
-                      <div class="item-subtitle">${person.phone}</div>
-                    </div>
+                    `}
                   </li>
                 `)}
               </ul>
@@ -188,13 +219,15 @@
             `}
           </div>
         </form>
+
+        <${PersonDialog} person=${activePerson.value} @added=${addPerson} @updated=${updatePerson}></${PersonDialog}>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import NewPersonDialog from '@/components/new-person-dialog.f7';
+import PersonDialog from '@/components/person-dialog.f7';
 import NewObjectDialog from '@/components/new-object-dialog.f7';
 
 export default (props, { $f7router, $f7route, $on, $f7, $ref, $el, $update }) => {
@@ -204,7 +237,9 @@ export default (props, { $f7router, $f7route, $on, $f7, $ref, $el, $update }) =>
   const saving = $ref(false);
   let agreementDateCalendar;
   let purchaseDateCalendar;
+  let activePerson = $ref({});
   let addedPersons = [];
+  let updatedPersons = [];
   let deletedPersons = [];
   let addedObjects = [];
   let deletedObjects = [];
@@ -212,7 +247,7 @@ export default (props, { $f7router, $f7route, $on, $f7, $ref, $el, $update }) =>
   $on('popupInit', async () => {
     initForm();
 
-    if (props.id) {
+    if (props.accountId) {
       try {
         loading.value = true;
         await getAccountData();
@@ -257,7 +292,7 @@ export default (props, { $f7router, $f7route, $on, $f7, $ref, $el, $update }) =>
 
   function getAccountData() {
     return new Promise((resolve, reject) => {
-      $f7.request.json(`/api/accounts/${props.id}`, (data, status, xhr) => {
+      $f7.request.json(`/api/accounts/${props.accountId}`, (data, status, xhr) => {
         accountData.value = data.data;
 
         if (Boolean(accountData.value.agreement_date)) {
@@ -380,10 +415,24 @@ export default (props, { $f7router, $f7route, $on, $f7, $ref, $el, $update }) =>
     $update();
   }
 
-  function deletePerson(person) {
+  function updatePerson({ detail }) {
+    const idx = updatedPersons.findIndex((p) => p.person_id === detail.person_id)
+    if (idx >= 0) {
+      updatedPersons[idx] = detail;
+    } else {
+      updatedPersons.push(detail);
+    }
+
+    accountData.value.persons[accountData.value.persons.findIndex((p) => p.person_id === detail.person_id)] = detail;
+    $update();
+  }
+
+  function deletePerson(person, event) {
+    event.stopPropagation();
+
     $f7.dialog.create({
       title: `Удалить владельца?`,
-      text: `${person.surname} ${person.name} ${person.pat_name} будет удален(a)${$f7route.name === 'new_account' ? '' : ' из счета №' + accountData.value.account}`,
+      text: `${person.surname} ${person.name} ${person.pat_name ?? ''} будет удален(a)${$f7route.name === 'new_account' ? '' : ' из счета №' + accountData.value.account}`,
       buttons: [
         {
           text: 'Отмена',
@@ -395,6 +444,7 @@ export default (props, { $f7router, $f7route, $on, $f7, $ref, $el, $update }) =>
           onClick: () => {
             if (person.person_id) {
               deletedPersons.push(person.person_id);
+              updatedPersons.splice(updatedPersons.findIndex((p) => p.person_id === person.person_id), 1);
             } else {
               const index = addedPersons.findIndex((p) => p.surname === person.surname && p.name === person.name && p.pat_name === person.pat_name);
               addedPersons.splice(index, 1);
@@ -409,13 +459,33 @@ export default (props, { $f7router, $f7route, $on, $f7, $ref, $el, $update }) =>
     }).open();
   }
 
-  function savePersons() {
+  async function savePersons() {
     function addPersons() {
       return Promise.all(addedPersons.map((person) => new Promise((resolve, reject) => {
         $f7.request({
           method: 'POST',
           url: `/api/accounts/${accountData.value.account_id}/persons`,
           data: person,
+          contentType: 'application/json',
+          dataType: 'json',
+          success: resolve,
+          error: (xhr, status, message) => {
+            if (status !== 401) {
+              reject(`${status}: ${message}`);
+            }
+          },
+        });
+      })));
+    }
+
+    function updatePersons() {
+      return Promise.all(updatedPersons.map((person) => new Promise((resolve, reject) => {
+        const { person_id, ...data } = person;
+
+        $f7.request({
+          method: 'PUT',
+          url: `/api/accounts/${accountData.value.account_id}/persons/${person_id}`,
+          data: data,
           contentType: 'application/json',
           dataType: 'json',
           success: resolve,
@@ -443,10 +513,15 @@ export default (props, { $f7router, $f7route, $on, $f7, $ref, $el, $update }) =>
       })));
     }
 
-    return Promise.all([
+    await Promise.all([
       addPersons(),
+      updatePersons(),
       deletePersons(),
     ]);
+
+    addedPersons = [];
+    updatedPersons = [];
+    deletedPersons = [];
   }
 
   function addObject({ detail }) {

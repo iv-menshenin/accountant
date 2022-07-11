@@ -2,23 +2,129 @@
   <div class="page" data-name="persons">
     <div class="navbar">
       <div class="navbar-bg"></div>
-      <div class="navbar-inner sliding">
+      <div class="navbar-inner">
         <div class="left no-display-medium">
           <a class="link panel-open">
             <i class="icon f7-icons">list_bullet</i>
           </a>
         </div>
         <div class="title">Владельцы</div>
+        <div class="right">
+          <a class="link" @click=${() => serachbarActive.value = true}>
+            <i class="icon f7-icons">search</i>
+          </a>
+        </div>
+        <${NavbarSearchbar} placeholder="Поиск владельца" search-container="#persons-list" search-in=".item-title" active=${serachbarActive.value} @searchbar:close=${() => serachbarActive.value = false}></${NavbarSearchbar}>
       </div>
     </div>
 
     <div class="page-content">
-      Persons
+      <div class="page-container">
+        <div class="block text-align-center searchbar-not-found">
+          Владельцев не найдено
+        </div>
+
+        ${loading.value && $h`
+          <div class="list media-list medium-inset">
+            <ul>
+              ${[1, 2, 3, 4, 5].map(() => $h`
+                <li class="item-content skeleton-effect-wave">
+                  <div class="item-media">
+                    <div class="item-icon skeleton-block"></div>
+                  </div>
+                  <div class="item-inner skeleton-text">
+                    <div class="item-title-row">
+                      <div class="item-title">Account Persona Fullname</div>
+                    </div>
+                    <div class="item-subtitle">Persona phonenumber</div>
+                  </div>
+                </li>
+              `)}
+            </ul>
+          </div>
+        `}
+
+        <div class="list virtual-list media-list chevron-center medium-inset searchbar-found" id="persons-list"></div>
+      </div>
     </div>
   </div>
 </template>
 <script>
-export default () => {
+import NavbarSearchbar from '@/components/navbar-searchbar.f7';
+
+export default (props, { $f7, $ref, $on, $el }) => {
+  const serachbarActive = $ref(false);
+  const loading = $ref(false);
+  let virtualList;
+  let items = [];
+
+  $on('pageInit', () => {
+    initVirtualList();
+    loadData();
+  });
+
+  function loadData() {
+    loading.value = true;
+
+    $f7.request.json('/api/persons', (data, status, xhr) => {
+      items = data.data;
+      virtualList.appendItems(items);
+      loading.value = false;
+    }, (xhr, status, message) => {
+      if (status !== 401) loading.value = false;
+    });
+  }
+
+  function initVirtualList() {
+    virtualList = $f7.virtualList.create({
+      el: $el.value.find('.virtual-list'),
+      items: items,
+      searchAll: (query, items) => {
+        let found = [];
+        for (let i = 0; i < items.length; i++) {
+          const displayItem = query.trim() === '' ||
+            query.toLowerCase().split(' ').every((word) =>
+              items[i].name.toLowerCase().indexOf(word) >= 0 ||
+              items[i].surname.toLowerCase().indexOf(word) >= 0 ||
+              items[i].pat_name.toLowerCase().indexOf(word) >= 0
+            );
+
+            if (displayItem) {
+              console.log(query, displayItem, items[i]);
+
+            }
+          if (displayItem) found.push(i);
+        }
+        return found; //return array with mathced indexes
+      },
+      renderItem(item) {
+        return `
+          <li>
+            <a href="/accounts/${item.accountID}/" class="item-link item-content">
+              <div class="item-media">
+                <div class="item-icon bg-color-primary">
+                  <i class="icon f7-icons">person</i>
+                </div>
+              </div>
+              <div class="item-inner">
+                <div class="item-title-row">
+                  <div class="item-title">
+                    <span>${item.surname} ${item.name} ${item.pat_name}</span>
+                    ${item.is_member ? `
+                      <i class="icon f7-icons color-blue tooltip-init" style="font-size: 1em" data-tooltip="Член садового товарищества">checkmark_seal_fill</i>
+                    ` : ''}
+                  </div>
+                </div>
+                <div class="item-subtitle">${item.phone}</div>
+              </div>
+            </a>
+          </li>
+        `;
+      },
+      height: 77,
+    });
+  }
+
   return $render;
 }
 </script>

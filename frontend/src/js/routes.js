@@ -29,7 +29,7 @@ export default [
         },
       },
       {
-        path: ':id/',
+        path: ':accountId/',
         name: 'account',
         popup: {
           asyncComponent: () => import('@/pages/account.f7'),
