@@ -165,35 +165,67 @@
 
           <div class="block-title display-flex justify-content-space-between align-items-center">
             <span>Участки</span>
-            <${NewObjectDialog} @added=${addObject}></${NewObjectDialog}>
+            <a href="#" class="button button-small display-inline-block object-dialog-open" @click=${() => activeObject.value = {}}>
+              <i class="icon f7-icons" style="font-size: 1em">plus</i>
+              <span>Добавить</span>
+            </a>
           </div>
           ${accountData.value.objects && accountData.value.objects.length > 0 ? $h`
             <div class="list media-list">
               <ul>
                 ${accountData.value.objects.map((object) => $h`
-                  <li class="item-content">
-                    <div class="item-media">
-                      <div class="item-icon bg-color-primary">
-                        <i class="icon f7-icons">skew</i>
+                  <li>
+                    ${object.object_id ? $h`
+                      <a href="#" class="item-link item-content object-dialog-open" @click=${() => activeObject.value = object}>
+                        <div class="item-media">
+                          <div class="item-icon bg-color-primary">
+                            <i class="icon f7-icons">skew</i>
+                          </div>
+                        </div>
+                        <div class="item-inner">
+                          <div class="item-title-row">
+                            <div class="item-title">
+                              <span>${object.street}, ${object.number}</span>
+                            </div>
+                            <div class="item-after">
+                              <a href="#" class="link color-red" @click=${(event) => deleteObject(object, event)}>
+                                <i class="icon f7-icons">trash</i>
+                              </a>
+                            </div>
+                          </div>
+                          ${object.area && $h`
+                            <div class="item-subtitle">
+                              ${object.area} м²
+                            </div>
+                          `}
+                        </div>
+                      </a>
+                    ` : $h`
+                      <div class="item-content">
+                        <div class="item-media">
+                          <div class="item-icon bg-color-primary">
+                            <i class="icon f7-icons">skew</i>
+                          </div>
+                        </div>
+                        <div class="item-inner">
+                          <div class="item-title-row">
+                            <div class="item-title">
+                              <span>${object.street}, ${object.number}</span>
+                            </div>
+                            <div class="item-after">
+                              <a href="#" class="link color-red" @click=${(event) => deleteObject(object, event)}>
+                                <i class="icon f7-icons">trash</i>
+                              </a>
+                            </div>
+                          </div>
+                          ${object.area && $h`
+                            <div class="item-subtitle">
+                              ${object.area} м²
+                            </div>
+                          `}
+                        </div>
                       </div>
-                    </div>
-                    <div class="item-inner">
-                      <div class="item-title-row">
-                        <div class="item-title">
-                          <span>${object.street}, ${object.number}</span>
-                        </div>
-                        <div class="item-after">
-                          <a href="#" class="link color-red" @click=${() => deleteObject(object)}>
-                            <i class="icon f7-icons">trash</i>
-                          </a>
-                        </div>
-                      </div>
-                      ${object.area && $h`
-                        <div class="item-subtitle">
-                          ${object.area} м²
-                        </div>
-                      `}
-                    </div>
+                    `}
                   </li>
                 `)}
               </ul>
@@ -221,6 +253,7 @@
         </form>
 
         <${PersonDialog} person=${activePerson.value} @added=${addPerson} @updated=${updatePerson}></${PersonDialog}>
+        <${ObjectDialog} object=${activeObject.value} @added=${addObject} @updated=${updateObject}></${ObjectDialog}>
       </div>
     </div>
   </div>
@@ -228,7 +261,7 @@
 
 <script>
 import PersonDialog from '@/components/person-dialog.f7';
-import NewObjectDialog from '@/components/new-object-dialog.f7';
+import ObjectDialog from '@/components/object-dialog.f7';
 
 export default (props, { $f7router, $f7route, $on, $f7, $ref, $el, $update }) => {
   const purchaseKindList = ['договор к/п', 'наследство', 'постановление', 'дарение'];
@@ -238,10 +271,12 @@ export default (props, { $f7router, $f7route, $on, $f7, $ref, $el, $update }) =>
   let agreementDateCalendar;
   let purchaseDateCalendar;
   let activePerson = $ref({});
+  let activeObject = $ref({});
   let addedPersons = [];
   let updatedPersons = [];
   let deletedPersons = [];
   let addedObjects = [];
+  let updatedObjects = [];
   let deletedObjects = [];
 
   $on('popupInit', async () => {
@@ -532,7 +567,21 @@ export default (props, { $f7router, $f7route, $on, $f7, $ref, $el, $update }) =>
     $update();
   }
 
+  function updateObject({ detail }) {
+    const idx = updatedObjects.findIndex((p) => p.object_id === detail.object_id)
+    if (idx >= 0) {
+      updatedObjects[idx] = detail;
+    } else {
+      updatedObjects.push(detail);
+    }
+
+    accountData.value.objects[accountData.value.objects.findIndex((p) => p.object_id === detail.object_id)] = detail;
+    $update();
+  }
+
   function deleteObject(object) {
+    event.stopPropagation();
+
     $f7.dialog.create({
       title: `Удалить участок?`,
       text: `Участок ${object.street}, ${object.number} будет удален${$f7route.name === 'new_account' ? '' : ' из счета №' + accountData.value.account}`,
@@ -547,6 +596,7 @@ export default (props, { $f7router, $f7route, $on, $f7, $ref, $el, $update }) =>
           onClick: () => {
             if (object.object_id) {
               deletedObjects.push(object.object_id);
+              updatedObjects.splice(updatedObjects.findIndex((p) => p.object_id === object.object_id), 1);
             } else {
               const index = addedObjects.findIndex((o) => o.street === object.street && o.number == object.number);
               addedObjects.splice(index, 1);
@@ -561,13 +611,33 @@ export default (props, { $f7router, $f7route, $on, $f7, $ref, $el, $update }) =>
     }).open();
   }
 
-  function saveObjects() {
+  async function saveObjects() {
     function addObjects() {
       return Promise.all(addedObjects.map((object) => new Promise((resolve, reject) => {
         $f7.request({
           method: 'POST',
           url: `/api/accounts/${accountData.value.account_id}/objects`,
           data: object,
+          contentType: 'application/json',
+          dataType: 'json',
+          success: resolve,
+          error: (xhr, status, message) => {
+            if (status !== 401) {
+              reject(`${status}: ${message}`);
+            }
+          },
+        });
+      })));
+    }
+
+    function updateObjects() {
+      return Promise.all(updatedObjects.map((person) => new Promise((resolve, reject) => {
+        const { object_id, ...data } = person;
+
+        $f7.request({
+          method: 'PUT',
+          url: `/api/accounts/${accountData.value.account_id}/objects/${object_id}`,
+          data: data,
           contentType: 'application/json',
           dataType: 'json',
           success: resolve,
@@ -595,10 +665,15 @@ export default (props, { $f7router, $f7route, $on, $f7, $ref, $el, $update }) =>
       })));
     }
 
-    return Promise.all([
+    await Promise.all([
       addObjects(),
+      updateObjects(),
       deleteObjects(),
     ]);
+
+    addedObjects = [];
+    updatedObjects = [];
+    deletedObjects = [];
   }
 
   return $render;

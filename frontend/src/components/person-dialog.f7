@@ -1,11 +1,11 @@
 <template>
-  <div class="new-person-dialog">
+  <div class="person-dialog">
     <form class="dialog dialog-buttons-2" @submit=${submit}>
       <div class="dialog-inner">
         <div class="dialog-title">
           ${mode() === 'add' ? 'Добавить' : 'Обновить данные'} владельца
         </div>
-        <div class="new-person-dialog-input-list list no-margin-bottom margin-top no-hairlines">
+        <div class="person-dialog-input-list list no-margin-bottom margin-top no-hairlines">
           <ul>
             <li>
               <div class="item-content item-input">
@@ -80,10 +80,10 @@
 </template>
 
 <style>
-  .new-person-dialog .dialog {
+  .person-dialog .dialog {
     display: none;
   }
-  .new-person-dialog-input-list {
+  .person-dialog-input-list {
     --f7-list-item-padding-horizontal: 0;
   }
 </style>

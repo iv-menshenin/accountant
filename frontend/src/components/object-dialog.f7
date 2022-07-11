@@ -1,14 +1,11 @@
 <template>
-  <div class="new-object-dialog">
-    <a href="#" class="button button-small display-inline-block" @click=${() => dialog.open()}>
-      <i class="icon f7-icons" style="font-size: 1em">plus</i>
-      <span>Добавить</span>
-    </a>
-
+  <div class="object-dialog">
     <form class="dialog dialog-buttons-2" @submit=${submit}>
       <div class="dialog-inner">
-        <div class="dialog-title">Добавить участок</div>
-        <div class="new-object-dialog-input-list list no-margin-bottom margin-top no-hairlines">
+        <div class="dialog-title">
+          ${mode() === 'add' ? 'Добавить участок' : 'Обновить данные участка'}
+        </div>
+        <div class="object-dialog-input-list list no-margin-bottom margin-top no-hairlines">
           <ul>
             <li>
               <div class="item-content item-input">
@@ -65,17 +62,19 @@
       </div>
       <div class="dialog-buttons">
         <button type="reset" class="dialog-button dialog-second-button" style="width: auto;">Отмена</button>
-        <button type="submit" class="dialog-button" style="width: auto;">Добавить</button>
+        <button type="submit" class="dialog-button" style="width: auto;">
+          ${mode() === 'add' ? 'Добавить' : 'Обновить'}
+        </button>
       </div>
     </form>
   </div>
 </template>
 
 <style>
-  .new-object-dialog .dialog {
+  .object-dialog .dialog {
     display: none;
   }
-  .new-object-dialog-input-list {
+  .object-dialog-input-list {
     --f7-list-item-padding-horizontal: 0;
   }
 </style>
@@ -83,7 +82,7 @@
 <script>
 import PhoneNumber from 'awesome-phonenumber';
 
-export default (props, { $f7, $el, $onMounted, $onBeforeUnmount, $emit }) => {
+export default (props, { $f7, $el, $onMounted, $onBeforeUnmount, $emit, $ }) => {
   let dialog;
 
   $onMounted(() => {
@@ -101,12 +100,40 @@ export default (props, { $f7, $el, $onMounted, $onBeforeUnmount, $emit }) => {
         },
       ],
       on: {
-        opened: (dialog) => dialog.$el.find('input')[0].focus(),
+        opened: (dialog) => {
+          dialog.$el.find('input')[0].focus();
+
+          for (let fieldName in props.object) {
+            if (props.object.hasOwnProperty(fieldName)) {
+              if (fieldName === 'is_member' && props.object[fieldName]) {
+                dialog.$el.find(`input[name="${fieldName}"]`).attr('checked', true);
+              } else {
+                dialog.$el.find(`input[name="${fieldName}"]`).val(props.object[fieldName]);
+              }
+            }
+          }
+        },
+        closed: (dialog) => {
+          dialog.$el.find('.item-input-error-message').html('');
+          dialog.$el.find('input').removeClass('input-invalid');
+          dialog.$el.find('.item-input-with-error-message')
+            .removeClass('item-input-with-error-message')
+            .removeClass('item-input-invalid');
+        },
       },
     });
 
     $el.value.find('.dialog').remove();
+    $(document).on('click', '.object-dialog-open', openDialog);
   });
+
+  function openDialog() {
+    dialog.open();
+  }
+
+  function mode() {
+    return props.object.object_id ? 'update' : 'add';
+  }
 
   function submit(event) {
     event.preventDefault();
@@ -126,12 +153,20 @@ export default (props, { $f7, $el, $onMounted, $onBeforeUnmount, $emit }) => {
       }
     }
 
-    $emit('added', data);
+    if (mode() === 'add') {
+      $emit('added', data);
+    } else {
+      data.object_id = props.object.object_id;
+      $emit('updated', data);
+    }
     event.target.reset();
     dialog.close();
   }
 
-  $onBeforeUnmount(() => dialog.destroy());
+  $onBeforeUnmount(() => {
+    dialog.destroy();
+    $(document).off('click', '.object-dialog-open', openDialog);
+  });
 
   return $render;
 }
