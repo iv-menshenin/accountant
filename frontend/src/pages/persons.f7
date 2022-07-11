@@ -89,10 +89,6 @@ export default (props, { $f7, $ref, $on, $el }) => {
               items[i].pat_name.toLowerCase().indexOf(word) >= 0
             );
 
-            if (displayItem) {
-              console.log(query, displayItem, items[i]);
-
-            }
           if (displayItem) found.push(i);
         }
         return found; //return array with mathced indexes
