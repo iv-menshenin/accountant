@@ -43,7 +43,7 @@ func (r *Resources) SetupRouting(router *mux.Router) {
 	router.Path("/html/{filename:[a-z0-9\\-_/]+}.html").Methods(http.MethodGet).Handler(http.HandlerFunc(r.Html))
 	router.Path("/css/{filename:[a-z0-9\\-_/]+}.css").Methods(http.MethodGet).Handler(http.HandlerFunc(r.Css))
 	router.Path("/png/{filename:[a-z0-9\\-_/]+}.png").Methods(http.MethodGet).Handler(http.HandlerFunc(r.Png))
-	router.Methods(http.MethodGet).Handler(http.HandlerFunc(r.Any))
+	router.Methods(http.MethodGet).Handler(http.HandlerFunc(r.SPA))
 }
 
 func (r *Resources) Script(w http.ResponseWriter, q *http.Request) {
@@ -112,15 +112,11 @@ func (r *Resources) Png(w http.ResponseWriter, q *http.Request) {
 
 var startPath = flag.String("www-start", os.Getenv("HTML_START"), "http-server homepage")
 
-func (r *Resources) Any(w http.ResponseWriter, q *http.Request) {
+func (r *Resources) SPA(w http.ResponseWriter, q *http.Request) {
 	fileName := q.URL.Path
-	if fileName == "" || fileName == "/" {
-		if *startPath == "/" || *startPath == "" {
-			w.WriteHeader(http.StatusNotFound)
-			return
-		}
-		http.Redirect(w, q, *startPath, http.StatusFound)
-		return
+	// SPA replacement
+	if path.Ext(fileName) == "" {
+		fileName = "/index.html"
 	}
 	if strings.Contains(fileName, "../") {
 		r.logger.Printf("DETECTED UPLEVEL: %s\n", fileName)
