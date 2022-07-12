@@ -418,8 +418,10 @@ paths:
     post:
       summary: "Create new User"
       requestBody:
-        - $ref: "#/components/requestBodies/User"
-
+        $ref: "#/components/requestBodies/User"
+      responses:
+        '200':
+          $ref: "#/components/responses/Payment"
 
 components:
 
@@ -614,9 +616,10 @@ components:
                 type: string
               permissions:
                 type: array
-                items: { type: string }
-                enum: [ reader, writer, money, admin ]
-            required: { login, name, email, permissions }
+                items:
+                  type: string
+                  enum: [ reader, writer, money, admin ]
+            required: [ login, name, email, permissions ]
 
   responses:
 
