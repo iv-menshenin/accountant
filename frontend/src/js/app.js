@@ -40,9 +40,12 @@ var app = new Framework7({
         },
         statusCode: {
           401: async (xhr) => {
+            if (!window.localStorage.getItem('devalio_token')) return;
+
             try {
               const { method, url } = xhr.requestParameters;
-              const { data } = await this.request.postJSON('/auth/refresh', { token: window.localStorage.getItem('devalio_refresh') });
+              const { data, status } = await this.request.postJSON('/auth/refresh', { token: window.localStorage.getItem('devalio_refresh') });
+
               window.localStorage.setItem('devalio_token', data.data.jwt_token);
               window.localStorage.setItem('devalio_refresh', data.data.refresh_token);
               xhr.open(method, url);
@@ -50,6 +53,10 @@ var app = new Framework7({
               xhr.send();
             } catch (error) {
               console.error('401', error);
+
+              window.localStorage.removeItem('devalio_token');
+              window.localStorage.removeItem('devalio_refresh');
+              this.view.main.router.navigate('/login/');
             }
           },
         }
