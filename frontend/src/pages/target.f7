@@ -1,0 +1,281 @@
+<template>
+  <div class="popup">
+    <div class="view">
+      <div class="page">
+        <div class="navbar">
+          <div class="navbar-bg"></div>
+          <div class="navbar-inner">
+            <div class="title">
+              ${$f7route.name === 'new_target' ?
+                'Новый взнос' :
+                'Взнос' + (targetData.value.type ? ` "${targetData.value.type}"` : '')
+              }
+            </div>
+            <div class="right">
+              <a class="link popup-close">
+                <i class="icon f7-icons">multiply</i>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <form class="page-content" @submit=${saveTargetData}>
+          <div class="list">
+            <ul>
+              <li>
+                <div class="item-content item-input">
+                  <div class="item-inner">
+                    <div class="item-title item-label">Тип</div>
+                    <div class="item-input-wrap ${loading.value && 'skeleton-effect-wave'}">
+                      <input type="text" name="type" value=${targetData.value.type} placeholder="Ежегодный" autocomplete="off" required validate disabled=${saving.value || $f7route.name === 'target'} @invalid=${() => $el.value.find('.page-content').scrollTop(0, 300)} />
+                    </div>
+                  </div>
+                </div>
+              </li>
+              <li>
+                <div class="item-content item-input">
+                  <div class="item-inner">
+                    <div class="item-title item-label">Период</div>
+                    <div class="item-input-wrap">
+                      <input type="text" name="period" placeholder="Период" readonly="readonly" disabled=${saving.value} />
+                    </div>
+                  </div>
+                </div>
+              </li>
+              <li>
+                <div class="item-content item-input">
+                  <div class="item-inner">
+                    <div class="item-title item-label">Сумма, ₽</div>
+                    <div class="item-input-wrap">
+                      <input type="number" name="cost" value=${targetData.value.cost} min="0" step="0.01" name="cost" placeholder="1000" required validate />
+                    </div>
+                  </div>
+                </div>
+              </li>
+              <li class="item-content item-input">
+                <div class="item-inner">
+                  <div class="item-title item-label">Комментарий</div>
+                  <div class="item-input-wrap ${loading.value && 'skeleton-effect-wave'}">
+                    <textarea class="resizable" name="comment" value=${targetData.value.comment} placeholder="Дополнительная информация" disabled=${saving.value}></textarea>
+                  </div>
+                </div>
+              </li>
+              <li class=${$f7route.name === 'new_target' && 'display-none'}>
+                <div class="item-content item-input">
+                  <div class="item-inner">
+                    <div class="item-title item-label">Дата закрытия</div>
+                    <div class="item-input-wrap ${loading.value && 'skeleton-effect-wave'}">
+                      <input type="text" name="closed" placeholder="03.02.2020" disabled=${saving.value} readonly />
+                    </div>
+                  </div>
+                </div>
+              </li>
+            </ul>
+          </div>
+
+          <div class="block">
+            <button type="submit" class="button button-fill button-large button-preloader ${saving.value && 'button-loading disabled'}">
+              <div class="preloader">
+                <span class="preloader-inner">
+                  <span class="preloader-inner-circle"></span>
+                </span>
+              </div>
+              <span>Сохранить</span>
+            </button>
+
+            ${$f7route.name === 'target' && $h`
+              <button type="button" class="button button-large color-red  margin-top" @click=${deleteTarget}>Удалить</button>
+            `}
+          </div>
+        </form>
+
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+export default (props, { $f7router, $f7route, $on, $f7, $ref, $el, $update }) => {
+  const monthes = 'Январь Февраль Март Апрель Май Июнь Июль Август Сентябрь Октябрь Ноябрь Декабрь'.split(' ');
+  const targetData = $ref({});
+  const loading = $ref(false);
+  const saving = $ref(false);
+  let closedDateCalendar;
+  let periodPicker;
+
+  $on('popupInit', async () => {
+    initForm();
+
+    if (props.targetId) {
+      try {
+        loading.value = true;
+        await getTargetData();
+      } catch (error) {
+        console.error(error);
+      } finally {
+        loading.value = false;
+      }
+    }
+  });
+
+  function initForm() {
+    const today = new Date();
+
+    periodPicker = $f7.picker.create({
+      inputEl: 'input[name="period"]',
+      openIn: 'popover',
+      rotateEffect: true,
+      value: [
+        today.getMonth(),
+        today.getFullYear(),
+      ],
+      formatValue: function (values, displayValues) {
+        return monthes[values[0]] + ' ' + values[1];
+      },
+      cols: [
+        // Months
+        {
+          values: ('0 1 2 3 4 5 6 7 8 9 10 11').split(' '),
+          displayValues: monthes,
+          textAlign: 'right'
+        },
+        // Years
+        {
+          values: (function () {
+            const arr = [];
+            for (let i = 1950; i <= 2050; i++) { arr.push(i); }
+            return arr;
+          })(),
+        },
+      ],
+    });
+
+    closedDateCalendar = $f7.calendar.create({
+      inputEl: 'input[name="closed"]',
+      closeOnSelect: true,
+      inputReadOnly: false,
+      openIn: 'popover',
+    });
+  }
+
+  function getTargetData() {
+    return new Promise((resolve, reject) => {
+      $f7.request.json(`/api/targets/${props.targetId}`, (data, status, xhr) => {
+        targetData.value = data.data;
+
+        periodPicker.setValue([targetData.value.period.month - 1, targetData.value.period.year]);
+        resolve();
+      }, (xhr, status, message) => {
+        if (status !== 401) {
+          reject(`${status}: ${message}`);
+        }
+      });
+    });
+  }
+
+  async function saveTargetData(event) {
+    event.preventDefault();
+
+    const { type, ...data } = $f7.form.convertToData(event.target);
+    data.closed = Boolean(data.closed) ? agreementDateCalendar.value[0].toISOString() : '';
+    data.cost = Number(data.cost);
+    data.period = {
+      month: Number(periodPicker.value[0]) + 1,
+      year: Number(periodPicker.value[1]),
+    };
+
+    for (let property in data) {
+      if (data.hasOwnProperty(property)) {
+        if (data[property] ===  '') {
+          delete data[property];
+        }
+      }
+    }
+
+    try {
+      saving.value = true;
+
+      const response = await new Promise((resolve, reject) => {
+        $f7.request({
+          method: $f7route.name === 'target' ? 'PUT' : 'POST',
+          url: '/api/targets' + ($f7route.name === 'target' ? `/${targetData.value.target_id}` : '') + `?type=${encodeURI(type)}`,
+          data,
+          contentType: 'application/json',
+          dataType: 'json',
+          success: resolve,
+          error: (xhr, status, message) => {
+            if (status !== 401) {
+              reject(`${status}: ${message}`);
+            }
+          },
+        });
+      });
+
+      targetData.value = response.data;
+
+      if ($f7route.name === 'target') {
+        // updated
+        $f7.emit('target:update', targetData.value);
+      } else {
+        // created
+        $f7router.updateCurrentUrl(`/targets/${targetData.value.target_id}/`);
+        $f7route.name = 'target';
+        $f7.emit('target:create', targetData.value);
+      }
+
+      $f7.toast.create({
+        text: 'Сохранено',
+        position: 'center',
+        closeTimeout: 2000,
+        destroyOnClose: true,
+        icon: '<i class="f7-icons">checkmark</i>',
+      }).open();
+    } catch (error) {
+      console.error(error);
+    } finally {
+      saving.value = false;
+    }
+  }
+
+  function deleteTarget() {
+    $f7.dialog.create({
+      title: `Удалить взнос "${targetData.value.type}"?`,
+      text: 'Это действие нельзя будет отменить',
+      buttons: [
+        {
+          text: 'Отмена',
+          cssClass: 'dialog-second-button',
+        },
+        {
+          text: 'Удалить',
+          color: 'red',
+          onClick: () => {
+            $f7.preloader.show();
+
+            $f7.request({
+              method: 'DELETE',
+              url: `/api/targets/${targetData.value.target_id}`,
+              success: (data, status, xhr) => {
+                $f7.emit('target:delete', targetData.value.target_id);
+                $f7.preloader.hide();
+                $f7.popup.close($el.value, true);
+              },
+              error: (xhr, status, message) => {
+                if (status !== 401) $f7.preloader.hide();
+              },
+            });
+          },
+        },
+      ],
+      destroyOnClose: true,
+    }).open();
+  }
+
+  $on('popupBeforeDestroys', () => {
+    periodPicker.destroy();
+    closedDateCalendar.destroy();
+  });
+
+  return $render;
+};
+</script>

@@ -67,6 +67,30 @@ export default [
     options: {
       auth: true,
     },
+    routes: [
+      {
+        path: 'new/',
+        name: 'new_target',
+        popup: {
+          asyncComponent: () => import('@/pages/target.f7'),
+        },
+        beforeEnter: checkAuth,
+        options: {
+          auth: true,
+        },
+      },
+      {
+        path: ':targetId/',
+        name: 'target',
+        popup: {
+          asyncComponent: () => import('@/pages/target.f7'),
+        },
+        beforeEnter: checkAuth,
+        options: {
+          auth: true,
+        },
+      },
+    ],
   },
   {
     path: '(.*)',

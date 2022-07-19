@@ -676,6 +676,11 @@ export default (props, { $f7router, $f7route, $on, $f7, $ref, $el, $update }) =>
     deletedObjects = [];
   }
 
+  $on('popupBeforeDestroy', () => {
+    agreementDateCalendar.destroy();
+    purchaseDateCalendar.destroy();
+  });
+
   return $render;
 };
 </script>
