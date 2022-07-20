@@ -145,7 +145,7 @@ export default (props, { $f7, $ref, $on, $el }) => {
     loading.value = true;
 
     $f7.request.json('/api/targets', (data, status, xhr) => {
-      items = data.data;
+      items = data.data.reverse();
       virtualList.appendItems(items);
       loading.value = false;
     }, (xhr, status, message) => {
