@@ -23,6 +23,7 @@ import Skeleton from 'framework7/components/skeleton';
 import Toast from 'framework7/components/toast';
 import Toggle from 'framework7/components/toggle';
 import Tooltip from 'framework7/components/tooltip';
+import Tabs from 'framework7/components/tabs';
 import Typography from 'framework7/components/typography';
 import VirtualList from 'framework7/components/virtual-list';
 import Fab from 'framework7/components/fab';
@@ -53,6 +54,7 @@ Framework7.use([
   Toast,
   Toggle,
   Tooltip,
+  Tabs,
   Typography,
   VirtualList,
   Fab,
