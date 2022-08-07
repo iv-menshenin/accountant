@@ -105,13 +105,17 @@
             </form>
 
             <div class="page-content tab" id="target-bills" @tab:show=${targetBillsShowed}>
-              <div class="block-title">
+              <div class="block-title" id="all-accounts-checkbox-block">
                 <label class="checkbox margin-horizontal">
                   <input type="checkbox" name="all-accounts-checkbox" />
                   <i class="icon-checkbox"></i>
                 </label>
 
-                <span>Формирование счетов</span>
+                ${getTotalChecked() === accounts.length - bills.length ? $h`
+                  <span id="all-accounts-label">Снять все</span>
+                ` : $h`
+                  <span id="all-accounts-label">Выбрать все</span>
+                `}
               </div>
 
               ${accountsLoading.value && $h`
@@ -167,6 +171,11 @@
 .page[data-name="target"] {
   /* --f7-page-subnavbar-offset: var(--f7-subnavbar-height); */
   --f7-page-toolbar-bottom-offset: var(--f7-toolbar-height);
+}
+.page[data-name="target"] .page-content[id="target-bills"] {
+  padding: 0;
+  margin-top: calc(var(--f7-page-navbar-offset, 0px) + var(--f7-page-toolbar-top-offset, 0px) + var(--f7-page-subnavbar-offset, 0px) + var(--f7-page-searchbar-offset, 0px) + var(--f7-page-content-extra-padding-top, 0px));
+  margin-bottom: calc(var(--f7-page-toolbar-bottom-offset, 0px) + var(--f7-safe-area-bottom) + var(--f7-page-content-extra-padding-bottom, 0px));
 }
 .page[data-name="target"] input[type="checkbox"][disabled] + .icon-checkbox {
   opacity: 0.5;
@@ -393,11 +402,11 @@ export default (props, { $f7router, $f7route, $on, $f7, $ref, $el, $update, $ })
         return found; //return array with mathced indexes
       },
       renderItem(item) {
-        const hasBill = bills.some((bill) => bill.object_id === item.object_id);
+        const bill = bills.find((bill) => bill.object_id === item.object_id);
         return `
           <li>
             <label class="item-checkbox item-content">
-              <input type="checkbox" name="account-checkbox" value="${item.object_id}" ${hasBill && 'checked disabled'} ${item.checked && 'checked'} />
+              <input type="checkbox" name="account-checkbox" value="${item.object_id}" ${Boolean(bill) && 'checked disabled'} ${item.checked && 'checked'} />
               <i class="icon icon-checkbox"></i>
               <div class="item-media">
                 <div class="item-icon bg-color-primary">
@@ -407,7 +416,7 @@ export default (props, { $f7router, $f7route, $on, $f7, $ref, $el, $update, $ })
               <div class="item-inner">
                 <div class="item-title-row">
                   <div class="item-title">${`<span>${item.street}, ${item.number}</span>`}</div>
-                  <div class="item-after">ЛС №${item.account}</div>
+                  <div class="item-after">${Boolean(bill) ? (bill.bill.toLocaleString() + ' ₽') : ''}</div>
                 </div>
                 ${item.persons && item.persons.length > 0 ? `
                   <div class="item-subtitle">
@@ -497,6 +506,10 @@ export default (props, { $f7router, $f7route, $on, $f7, $ref, $el, $update, $ })
       }, []);
       accountsLoading.value = false;
       virtualList.appendItems(accounts);
+
+      if (accounts.length === bills.length) {
+        $el.value.find('#all-accounts-checkbox-block').css('display', 'none');
+      }
     }, (xhr, status, message) => {
       if (status !== 401) accountsLoading.value = false;
     });
@@ -510,6 +523,10 @@ export default (props, { $f7router, $f7route, $on, $f7, $ref, $el, $update, $ })
       billsLoading.value = false;
       virtualList.clearCache();
       virtualList.update();
+
+      if (accounts.length === bills.length) {
+        $el.value.find('#all-accounts-checkbox-block').css('display', 'none');
+      }
     }, (xhr, status, message) => {
       if (status !== 401) billsLoading.value = false;
     });
