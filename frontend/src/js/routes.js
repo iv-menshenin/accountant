@@ -89,6 +89,17 @@ export default [
         options: {
           auth: true,
         },
+        routes: [
+          {
+            path: '/bills/',
+            name: 'bills',
+            asyncComponent: () => import('@/pages/bills.f7'),
+            beforeEnter: checkAuth,
+            options: {
+              auth: true,
+            },
+          }
+        ],
       },
     ],
   },

@@ -1,0 +1,348 @@
+<template>
+  <div class="page" data-name="bills">
+    <div class="navbar">
+      <div class="navbar-bg"></div>
+      <div class="navbar-inner">
+        <div class="left no-display-medium">
+          <a class="link panel-open">
+            <i class="icon f7-icons">list_bullet</i>
+          </a>
+        </div>
+        <div class="title">
+          Формирование счетов для взноса${(targetData.value.type ? ` "${targetData.value.type}"` : '')}
+        </div>
+        <div class="right">
+          <a class="link" @click=${() => serachbarActive.value = true}>
+            <i class="icon f7-icons">search</i>
+          </a>
+        </div>
+        <${NavbarSearchbar} placeholder="Поиск счета на оплату" search-container="#bill-list" search-in=".item-title" active=${serachbarActive.value} @searchbar:close=${() => serachbarActive.value = false}></${NavbarSearchbar}>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <div class="page-container">
+        <div class="block-title" id="all-accounts-checkbox-block">
+          <label class="checkbox margin-horizontal">
+            <input type="checkbox" name="all-accounts-checkbox" />
+            <i class="icon-checkbox"></i>
+          </label>
+
+          ${getTotalChecked() === accounts.length - bills.length ? $h`
+            <span id="all-accounts-label">Снять все</span>
+          ` : $h`
+            <span id="all-accounts-label">Выбрать все</span>
+          `}
+        </div>
+
+        ${loading.value && $h`
+          <div class="list media-list medium-inset">
+            <ul>
+              ${[1, 2, 3].map(() => $h`
+                <li>
+                  <label class="item-checkbox item-content skeleton-effect-wave">
+                    <input type="checkbox" disabled />
+                    <i class="icon icon-checkbox"></i>
+                    <div class="item-media">
+                      <div class="item-icon skeleton-block"></div>
+                    </div>
+                    <div class="item-inner skeleton-text">
+                      <div class="item-title-row">
+                        <div class="item-title">Number</div>
+                      </div>
+                      <div class="item-subtitle">Account Persona Fullname</div>
+                      <div class="item-text">Lorem ipsum dolor sit amet</div>
+                    </div>
+                  </label>
+                </li>
+              `)}
+            </ul>
+          </div>
+        `}
+
+        <div class="list virtual-list media-list chevron-center searchbar-found medium-inset" id="bill-list"></div>
+      </div>
+    </div>
+
+    <div class="fab fab-extended fab-right-bottom color-teal hidden">
+      <a href="#" @click=${createBills}>
+        <i class="icon f7-icons">checkmark_alt</i>
+        <div class="fab-text">Сформировать</div>
+      </a>
+      <span class="badge color-white text-color-teal">${getTotalChecked()}</span>
+    </div>
+  </div>
+</template>
+
+<style>
+.page[data-name="bills"] input[type="checkbox"][disabled] + .icon-checkbox {
+  opacity: 0.5;
+}
+.page[data-name="bills"] .fab {
+  bottom: calc(var(--f7-fab-margin) + var(--f7-toolbar-height));
+  transition: right .3s;
+}
+.page[data-name="bills"] .fab.hidden {
+  right: -100%;
+}
+.page[data-name="bills"] .fab .badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 1;
+  border: 2px solid var(--f7-color-teal);
+}
+</style>
+
+<script>
+import NavbarSearchbar from '@/components/navbar-searchbar.f7';
+
+export default (props, { $on, $f7, $ref, $el, $update, $ }) => {
+  const serachbarActive = $ref(false);
+  const loading = $ref(false);
+  const targetData = $ref({});
+  let accounts = [];
+  let bills = [];
+  let virtualList;
+
+  $on('pageInit', () => {
+    loadData();
+    initVirtualList();
+  });
+
+  async function loadData() {
+    function loadAccounts() {
+      return new Promise((resolve, reject) => {
+        $f7.request.json('/api/accounts', (data, status, xhr) => {
+          resolve(data.data);
+        }, (xhr, status, message) => {
+          if (status !== 401) reject(`${status}: ${message}`);
+        });
+      });
+    }
+    function loadBills() {
+      return new Promise((resolve, reject) => {
+        $f7.request.json(`/api/bills?target_id=${props.targetId}`, (data, status, xhr) => {
+          resolve(data.data);
+        }, (xhr, status, message) => {
+          if (status !== 401) reject(`${status}: ${message}`);
+        });
+      });
+    }
+    function loadTarget() {
+      return new Promise((resolve, reject) => {
+        $f7.request.json(`/api/targets/${props.targetId}`, (data, status, xhr) => {
+          resolve(data.data);
+        }, (xhr, status, message) => {
+          if (status !== 401) reject(`${status}: ${message}`);
+        });
+      });
+    }
+
+    try {
+      loading.value = true;
+
+      await Promise.all([loadAccounts(), loadBills(), loadTarget()]).then(([accountsData, billsData, _targetData]) => {
+        targetData.value = _targetData;
+        bills = billsData;
+        accounts = accountsData.reduce((list, item) => {
+          if (item.objects && item.objects.length > 0) {
+            item.objects.forEach((object) => {
+              list.push($f7.utils.extend({}, item, object));
+            });
+          }
+
+          return list;
+        }, []);
+        virtualList.appendItems(accounts);
+
+        if (accounts.length === bills.length) {
+          $el.value.find('#all-accounts-checkbox-block').css('display', 'none');
+        }
+      });
+    } catch (error) {
+      console.error(error);
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  function initVirtualList() {
+    virtualList = $f7.virtualList.create({
+      el: $el.value.find('#bill-list'),
+      items: accounts,
+      searchAll: (query, items) => {
+        let found = [];
+        for (let i = 0; i < items.length; i++) {
+          const displayItem = query.trim() === '' ||
+            query.toLowerCase().split(' ').every((word) =>
+              items[i].persons[0].name.toLowerCase().indexOf(word) >= 0 ||
+              items[i].persons[0].surname.toLowerCase().indexOf(word) >= 0 ||
+              items[i].persons[0].pat_name.toLowerCase().indexOf(word) >= 0
+            ) ||
+            query.toLowerCase().split(' ').every((word) =>
+              items[i].street.toLowerCase().indexOf(word) >= 0 ||
+              String(items[i].number).indexOf(word) >= 0
+            );
+
+          if (displayItem) {
+            found.push(i)
+          }
+        }
+        return found; //return array with mathced indexes
+      },
+      renderItem(item) {
+        const bill = bills.find((bill) => bill.object_id === item.object_id);
+        return `
+          <li>
+            <label class="item-checkbox item-content">
+              <input type="checkbox" name="account-checkbox" value="${item.object_id}" ${Boolean(bill) && 'checked disabled'} ${item.checked && 'checked'} />
+              <i class="icon icon-checkbox"></i>
+              <div class="item-media">
+                <div class="item-icon bg-color-primary">
+                  <i class="icon f7-icons">skew</i>
+                </div>
+              </div>
+              <div class="item-inner">
+                <div class="item-title-row">
+                  <div class="item-title">${`<span>${item.street}, ${item.number}</span>`}</div>
+                  <div class="item-after">${Boolean(bill) ? (bill.bill.toLocaleString() + ' ₽') : ''}</div>
+                </div>
+                ${item.persons && item.persons.length > 0 ? `
+                  <div class="item-subtitle">
+                    <span>${item.persons[0].surname} ${item.persons[0].name} ${item.persons[0].pat_name}</span>
+                    ${item.persons[0].is_member ? `
+                      <i class="icon f7-icons color-blue" style="font-size: 1em">checkmark_seal_fill</i>
+                    ` : ''}
+                    ${item.persons.length > 1 ? `
+                      <span>, +${item.persons.length - 1}</span>
+                    ` : ''}
+                  </div>
+                ` : `
+                  <div class="item-subtitle">Нет владельцев</div>
+                `}
+              </div>
+            </label>
+          </li>
+        `;
+      },
+      height: 77,
+    });
+
+    $el.value.find('input[name="all-accounts-checkbox"]').on('change', (event) => {
+      const noBillsList = accounts.filter((account) => !bills.some((bill) => bill.object_id === account.object_id));
+      noBillsList.forEach((item) => item.checked = event.target.checked);
+      virtualList.clearCache();
+      virtualList.update();
+
+      if (noBillsList[0].checked) {
+        $el.value.find('.fab').removeClass('hidden');
+      } else {
+        $el.value.find('.fab').addClass('hidden');
+      }
+
+      $update();
+    });
+
+    $el.value.on('change', 'input[name="account-checkbox"]', (event) => {
+      accounts.find((account) => account.object_id === event.target.value).checked = event.target.checked;
+      const totalChecked = getTotalChecked();
+
+      if (totalChecked === 0) {
+        $el.value.find('input[name="all-accounts-checkbox"]').prop('checked', false);
+        $el.value.find('input[name="all-accounts-checkbox"]').prop('indeterminate', false);
+      } else if (totalChecked === accounts.length - bills.length) {
+        $el.value.find('input[name="all-accounts-checkbox"]').prop('checked', true);
+        $el.value.find('input[name="all-accounts-checkbox"]').prop('indeterminate', false);
+      } else {
+        $el.value.find('input[name="all-accounts-checkbox"]').prop('indeterminate', true);
+      }
+
+      if (totalChecked === 0) {
+        $el.value.find('.fab').addClass('hidden');
+      } else {
+        $el.value.find('.fab').removeClass('hidden');
+      }
+
+      $update();
+    });
+  }
+
+  function getTotalChecked() {
+    const noBillsList = accounts.filter((account) => !bills.some((bill) => bill.object_id === account.object_id));
+    return noBillsList.filter((item) => item.checked).length;
+  }
+
+  function createBills() {
+    $f7.dialog.create({
+      title: 'Сформировать счета?',
+      text: `Будет сформировано счетов на оплату: ${getTotalChecked()}`,
+      buttons: [
+        {
+          text: 'Отмена',
+          cssClass: 'dialog-second-button',
+        },
+        {
+          text: 'Сформировать',
+          onClick: async () => {
+            let progress = 0;
+            const dialog = $f7.dialog.progress('Формирование счетов', progress);
+            const checkedAccounts = accounts.filter((account) => !bills.some((bill) => bill.object_id === account.object_id)).filter((item) => item.checked);
+            const total = checkedAccounts.length;
+            dialog.setText(`Сформировано 0 из ${total}`);
+
+            while (checkedAccounts.length > 0) {
+              const batch = checkedAccounts.splice(0, 10);
+              const response = await Promise.all(batch.map((account) => new Promise((resolve, reject) => {
+                const newBill = {
+                  formed: new Date().toISOString(),
+                  period: targetData.value.period,
+                  object_id: account.object_id,
+                  target: {
+                    target_id: targetData.value.target_id,
+                    type: targetData.value.type,
+                  },
+                  bill: targetData.value.cost,
+                };
+
+                $f7.request({
+                  method: 'POST',
+                  url: `/api/accounts/${account.account_id}/bills`,
+                  data: newBill,
+                  contentType: 'application/json',
+                  dataType: 'json',
+                  success: resolve,
+                  error: (xhr, status, message) => {
+                    if (status !== 401) {
+                      reject(`${status}: ${message}`);
+                    }
+                  },
+                });
+              })));
+
+              progress = (total - checkedAccounts.length) / total * 100;
+              dialog.setProgress(progress);
+              dialog.setText(`Сформировано ${total - checkedAccounts.length} из ${total}`);
+
+              response.forEach((item) => bills.push(item.data));
+            }
+
+            dialog.close();
+            virtualList.clearCache();
+            virtualList.update();
+
+            $el.value.find('input[name="all-accounts-checkbox"]').prop('checked', false);
+            $el.value.find('input[name="all-accounts-checkbox"]').prop('indeterminate', false);
+            $el.value.find('.fab').addClass('hidden');
+            const noBillsList = accounts.filter((account) => !bills.some((bill) => bill.object_id === account.object_id)).forEach((item) => item.checked = false);
+            $update();
+          },
+        },
+      ],
+      destroyOnClose: true,
+    }).open();
+  }
+
+  return $render;
+}
+</script>
